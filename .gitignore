@@ -9,7 +9,7 @@ backend/*.pyc
 backend/.venv/
 backend/venv/
 
-# environment stuff
+# environment stuff, useful for later (not sure)
 .env
 backend/.env
 frontend/.env
