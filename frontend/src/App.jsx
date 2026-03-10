@@ -9,6 +9,7 @@ import Collection from './pages/Collection'
 import Challenges from './pages/Challenges'
 import Friends from './pages/Friends'
 import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <Route path="/challenges" element={<Challenges />} />
       <Route path="/friends" element={<Friends />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/settings" element={<Settings />} />
     </Routes>
   )
 }
