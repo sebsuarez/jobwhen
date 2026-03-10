@@ -1,0 +1,48 @@
+services:
+  frontend:
+    build: ./frontend
+    container_name: jobwhen_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:5000/graphql
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  backend:
+    build: ./backend
+    container_name: jobwhen_backend
+    ports:
+      - "5001:5000"
+    depends_on:
+      - db
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=jobwhen
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    volumes:
+      - ./backend:/app
+
+  db:
+    image: postgres:15
+    container_name: jobwhen_db
+    restart: always
+    environment:
+      - POSTGRES_DB=jobwhen
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:

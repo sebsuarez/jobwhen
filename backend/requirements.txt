@@ -1,0 +1,26 @@
+# these are the dependencies that I think we will need for now
+# feel free to add or delete as necessary
+
+Flask
+Flask-Cors
+python-dotenv
+
+# GraphQL
+graphene
+Flask-GraphQL
+
+# not sure which one we will use for GraphQL,
+# but these are the two most popular ones (after graphene)
+# ariadne
+# strawberry-graphql
+
+# db
+psycopg2-binary
+SQLAlchemy
+Flask-SQLAlchemy
+
+# auth and oauth
+google-auth
+requests
+
+
