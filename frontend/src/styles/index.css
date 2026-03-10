@@ -1,68 +1,192 @@
+/* styles/index.css */
+
+/* Consistent Design Formats */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Fonts */
+  --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Space Mono', 'Fira Code', monospace;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  /* Font Sizes */
+  --text-xs:  0.75rem;
+  --text-sm:  0.875rem;
+  --text-base: 1rem;
+  --text-lg:  1.125rem;
+  --text-xl:  1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 2.5rem;
+
+  /* Text */
+  --text-primary:   #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted:     #64748B;
+  --text-accent:    #D8B4FE;
+  --text-link:      #A855F7;
+
+  /* Surfaces */
+  --bg-page:     #0F172A;
+  --bg-sidebar:  #1E293B;
+  --bg-card:     rgba(30, 41, 59, 0.5);
+  --bg-card-solid: #1E293B;
+  --bg-modal:    #0F172A;
+  --bg-input:    #1E293B;
+
+  /* Borders */
+  --border-default: #334155;
+  --border-focus:   #A855F7;
+
+  /* Buttons */
+  --btn-primary-bg:    #9333EA;
+  --btn-primary-hover: #7E22CE;
+  --btn-primary-text:  #FFFFFF;
+  --btn-submit-bg:     #7215D4;
+  --btn-selected-bg:   #692099;
+  --btn-ghost-bg:      rgba(0, 0, 0, 0.25);
+  --btn-ghost-border:  #334155;
+  --btn-destructive-bg: #F87171;
+
+  /* Sidebar */
+  --logo-color:    #A855F7;
+  --nav-active:    #D8B4FE;
+  --nav-inactive:  #94A3B8;
+  --nav-indicator: #D8B4FE;
+
+  /* Job Board Status */
+  --status-wishlist:  #94A3B8;
+  --status-applied:   #A855F7;
+  --status-interview: #38BDF8;
+  --status-offer:     #4ADE80;
+  --status-rejected:  #F87171;
+  --status-ghosted:   #FBBF24;
+
+  /* Dashboard Stats */
+  --stat-total:     #A855F7;
+  --stat-interview: #38BDF8;
+  --stat-offer:     #4ADE80;
+  --stat-rate:      #8B5CF6;
+
+  /* XP / Progress */
+  --level-circle-bg:     #3B0764;
+  --level-circle-border: #C884FC;
+  --level-text:          #D8B4FE;
+  --progress-track:      #334155;
+  --progress-fill:       #C884FC;
+
+  /* Cards */
+  --card-salary:      #C884FC;
+  --card-location:    #334155;
+  --card-tag-text:    #D8B4FE;
+  --card-tag-bg:      rgba(105, 32, 153, 0.55);
+  --card-deadline-bg: #334155;
+
+  /* Challenges & Badges */
+  --challenge-timer-bg:     #C884FC;
+  --challenge-timer-border: #D8B4FE;
+  --challenge-add-bg:       #A855F7;
+  --badge-unlocked-bg:      rgba(51, 65, 85, 0.5);
+  --badge-locked-bg:        rgba(0, 0, 0, 0.5);
+  --badge-special-border:   #F19EDC;
+
+  /* Forms */
+  --form-label:        #64748B;
+  --form-field-bg:     #1E293B;
+  --form-field-border: #334155;
+
+  /* Auth */
+  --auth-card-bg:     rgba(30, 41, 59, 0.5);
+  --auth-card-border: #334155;
+  --auth-tab-active:  #A855F7;
+  --auth-tab-bg:      #334155;
+  --auth-divider:     rgba(148, 163, 184, 0.2);
+
+  /* Mood */
+  --mood-icon-border: #D9D9D9;
+
+  /* Spacing */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Radius */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* Sidebar Layout */
+  --sidebar-width: 250px;
+}
+
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: var(--font-body);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Elements */
+
+a {
+  color: var(--text-link);
+  text-decoration: none;
+  transition: color var(--transition-fast);
 }
+a:hover { color: var(--text-accent); }
+
+img { max-width: 100%; display: block; }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-family: var(--font-body);
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  border: none;
+  outline: none;
+  background: none;
+  color: inherit;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+input, textarea, select {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--form-field-bg);
+  border: 2px solid var(--form-field-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xl);
+  transition: border-color var(--transition-fast);
+  outline: none;
+  width: 100%;
 }
+input:focus, textarea:focus, select:focus { border-color: var(--border-focus); }
+input::placeholder, textarea::placeholder { color: var(--text-muted); }
