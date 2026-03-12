@@ -24,9 +24,9 @@ services:
       - FLASK_ENV=development
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_NAME=jobwhen
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./backend:/app
 
@@ -35,9 +35,9 @@ services:
     container_name: jobwhen_db
     restart: always
     environment:
-      - POSTGRES_DB=jobwhen
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
