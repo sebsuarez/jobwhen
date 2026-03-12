@@ -1,6 +1,7 @@
-.page-login {
+/* Login.css */
+
+.login {
   min-height: 100vh;
-  background: #0f172a;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -9,7 +10,7 @@
   color: white;
 }
 
-.login-container {
+.login__container {
   width: 100%;
   max-width: 765px;
   display: flex;
@@ -17,7 +18,7 @@
   align-items: center;
 }
 
-.login-title {
+.login__title {
   font-family: 'Space Mono', monospace;
   font-size: 40px;
   font-weight: 700;
@@ -25,24 +26,25 @@
   margin: 0;
 }
 
-.login-subtitle {
+.login__subtitle {
   margin-top: 8px;
   margin-bottom: 26px;
   font-size: 18px;
   color: #94a3b8;
 }
 
-.login-card {
+.login__card {
   width: 100%;
   max-width: 765px;
   background: rgba(30, 41, 59, 0.5);
   border: 2px solid #334155;
   border-radius: 30px;
   padding: 44px 50px 38px;
-  box-sizing: border-box;
 }
 
-.login-tabs {
+/* ── Tabs ── */
+
+.login__tabs {
   width: 100%;
   height: 62px;
   background: #334155;
@@ -53,26 +55,24 @@
   margin-bottom: 30px;
 }
 
-
-.tab {
+.login__tab {
   flex: 1;
-  text-decoration: none;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
   font-size: 20px;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
 }
 
-.tab.active {
+.login__tab--active {
   background: #a855f7;
   border-radius: 18px;
 }
 
-.google-btn {
-  width: 100%;
+/* ── Google Button ── */
+
+.login__google {
   height: 62px;
   border: 2px solid #334155;
   border-radius: 20px;
@@ -85,7 +85,9 @@
   margin-bottom: 24px;
 }
 
-.divider {
+/* ── Divider ── */
+
+.login__divider {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -94,27 +96,28 @@
   font-size: 18px;
 }
 
-.divider::before,
-.divider::after {
+.login__divider::before,
+.login__divider::after {
   content: "";
   flex: 1;
   height: 2px;
   background: rgba(148, 163, 184, 0.2);
 }
 
-.login-form {
+/* ── Form ── */
+
+.login__form {
   display: flex;
   flex-direction: column;
 }
 
-.login-form label {
+.login__form label {
   font-size: 18px;
   color: #94a3b8;
   margin-bottom: 8px;
 }
 
-.login-form input {
-  width: 100%;
+.login__form input {
   height: 62px;
   background: rgba(30, 41, 59, 0.5);
   border: 2px solid #334155;
@@ -127,11 +130,11 @@
   margin-bottom: 22px;
 }
 
-.login-form input::placeholder {
+/* .login-form input::placeholder {
   color: #64748b;
-}
+} */
 
-.forgot-password {
+.login__forgot {
   color: #a855f7;
   font-size: 18px;
   font-weight: 700;
@@ -140,7 +143,7 @@
   width: fit-content;
 }
 
-.login-btn {
+/* .login__signup {
   width: 100%;
   height: 62px;
   background: #a855f7;
@@ -153,7 +156,7 @@
   cursor: pointer;
 }
 
-.signup-link {
+/* .signup-link {
   margin-top: 16px;
   font-size: 18px;
   color: #94a3b8;
@@ -163,4 +166,4 @@
 .signup-link span {
   color: #a855f7;
   font-weight: 700;
-}
+} */ 
