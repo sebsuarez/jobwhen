@@ -15,6 +15,8 @@ const COLUMNS = [
   {id: 'ghosted', label: 'Ghosted' },
 ]
 
+const FILTERS = ['All', 'Wishlist', 'Applied', 'Interview', 'Rejected', 'Ghosted']
+
 // TODO: REPLACE THIS WITH REAL DATA FROM BACKEND ONCE SETUP!
 const MOCK_JOBS = [
   { id: 1, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'wishlist' },
@@ -30,6 +32,7 @@ const MOCK_JOBS = [
 
 export default function Board() {
   const [showAddModal, setShowAddModal] = useState(false)
+  const [activeFilter, setActiveFilter] = useState('All')
 
   // TODO: REPLACE THIS WITH PROPER FUNCTIONALITY WITH BACKEND ONCE SETUP
   const getColumnJobs = (columnId) =>
@@ -55,6 +58,23 @@ export default function Board() {
             </div>
             <Button onClick={() => setShowAddModal(true)}>+ Add Job</Button>
           </div>
+        </div>
+
+        <div className="board__filters">
+          {FILTERS.map((filter) => {
+            const count = filter === 'All'
+              ? MOCK_JOBS.length
+              : MOCK_JOBS.filter((j) => j.status === filter.toLowerCase()).length
+            return (
+              <button
+                key={filter}
+                className={`board__filter ${activeFilter === filter ? 'board__filter--active' : ''}`}
+                onClick={() => setActiveFilter(filter)}
+              >
+                {filter} ({count})
+              </button>
+            )
+          })}
         </div>
 
         <div className="board__columns">

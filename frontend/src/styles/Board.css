@@ -173,3 +173,33 @@
   padding: 2px var(--space-2);
   border-radius: var(--radius-sm);
 }
+
+/* Filters */
+
+.board__filters {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+ 
+.board__filter {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+ 
+.board__filter:hover {
+  color: var(--text-primary);
+}
+ 
+.board__filter--active {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-bg);
+}
