@@ -28,6 +28,21 @@ export default function Board() {
           </div>
           <Button onClick={() => setShowAddModal(true)}>+ Add Job</Button>
         </div>
+
+        <div className="board__columns">
+          {COLUMNS.map((col) => (
+            <div key={col.id} className="board__column">
+              <div className="board__column-header">
+                <span className={`board__column-dot board__column-dot--${col.id}`} />
+                <span className="board__column-label">{col.label}</span>
+              </div>
+              <div className="board__column-body">
+                <p className="board__empty">No applications</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        
         <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Application">
           <div className="board__form">
             <label className="board__form-label">Company</label>

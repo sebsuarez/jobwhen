@@ -26,3 +26,61 @@
   gap: var(--space-3);
   margin-top: var(--space-4);
 }
+
+/* Board-Columns */
+
+.board__columns {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+}
+
+.board__column {
+  min-width: 220px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.board__column-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.board__column-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.board__column-dot--wishlist  { background: var(--status-wishlist); }
+
+.board__column-dot--applied   { background: var(--status-applied); }
+
+.board__column-dot--interview { background: var(--status-interview); }
+
+.board__column-dot--offer     { background: var(--status-offer); }
+
+.board__column-dot--rejected  { background: var(--status-rejected); }
+
+.board__column-dot--ghosted   { background: var(--status-ghosted); }
+
+.board__column-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.board__column-body {
+  padding: var(--space-3);
+  min-height: 200px;
+}
+
+.board__empty {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-align: center;
+}
