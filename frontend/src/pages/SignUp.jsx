@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/login.css";
-import "../styles/signup.css";
+import "../styles/SignUp.css";
 
 export default function SignUp() {
   const [role, setRole] = useState("jobseeker");
