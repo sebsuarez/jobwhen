@@ -26,7 +26,17 @@ export default function Board() {
             <h1 className="page-title">Job Board</h1>
             <p className="page-subtitle">Drag cards between columns to update their status OR edit cards by clicking/tapping on them</p>
           </div>
-          <Button onClick={() => setShowAddModal(true)}>+ Add Job</Button>
+          <div className="board__header-actions">
+            <div className="board__search">
+              <span className="board__search-icon">🔍</span>
+              <input
+                type="text"
+                className="board__search-input"
+                placeholder="Search..."
+              />
+            </div>
+            <Button onClick={() => setShowAddModal(true)}>+ Add Job</Button>
+          </div>
         </div>
 
         <div className="board__columns">
