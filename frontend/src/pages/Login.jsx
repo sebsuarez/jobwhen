@@ -1,8 +1,9 @@
 // pages/Login.jsx
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import "../styles/login.css";
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import Button from '../components/Button'
+import '../styles/Login.css'
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -14,32 +15,32 @@ export default function Login() {
   };
 
   return (
-    <div className="page-login">
-      <div className="login-container">
-        <h1 className="login-title">Job When?</h1>
-        <p className="login-subtitle">
+    <div className="login">
+      <div className="login__container">
+        <h1 className="login__title">Job When?</h1>
+        <p className="login__subtitle">
           Welcome back! Let's keep the momentum going.
         </p>
 
-        <div className="login-card">
-          <div className="login-tabs">
-            <button type="button" className="tab active">
+        <div className="login__card">
+          <div className="login__tabs">
+            <button type="button" className="login__tab login__tab--active">
               Log In
             </button>
-            <Link to="/signup" className="tab">
+            <Link to="/signup" className="login__tab">
               Sign Up
             </Link>
           </div>
 
-          <button type="button" className="google-btn">
+          <Button variant="ghost" fullWidth className="login__google">
             Continue with Google
-          </button>
+          </Button>
 
-          <div className="divider">
+          <div className="login__divider">
             <span>or use email</span>
           </div>
 
-          <form className="login-form" onSubmit={handleSubmit}>
+          <form className="login__form" onSubmit={handleSubmit}>
             <label htmlFor="email">Email</label>
             <input
               id="email"
@@ -58,21 +59,19 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            <a href="#" className="forgot-password">
-              Forgot Password
-            </a>
+            <a href="#" className="login__forgot">Forgot Password</a>
 
-            <button type="submit" className="login-btn">
+            <Button variant="primary" fullWidth type="submit">
               Log In
-            </button>
+            </Button>
           </form>
         </div>
 
-        <p className="signup-link">
+        <p className="login__signup">
           Don't have an account?{" "}
-        <Link to="/signup">Sign up for free</Link>
+          <Link to="/signup">Sign up for free</Link>
         </p>
       </div>
     </div>
-  );
+  )
 }
