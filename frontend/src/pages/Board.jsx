@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
-import Card from '..components/Card'
+import Card from '../components/Card'
 import '../styles/Board.css'
 
 const COLUMNS = [
