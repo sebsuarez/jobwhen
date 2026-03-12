@@ -15,19 +15,19 @@ export default function Login() {
   };
 
   return (
-    <div className="page-login">
-      <div className="login-container">
-        <h1 className="login-title">Job When?</h1>
-        <p className="login-subtitle">
+    <div className="login">
+      <div className="login__container">
+        <h1 className="login__title">Job When?</h1>
+        <p className="login__subtitle">
           Welcome back! Let's keep the momentum going.
         </p>
 
-        <div className="login-card">
-          <div className="login-tabs">
-            <Button type="button" className="login__tab login__tab--active">
+        <div className="login__card">
+          <div className="login__tabs">
+            <button type="button" className="login__tab login__tab--active">
               Log In
-            </Button>
-            <Link to="/signup" className="tab">
+            </button>
+            <Link to="/signup" className="login__tab">
               Sign Up
             </Link>
           </div>
@@ -36,11 +36,11 @@ export default function Login() {
             Continue with Google
           </Button>
 
-          <div className="divider">
+          <div className="login__divider">
             <span>or use email</span>
           </div>
 
-          <form className="login-form" onSubmit={handleSubmit}>
+          <form className="login__form" onSubmit={handleSubmit}>
             <label htmlFor="email">Email</label>
             <input
               id="email"
@@ -59,9 +59,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            <a href="#" className="forgot-password">
-              Forgot Password
-            </a>
+            <a href="#" className="login__forgot">Forgot Password</a>
 
             <Button variant="primary" fullWidth type="submit">
               Log In
@@ -69,11 +67,11 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="signup-link">
+        <p className="login__signup">
           Don't have an account?{" "}
-        <Link to="/signup">Sign up for free</Link>
+          <Link to="/signup">Sign up for free</Link>
         </p>
       </div>
     </div>
-  );
+  )
 }
