@@ -1,4 +1,4 @@
-# Start
+## Start
 - make sure you are in the root directory
 - then run this (when you have docker stuff installed)
 `docker compose up --build`
