@@ -1,4 +1,7 @@
+// pages/Login.jsx
+
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "../styles/login.css";
 
 export default function Login() {
@@ -15,7 +18,7 @@ export default function Login() {
       <div className="login-container">
         <h1 className="login-title">Job When?</h1>
         <p className="login-subtitle">
-          Welcome back! Let&apos;s keep the momentum going.
+          Welcome back! Let's keep the momentum going.
         </p>
 
         <div className="login-card">
@@ -23,9 +26,9 @@ export default function Login() {
             <button type="button" className="tab active">
               Log In
             </button>
-            <button type="button" className="tab">
+            <Link to="/signup" className="tab">
               Sign Up
-            </button>
+            </Link>
           </div>
 
           <button type="button" className="google-btn">
@@ -66,7 +69,8 @@ export default function Login() {
         </div>
 
         <p className="signup-link">
-          Don&apos;t have an account? <span>Sign up for free</span>
+          Don't have an account?{" "}
+        <Link to="/signup">Sign up for free</Link>
         </p>
       </div>
     </div>
