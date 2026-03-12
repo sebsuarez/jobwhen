@@ -1,0 +1,45 @@
+/* Button.css */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.btn--primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+.btn--primary:hover { background: var(--btn-primary-hover); }
+
+.btn--submit {
+  background: var(--btn-submit-bg);
+  color: var(--btn-primary-text);
+}
+
+.btn--ghost {
+  background: var(--btn-ghost-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--btn-ghost-border);
+}
+
+.btn--danger {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--btn-destructive-bg);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.btn--full { width: 100%; }
+
+.btn--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
