@@ -1,8 +1,9 @@
 // pages/Login.jsx
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import "../styles/login.css";
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import Button from '../components/Button'
+import '../styles/Login.css'
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -23,17 +24,17 @@ export default function Login() {
 
         <div className="login-card">
           <div className="login-tabs">
-            <button type="button" className="tab active">
+            <Button type="button" className="login__tab login__tab--active">
               Log In
-            </button>
+            </Button>
             <Link to="/signup" className="tab">
               Sign Up
             </Link>
           </div>
 
-          <button type="button" className="google-btn">
+          <Button variant="ghost" fullWidth className="login__google">
             Continue with Google
-          </button>
+          </Button>
 
           <div className="divider">
             <span>or use email</span>
@@ -62,9 +63,9 @@ export default function Login() {
               Forgot Password
             </a>
 
-            <button type="submit" className="login-btn">
+            <Button variant="primary" fullWidth type="submit">
               Log In
-            </button>
+            </Button>
           </form>
         </div>
 
