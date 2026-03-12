@@ -118,9 +118,13 @@
 
 /* Job Cards (overrides base Card styling) */
  
-.board__job {
-  border-left: 3px solid var(--text-primary);
-}
+.board__job { border-left: 3px solid transparent; }
+.board__job--wishlist  { border-left-color: var(--status-wishlist); }
+.board__job--applied   { border-left-color: var(--status-applied); }
+.board__job--interview { border-left-color: var(--status-interview); }
+.board__job--offer     { border-left-color: var(--status-offer); }
+.board__job--rejected  { border-left-color: var(--status-rejected); }
+.board__job--ghosted   { border-left-color: var(--status-ghosted); }
  
 .board__job-company {
   font-size: var(--text-sm);

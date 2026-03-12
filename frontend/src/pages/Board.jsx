@@ -73,7 +73,7 @@ export default function Board() {
                     <p className="board__empty">No applications</p>
                   ) : (
                     jobs.map((job) => (
-                      <Card key={job.id} className="board__job" onClick={() => {}}>
+                      <Card key={job.id} className={`board__job board__job--${job.status}`} onClick={() => {}}>
                         <h4 className="board__job-company">{job.company}</h4>
                         <p className="board__job-role">{job.role}</p>
                         <p className="board__job-location">{job.location}</p>
