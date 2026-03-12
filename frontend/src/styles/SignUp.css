@@ -1,0 +1,109 @@
+.register-label {
+  color: var(--text-secondary);
+  font-size: var(--text-lg);
+  margin-top: var(--space-2);
+}
+
+.role-toggle {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.role {
+  flex: 1;
+  height: 50px;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--border-default);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-fast);
+}
+
+.role.active {
+  background: var(--auth-tab-active);
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.form-grid label,
+.mentor-top-row label,
+.mentor-textarea-group label {
+  display: block;
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.form-grid input,
+.mentor-top-row input,
+.mentor-textarea-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  height: 50px;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--form-field-border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 0 var(--space-4);
+  font-size: var(--text-xl);
+}
+
+.mentor-textarea-group textarea {
+  height: 161px;
+  resize: none;
+  padding: var(--space-3) var(--space-4);
+}
+
+.signup-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  transition: all var(--transition-slow);
+}
+
+.signup-main-card {
+  width: 765px;
+  flex-shrink: 0;
+  border-radius: 30px 30px 0 30px;
+  transition: transform var(--transition-slow);
+}
+
+.signup-layout.mentor-mode .signup-main-card {
+  transform: translateX(-220px);
+}
+
+.mentor-card {
+  width: 618px;
+  min-height: 350px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  background: var(--bg-card);
+  border: 2px solid var(--auth-card-border);
+  border-left: none;
+  border-radius: 0 30px 30px 0;
+  padding: 22px 26px;
+  margin-top: 250px;
+  opacity: 1;
+  transition: all var(--transition-slow);
+}
+
+.mentor-top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  margin-bottom: var(--space-4);
+}
