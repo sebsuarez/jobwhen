@@ -15,7 +15,7 @@ const COLUMNS = [
   {id: 'ghosted', label: 'Ghosted' },
 ]
 
-const FILTERS = ['All', 'Wishlist', 'Applied', 'Interview', 'Rejected', 'Ghosted']
+const FILTERS = ['All', 'Wishlist', 'Applied', 'Interview', 'Offer', 'Rejected', 'Ghosted']
 
 // TODO: REPLACE THIS WITH REAL DATA FROM BACKEND ONCE SETUP!
 const MOCK_JOBS = [
