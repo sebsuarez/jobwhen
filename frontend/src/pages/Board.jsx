@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import Button from '../components/Button'
+import Modal from '../components/Modal'
 import '../styles/Board.css'
 
 const COLUMNS = [
@@ -27,6 +28,24 @@ export default function Board() {
           </div>
           <Button onClick={() => setShowAddModal(true)}>+ Add Job</Button>
         </div>
+        <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Application">
+          <div className="board__form">
+            <label className="board__form-label">Company</label>
+            <input type="text" placeholder="e.g. Google" />
+            <label className="board__form-label">Role</label>
+            <input type="text" placeholder="e.g. Frontend Developer" />
+            <label className="board__form-label">Location</label>
+            <input type="text" placeholder="e.g. Calgary, AB" />
+            <label className="board__form-label">Date Applied</label>
+            <input type="date" />
+            <label className="board__form-label">Notes</label>
+            <textarea rows={3} placeholder="Any notes..." />
+            <div className="board__form-actions">
+              <Button variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
+              <Button variant="submit">Add Application</Button>
+            </div>
+          </div>
+        </Modal>
       </main>
     </div>
   )

@@ -6,3 +6,23 @@
   align-items: flex-start;
   margin-bottom: var(--space-8);
 }
+
+/* Add Application Form */
+
+.board__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.board__form-label {
+  font-size: var(--text-sm);
+  color: var(--form-label);
+}
+
+.board__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
