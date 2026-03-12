@@ -1,4 +1,4 @@
-// components/Modal.jsx
+// components/Card.jsx
 import '../styles/Card.css'
 
 export default function Card({ children, className = '', onClick, ...props }) {

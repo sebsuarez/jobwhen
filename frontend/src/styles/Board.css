@@ -51,38 +51,35 @@
 
 .board__column-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-default);
 }
-
-.board__column-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.board__column-dot--wishlist  { background: var(--status-wishlist); }
-
-.board__column-dot--applied   { background: var(--status-applied); }
-
-.board__column-dot--interview { background: var(--status-interview); }
-
-.board__column-dot--offer     { background: var(--status-offer); }
-
-.board__column-dot--rejected  { background: var(--status-rejected); }
-
-.board__column-dot--ghosted   { background: var(--status-ghosted); }
-
+ 
 .board__column-label {
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+ 
+.board__column-label--wishlist  { color: var(--status-wishlist); }
+.board__column-label--applied   { color: var(--status-applied); }
+.board__column-label--interview { color: var(--status-interview); }
+.board__column-label--offer     { color: var(--status-offer); }
+.board__column-label--rejected  { color: var(--status-rejected); }
+.board__column-label--ghosted   { color: var(--status-ghosted); }
+ 
+.board__column-count {
   font-size: var(--text-sm);
-  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .board__column-body {
   padding: var(--space-3);
   min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .board__empty {
@@ -91,7 +88,7 @@
   text-align: center;
 }
 
-/* ── Search ── */
+/* Search */
  
 .board__search {
   display: flex;
@@ -117,4 +114,58 @@
  
 .board__search-input:focus {
   border-color: transparent;
+}
+
+/* Job Cards (overrides base Card styling) */
+ 
+.board__job {
+  border-left: 3px solid var(--text-primary);
+}
+ 
+.board__job-company {
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+ 
+.board__job-role {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+ 
+.board__job-location {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+ 
+.board__job-salary {
+  font-size: var(--text-sm);
+  color: var(--card-salary);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+ 
+.board__job-deadline {
+  display: inline-block;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: var(--card-deadline-bg);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+ 
+.board__job-tags {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+ 
+.board__job-tag {
+  font-size: var(--text-xs);
+  color: var(--card-tag-text);
+  background: var(--card-tag-bg);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
 }

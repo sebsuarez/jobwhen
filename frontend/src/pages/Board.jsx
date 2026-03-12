@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
+import Card from '..components/Card'
 import '../styles/Board.css'
 
 const COLUMNS = [
@@ -14,8 +15,25 @@ const COLUMNS = [
   {id: 'ghosted', label: 'Ghosted' },
 ]
 
+// TODO: REPLACE THIS WITH REAL DATA FROM BACKEND ONCE SETUP!
+const MOCK_JOBS = [
+  { id: 1, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'wishlist' },
+  { id: 2, company: 'Figma', role: 'UI/UX Designer', location: 'Seattle, WA', salary: '$90k', deadline: 'March 11, 2026', tags: ['remote', 'Figma'], status: 'wishlist' },
+  { id: 3, company: 'Google', role: 'SWE Intern (4m)', location: 'Waterloo, ON', salary: '$45/hr', deadline: 'March 1, 2026', tags: ['Hybrid'], status: 'applied' },
+  { id: 4, company: 'Stripe', role: 'Full Stack Engineer', location: 'Seattle, WA', salary: '$90k', deadline: 'February 28, 2026', tags: ['on-site', 'next.js'], status: 'applied' },
+  { id: 5, company: 'Vercel', role: 'Backend Engineer', location: 'Remote', salary: '$110k - $140k', deadline: 'March 11, 2026', tags: ['remote', 'next.js'], status: 'applied' },
+  { id: 6, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'interview' },
+  { id: 7, company: 'Figma', role: 'UI/UX Designer', location: 'Seattle, WA', salary: '$90k', deadline: 'March 11, 2026', tags: ['remote', 'Figma'], status: 'interview' },
+  { id: 8, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'rejected' },
+  { id: 9, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'ghosted' },
+]
+
 export default function Board() {
   const [showAddModal, setShowAddModal] = useState(false)
+
+  // TODO: REPLACE THIS WITH PROPER FUNCTIONALITY WITH BACKEND ONCE SETUP
+  const getColumnJobs = (columnId) =>
+    MOCK_JOBS.filter((job) => job.status === columnId)
 
   return (
     <div className="app-layout">
@@ -40,17 +58,39 @@ export default function Board() {
         </div>
 
         <div className="board__columns">
-          {COLUMNS.map((col) => (
-            <div key={col.id} className="board__column">
-              <div className="board__column-header">
-                <span className={`board__column-dot board__column-dot--${col.id}`} />
-                <span className="board__column-label">{col.label}</span>
+          {COLUMNS.map((col) => {
+            const jobs = getColumnJobs(col.id)
+            return (
+              <div key={col.id} className="board__column">
+                <div className="board__column-header">
+                  <span className={`board__column-label board__column-label--${col.id}`}>
+                    {col.label}
+                  </span>
+                  <span className="board__column-count">{jobs.length}</span>
+                </div>
+                <div className="board__column-body">
+                  {jobs.length === 0 ? (
+                    <p className="board__empty">No applications</p>
+                  ) : (
+                    jobs.map((job) => (
+                      <Card key={job.id} className="board__job" onClick={() => {}}>
+                        <h4 className="board__job-company">{job.company}</h4>
+                        <p className="board__job-role">{job.role}</p>
+                        <p className="board__job-location">{job.location}</p>
+                        <p className="board__job-salary">{job.salary}</p>
+                        <span className="board__job-deadline">Deadline {job.deadline}</span>
+                        <div className="board__job-tags">
+                          {job.tags.map((tag) => (
+                            <span key={tag} className="board__job-tag">{tag}</span>
+                          ))}
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
               </div>
-              <div className="board__column-body">
-                <p className="board__empty">No applications</p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
         
         <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Application">
