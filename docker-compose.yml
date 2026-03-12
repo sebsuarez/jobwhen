@@ -7,7 +7,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost:5000/graphql
+      - VITE_API_URL=http://localhost:5001/graphql
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -16,7 +16,7 @@ services:
     build: ./backend
     container_name: jobwhen_backend
     ports:
-      - "5001:5000"
+      - "5001:5001"
     depends_on:
       - db
     environment:
