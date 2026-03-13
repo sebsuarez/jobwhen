@@ -1,0 +1,205 @@
+/* Board.css */
+
+.board__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-8);
+}
+
+.board__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Add Application Form */
+
+.board__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.board__form-label {
+  font-size: var(--text-sm);
+  color: var(--form-label);
+}
+
+.board__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* Board-Columns */
+
+.board__columns {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+}
+
+.board__column {
+  min-width: 220px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.board__column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+}
+ 
+.board__column-label {
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+ 
+.board__column-label--wishlist  { color: var(--status-wishlist); }
+.board__column-label--applied   { color: var(--status-applied); }
+.board__column-label--interview { color: var(--status-interview); }
+.board__column-label--offer     { color: var(--status-offer); }
+.board__column-label--rejected  { color: var(--status-rejected); }
+.board__column-label--ghosted   { color: var(--status-ghosted); }
+ 
+.board__column-count {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.board__column-body {
+  padding: var(--space-3);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.board__empty {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+/* Search */
+ 
+.board__search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-4);
+}
+ 
+.board__search-icon {
+  font-size: var(--text-sm);
+}
+ 
+.board__search-input {
+  border: none;
+  background: transparent;
+  font-size: var(--text-sm);
+  padding: var(--space-1) 0;
+  width: 180px;
+}
+ 
+.board__search-input:focus {
+  border-color: transparent;
+}
+
+/* Job Cards (overrides base Card styling) */
+ 
+.board__job { border-left: 3px solid transparent; }
+.board__job--wishlist  { border-left-color: var(--status-wishlist); }
+.board__job--applied   { border-left-color: var(--status-applied); }
+.board__job--interview { border-left-color: var(--status-interview); }
+.board__job--offer     { border-left-color: var(--status-offer); }
+.board__job--rejected  { border-left-color: var(--status-rejected); }
+.board__job--ghosted   { border-left-color: var(--status-ghosted); }
+ 
+.board__job-company {
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+ 
+.board__job-role {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+ 
+.board__job-location {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+ 
+.board__job-salary {
+  font-size: var(--text-sm);
+  color: var(--card-salary);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+ 
+.board__job-deadline {
+  display: inline-block;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background: var(--card-deadline-bg);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+ 
+.board__job-tags {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+ 
+.board__job-tag {
+  font-size: var(--text-xs);
+  color: var(--card-tag-text);
+  background: var(--card-tag-bg);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+/* Filters */
+
+.board__filters {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+ 
+.board__filter {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+ 
+.board__filter:hover {
+  color: var(--text-primary);
+}
+ 
+.board__filter--active {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-bg);
+}
