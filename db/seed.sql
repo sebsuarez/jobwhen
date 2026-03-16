@@ -66,7 +66,7 @@ INSERT INTO user_settings (
 (9, TRUE, 'private', TRUE, TRUE, FALSE);
 
 -- BADGES
-=INSERT INTO badges (badge_name, description, level_required, icon_name) VALUES
+INSERT INTO badges (badge_name, description, level_required, icon_name) VALUES
 ('Level 1 Badge', 'Earned for reaching Level 1.', 1, 'badge-level-1'),
 ('Level 2 Badge', 'Earned for reaching Level 2.', 2, 'badge-level-2'),
 ('Level 3 Badge', 'Earned for reaching Level 3.', 3, 'badge-level-3'),
