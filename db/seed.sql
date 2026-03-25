@@ -135,7 +135,7 @@ INSERT INTO job_applications (
  'interview', 'System design round next.', NULL, '2026-02-10'),
 
 (1, 'Figma', 'Software Engineer', 'SF, CA', 'https://figma.com/careers', '$140k',
- 'offered', 'Offer received. Deadline Mar 5.', '2026-03-05', '2026-01-30'),
+ 'offer', 'Offer received. Deadline Mar 5.', '2026-03-05', '2026-01-30'),
 
 (1, 'Meta', 'Production Engineer', 'Menlo Park, CA', 'https://careers.meta.com', '$120k-$150k',
  'rejected', 'Did not pass phone screen.', NULL, '2026-02-01'),
@@ -156,7 +156,7 @@ INSERT INTO application_history (application_id, old_status, new_status, note) V
 (7, 'applied', 'interview', 'Interview scheduled.'),
 (8, NULL, 'applied', 'Application submitted.'),
 (8, 'applied', 'interview', 'Interviewed successfully.'),
-(8, 'interview', 'offered', 'Offer extended.'),
+(8, 'interview', 'offer', 'Offer extended.'),
 (9, NULL, 'applied', 'Application submitted.'),
 (9, 'applied', 'rejected', 'Rejected after phone screen.'),
 (10, NULL, 'applied', 'Application submitted.'),

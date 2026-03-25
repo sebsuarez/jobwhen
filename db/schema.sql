@@ -88,7 +88,7 @@ CREATE TABLE job_applications (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT chk_application_status
-        CHECK (status IN ('wishlist', 'applied', 'interview', 'offered', 'rejected', 'ghosted')),
+        CHECK (status IN ('wishlist', 'applied', 'interview', 'offer', 'rejected', 'ghosted')),
 
     CONSTRAINT fk_application_user
         FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -108,12 +108,12 @@ CREATE TABLE application_history (
     CONSTRAINT chk_old_status
         CHECK (
             old_status IS NULL OR
-            old_status IN ('wishlist', 'applied', 'interview', 'offered', 'rejected', 'ghosted')
+            old_status IN ('wishlist', 'applied', 'interview', 'offer', 'rejected', 'ghosted')
         ),
 
     CONSTRAINT chk_new_status
         CHECK (
-            new_status IN ('wishlist', 'applied', 'interview', 'offered', 'rejected', 'ghosted')
+            new_status IN ('wishlist', 'applied', 'interview', 'offer', 'rejected', 'ghosted')
         ),
 
     CONSTRAINT fk_history_application

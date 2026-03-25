@@ -35,7 +35,7 @@ PostgreSQL 15 database for the Job When? platform.
 ## Application Status Pipeline
 
 ```
-wishlist → applied → interview → offered
+wishlist → applied → interview → offer
                    ↘ rejected
                    ↘ ghosted
 ```
