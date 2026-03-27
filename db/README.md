@@ -35,26 +35,76 @@ PostgreSQL 15 database for the Job When? platform.
 ## Application Status Pipeline
 
 ```
-wishlist → applied → interview → offered
+wishlist → applied → interview → offer
                    ↘ rejected
                    ↘ ghosted
 ```
 
-## How to Apply
+## Running the Scripts
 
-To apply manually against a running PostgreSQL instance:
+### Option 1: Docker Compose (Recommended)
+
+The schema and seed scripts run **automatically** when the database container starts for the first time. No manual steps required.
+
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+1. Copy the example environment file and fill in your credentials:
 
 ```bash
-psql -h localhost -U postgres -d jobwhen -f db/schema.sql
-psql -h localhost -U postgres -d jobwhen -f db/seed.sql
+cp .env.example .env
 ```
 
-> `schema.sql` drops and recreates all tables. Running it will erase existing data.
-> Only run `seed.sql` after `schema.sql` on a fresh database.
+Edit `.env` with your values:
+
+```
+POSTGRES_USER=your_username
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=jobwhen
+```
+
+2. From the project root, start all services:
+
+```bash
+docker compose up --build
+```
+
+Docker will:
+- Build the `db` image from `db/Dockerfile`
+- Copy `schema.sql` and `seed.sql` into `/docker-entrypoint-initdb.d/`
+- PostgreSQL automatically runs them in order (`01_schema.sql` → `02_seed.sql`) on first startup
+
+The database will be ready at `localhost:5432`.
+
+> To reset the database, stop the containers and remove the volume, then rebuild:
+> ```bash
+> docker compose down -v
+> docker compose up --build
+> ```
+
+---
+
+### Option 2: Manual psql
+
+To run the scripts manually against an already-running PostgreSQL instance:
+
+```bash
+psql -h localhost -U <your_user> -d <your_db> -f db/schema.sql
+psql -h localhost -U <your_user> -d <your_db> -f db/seed.sql
+```
+
+> `schema.sql` drops and recreates all tables — running it will erase all existing data.
+> Always run `seed.sql` after `schema.sql` on a fresh database.
 
 ## Resetting the Database
 
+**With Docker:**
 ```bash
-psql -h localhost -U postgres -d jobwhen -f db/schema.sql
-psql -h localhost -U postgres -d jobwhen -f db/seed.sql
+docker compose down -v
+docker compose up --build
+```
+
+**Manually:**
+```bash
+psql -h localhost -U <your_user> -d <your_db> -f db/schema.sql
+psql -h localhost -U <your_user> -d <your_db> -f db/seed.sql
 ```
