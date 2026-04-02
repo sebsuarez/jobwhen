@@ -90,6 +90,23 @@ export default function Challenges() {
     setNewChallenges((prev) => [...prev, challenge])
   }
 
+  const updateProgress = (challengeId) => {
+    setActiveChallenges((prev) =>
+      prev.map((challenge) => {
+        if (challenge.id !== challengeId) return challenge
+
+        const [current, total] = challenge.progressText.split('/').map(Number)
+        const newCurrent = Math.min(current + 1, total)
+
+        return {
+          ...challenge,
+          progressText: `${newCurrent}/${total}`,
+          progressPercent: (newCurrent / total) * 100,
+        }
+      })
+    )
+  }
+
   return (
     <div className="challenges-page">
       <Sidebar />
@@ -139,6 +156,14 @@ export default function Challenges() {
                     style={{ width: `${challenge.progressPercent}%` }}
                   />
                 </div>
+
+                <Button
+                  variant="primary"
+                  className="challenge-card__progress-btn"
+                  onClick={() => updateProgress(challenge.id)}
+                >
+                  + Progress
+                </Button>
               </Card>
             ))}
           </div>
