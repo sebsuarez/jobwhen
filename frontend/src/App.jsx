@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import './styles/App.css'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
+import CompleteSignup from './pages/CompleteSignup'
 import Dashboard from './pages/Dashboard'
 import Board from './pages/Board'
 import Collection from './pages/Collection'
@@ -45,6 +46,7 @@ function App() {
     <Routes>
       <Route path="/" element={<AuthRedirect><Login /></AuthRedirect>} />
       <Route path="/signup" element={<AuthRedirect><SignUp /></AuthRedirect>} />
+      <Route path="/complete-signup" element={<AuthRedirect><CompleteSignup /></AuthRedirect>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/board" element={<ProtectedRoute><Board /></ProtectedRoute>} />
       <Route path="/collection" element={<ProtectedRoute><Collection /></ProtectedRoute>} />

@@ -64,6 +64,11 @@ export default function SignUp() {
               throw new Error(result.error || 'Google sign-up failed.')
             }
 
+            if (result.requires_signup) {
+              navigate('/complete-signup')
+              return
+            }
+
             await refreshUser()
             navigate('/dashboard')
           } catch (error) {

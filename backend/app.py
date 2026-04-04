@@ -28,7 +28,9 @@ DATABASE_URL = (
     f"{os.getenv('DB_NAME', os.getenv('POSTGRES_DB', 'jobwhen'))}"
 )
 SESSION_COOKIE_NAME = "jobwhen_session"
+PENDING_SIGNUP_COOKIE_NAME = "jobwhen_pending_signup"
 SESSION_TTL_DAYS = int(os.getenv("SESSION_TTL_DAYS", "7"))
+PENDING_SIGNUP_TTL_MINUTES = int(os.getenv("PENDING_SIGNUP_TTL_MINUTES", "15"))
 SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
 engine = create_engine(DATABASE_URL, future=True)
 
@@ -84,14 +86,12 @@ def get_default_role_id(connection):
     return role_id
 
 
-def upsert_google_user(connection, payload):
+def find_user_by_google_payload(connection, payload):
     email = payload.get("email")
     google_sub = payload.get("sub")
 
     if not email or not google_sub:
         raise RuntimeError("Google payload is missing required user fields.")
-
-    full_name = payload.get("name") or email.split("@", 1)[0]
 
     existing_user = connection.execute(
         text(
@@ -106,45 +106,149 @@ def upsert_google_user(connection, payload):
     ).mappings().first()
 
     if existing_user:
-        user_id = existing_user["user_id"]
+        return fetch_user_by_id(connection, existing_user["user_id"])
+
+    return None
+
+
+def update_existing_google_user(connection, user_id, payload):
+    email = payload.get("email")
+    google_sub = payload.get("sub")
+    full_name = payload.get("name") or email.split("@", 1)[0]
+
+    connection.execute(
+        text(
+            """
+            UPDATE users
+            SET email = :email,
+                full_name = :full_name,
+                google_sub = :google_sub
+            WHERE user_id = :user_id
+            """
+        ),
+        {
+            "email": email,
+            "full_name": full_name,
+            "google_sub": google_sub,
+            "user_id": user_id,
+        },
+    )
+
+    return fetch_user_by_id(connection, user_id)
+
+
+def create_pending_signup(connection, payload):
+    email = payload.get("email")
+    google_sub = payload.get("sub")
+    full_name = payload.get("name") or email.split("@", 1)[0]
+    signup_token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=PENDING_SIGNUP_TTL_MINUTES)
+
+    connection.execute(
+        text("DELETE FROM pending_google_signups WHERE email = :email OR google_sub = :google_sub"),
+        {"email": email, "google_sub": google_sub},
+    )
+    connection.execute(
+        text(
+            """
+            INSERT INTO pending_google_signups (signup_token, google_sub, email, full_name, expires_at)
+            VALUES (:signup_token, :google_sub, :email, :full_name, :expires_at)
+            """
+        ),
+        {
+            "signup_token": signup_token,
+            "google_sub": google_sub,
+            "email": email,
+            "full_name": full_name,
+            "expires_at": expires_at,
+        },
+    )
+
+    return {
+        "signup_token": signup_token,
+        "email": email,
+        "google_sub": google_sub,
+        "full_name": full_name,
+        "expires_at": expires_at,
+    }
+
+
+def fetch_pending_signup(connection, signup_token):
+    if not signup_token:
+        return None
+
+    row = connection.execute(
+        text(
+            """
+            SELECT signup_token, google_sub, email, full_name, expires_at, created_at
+            FROM pending_google_signups
+            WHERE signup_token = :signup_token
+            """
+        ),
+        {"signup_token": signup_token},
+    ).mappings().first()
+
+    if not row:
+        return None
+
+    expires_at = row["expires_at"]
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if expires_at <= datetime.now(timezone.utc):
         connection.execute(
-            text(
-                """
-                UPDATE users
-                SET email = :email,
-                    full_name = :full_name,
-                    google_sub = :google_sub
-                WHERE user_id = :user_id
-                """
-            ),
-            {
-                "email": email,
-                "full_name": full_name,
-                "google_sub": google_sub,
-                "user_id": user_id,
-            },
+            text("DELETE FROM pending_google_signups WHERE signup_token = :signup_token"),
+            {"signup_token": signup_token},
         )
-    else:
-        role_id = get_default_role_id(connection)
-        user_id = connection.execute(
-            text(
-                """
-                INSERT INTO users (role_id, full_name, email, google_sub)
-                VALUES (:role_id, :full_name, :email, :google_sub)
-                RETURNING user_id
-                """
-            ),
-            {
-                "role_id": role_id,
-                "full_name": full_name,
-                "email": email,
-                "google_sub": google_sub,
-            },
-        ).scalar_one()
-        connection.execute(
-            text("INSERT INTO user_settings (user_id) VALUES (:user_id)"),
-            {"user_id": user_id},
-        )
+        return None
+
+    return {
+        "signup_token": row["signup_token"],
+        "google_sub": row["google_sub"],
+        "email": row["email"],
+        "full_name": row["full_name"],
+        "expires_at": expires_at.isoformat(),
+    }
+
+
+def create_user_from_pending_signup(connection, signup_token, role_name=None, full_name=None):
+    pending_signup = fetch_pending_signup(connection, signup_token)
+
+    if not pending_signup:
+        raise RuntimeError("Pending signup session is missing or expired.")
+
+    resolved_role_name = role_name or "job_seeker"
+    role_id = connection.execute(
+        text("SELECT role_id FROM roles WHERE role_name = :role_name"),
+        {"role_name": resolved_role_name},
+    ).scalar_one_or_none()
+
+    if role_id is None:
+        raise RuntimeError(f"Role `{resolved_role_name}` does not exist.")
+
+    user_id = connection.execute(
+        text(
+            """
+            INSERT INTO users (role_id, full_name, email, google_sub)
+            VALUES (:role_id, :full_name, :email, :google_sub)
+            RETURNING user_id
+            """
+        ),
+        {
+            "role_id": role_id,
+            "full_name": full_name or pending_signup["full_name"],
+            "email": pending_signup["email"],
+            "google_sub": pending_signup["google_sub"],
+        },
+    ).scalar_one()
+    connection.execute(
+        text("INSERT INTO user_settings (user_id) VALUES (:user_id)"),
+        {"user_id": user_id},
+    )
+    connection.execute(
+        text("DELETE FROM pending_google_signups WHERE signup_token = :signup_token"),
+        {"signup_token": signup_token},
+    )
 
     return fetch_user_by_id(connection, user_id)
 
@@ -253,12 +357,40 @@ def google_auth():
     if not payload.get("email_verified"):
         return jsonify({"error": "Google account email is not verified."}), 401
 
+    user = None
     try:
         with engine.begin() as connection:
-            user = upsert_google_user(connection, payload)
-            session_id, expires_at = create_session(connection, user["user_id"])
+            user = find_user_by_google_payload(connection, payload)
+            if user:
+                user = update_existing_google_user(connection, user["user_id"], payload)
+                session_id, expires_at = create_session(connection, user["user_id"])
+            else:
+                pending_signup = create_pending_signup(connection, payload)
     except (RuntimeError, SQLAlchemyError) as exc:
         return jsonify({"error": str(exc)}), 500
+
+    if not user:
+        response = jsonify(
+            {
+                "message": "Google account verified. Complete signup to create your account.",
+                "requires_signup": True,
+                "profile": {
+                    "email": pending_signup["email"],
+                    "full_name": pending_signup["full_name"],
+                },
+                "signup_expires_at": pending_signup["expires_at"],
+            }
+        )
+        response.set_cookie(
+            PENDING_SIGNUP_COOKIE_NAME,
+            pending_signup["signup_token"],
+            httponly=True,
+            secure=SESSION_COOKIE_SECURE,
+            samesite="Lax",
+            max_age=PENDING_SIGNUP_TTL_MINUTES * 60,
+            path="/",
+        )
+        return response
 
     response = jsonify(
         {
@@ -276,6 +408,71 @@ def google_auth():
         max_age=SESSION_TTL_DAYS * 24 * 60 * 60,
         path="/",
     )
+    return response
+
+
+@app.get("/auth/pending-signup")
+def auth_pending_signup():
+    try:
+        with engine.begin() as connection:
+            pending_signup = fetch_pending_signup(
+                connection,
+                request.cookies.get(PENDING_SIGNUP_COOKIE_NAME),
+            )
+    except SQLAlchemyError as exc:
+        return jsonify({"error": str(exc)}), 500
+
+    if not pending_signup:
+        response = jsonify({"pending_signup": None})
+        response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
+        return response, 401
+
+    return jsonify(
+        {
+            "pending_signup": {
+                "email": pending_signup["email"],
+                "full_name": pending_signup["full_name"],
+                "expires_at": pending_signup["expires_at"],
+            }
+        }
+    )
+
+
+@app.post("/auth/complete-signup")
+def auth_complete_signup():
+    data = request.get_json(silent=True) or {}
+    role_name = data.get("role_name") or "job_seeker"
+    full_name = (data.get("full_name") or "").strip() or None
+
+    try:
+        with engine.begin() as connection:
+            user = create_user_from_pending_signup(
+                connection,
+                request.cookies.get(PENDING_SIGNUP_COOKIE_NAME),
+                role_name=role_name,
+                full_name=full_name,
+            )
+            session_id, expires_at = create_session(connection, user["user_id"])
+    except (RuntimeError, SQLAlchemyError) as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    response = jsonify(
+        {
+            "message": "Account created successfully.",
+            "user": user,
+            "session_expires_at": expires_at.isoformat(),
+        }
+    )
+    response.set_cookie(
+        SESSION_COOKIE_NAME,
+        session_id,
+        httponly=True,
+        secure=SESSION_COOKIE_SECURE,
+        samesite="Lax",
+        max_age=SESSION_TTL_DAYS * 24 * 60 * 60,
+        path="/",
+    )
+    response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
     return response
 
 
@@ -301,4 +498,5 @@ def auth_logout():
 
     response = jsonify({"message": "Logged out successfully."})
     response.delete_cookie(SESSION_COOKIE_NAME, path="/")
+    response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
     return response

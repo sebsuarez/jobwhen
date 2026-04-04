@@ -65,6 +65,11 @@ export default function Login() {
               throw new Error(result.error || 'Google sign-in failed.')
             }
 
+            if (result.requires_signup) {
+              navigate('/complete-signup')
+              return
+            }
+
             await refreshUser()
             navigate('/dashboard')
           } catch (error) {
@@ -111,7 +116,7 @@ export default function Login() {
       window.clearInterval(intervalId)
       window.clearTimeout(timeoutId)
     }
-  }, [navigate])
+  }, [navigate, refreshUser])
 
   return (
     <div className="login">
