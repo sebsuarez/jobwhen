@@ -70,33 +70,10 @@
 /* ── Google Button ── */
 
 .login__google {
+  height: 62px;
+  font-size: var(--text-xl);
+  border-radius: var(--radius-xl);
   margin-bottom: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.login__google-button {
-  width: 100%;
-  min-height: 44px;
-  display: flex;
-  justify-content: center;
-}
-
-.login__status,
-.login__error {
-  width: 100%;
-  margin: 0;
-  font-size: var(--text-base);
-}
-
-.login__status {
-  color: var(--text-secondary);
-}
-
-.login__error {
-  color: #b42318;
 }
 
 /* ── Divider ── */

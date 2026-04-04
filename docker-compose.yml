@@ -7,8 +7,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost:5001
-      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+      - VITE_API_URL=http://localhost:5001/graphql
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -29,8 +28,6 @@ services:
       - DB_NAME=${POSTGRES_DB}
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN}
     volumes:
       - ./backend:/app
 

@@ -27,25 +27,6 @@ docker compose up --build
 | Backend (health check) | http://localhost:5001/health |
 | PostgreSQL | localhost:5432 |
 
-## Google OAuth Setup
-
-To enable Google sign-in locally, create a Google OAuth client for a web app and use these local URLs during setup:
-
-- Authorized JavaScript origins: `http://localhost:5173`
-- Authorized redirect URIs: none required for the Google Identity Services button implemented in this repo
-
-Then copy the template environment file and fill in the same Google web client ID for both frontend and backend:
-
-```bash
-cp .env.example .env
-```
-
-Set:
-
-- `GOOGLE_CLIENT_ID=...apps.googleusercontent.com`
-- `VITE_GOOGLE_CLIENT_ID=...apps.googleusercontent.com`
-- `FRONTEND_ORIGIN=http://localhost:5173`
-
 ## Project Structure
 
 ```
