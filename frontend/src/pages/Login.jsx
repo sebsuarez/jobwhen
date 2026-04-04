@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
-import { useAuth } from '../context/AuthContext'
+import { graphqlRequest, useAuth } from '../context/AuthContext'
 import '../styles/Login.css'
 
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:5001'
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 export default function Login() {
@@ -50,22 +49,20 @@ export default function Login() {
           setGoogleError('')
 
           try {
-            const response = await fetch(`${apiUrl}/auth/google`, {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ credential }),
-            })
+            const data = await graphqlRequest(
+              `
+                mutation GoogleAuth($credential: String!) {
+                  googleAuth(credential: $credential) {
+                    ok
+                    message
+                    requiresSignup
+                  }
+                }
+              `,
+              { credential },
+            )
 
-            const result = await response.json()
-
-            if (!response.ok) {
-              throw new Error(result.error || 'Google sign-in failed.')
-            }
-
-            if (result.requires_signup) {
+            if (data.googleAuth.requiresSignup) {
               navigate('/complete-signup')
               return
             }

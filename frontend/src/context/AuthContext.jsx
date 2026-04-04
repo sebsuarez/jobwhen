@@ -4,25 +4,49 @@ const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:5001'
 
 const AuthContext = createContext(null)
 
+async function graphqlRequest(query, variables = {}) {
+  const response = await fetch(`${apiUrl}/graphql`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, variables }),
+  })
+
+  const result = await response.json()
+
+  if (!response.ok || result.errors?.length) {
+    throw new Error(result.errors?.[0]?.message || 'GraphQL request failed.')
+  }
+
+  return result.data
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const refreshUser = async () => {
     try {
-      const response = await fetch(`${apiUrl}/auth/me`, {
-        credentials: 'include',
-      })
+      const data = await graphqlRequest(`
+        query Me {
+          me {
+            userId
+            email
+            fullName
+            googleSub
+            createdAt
+            role {
+              roleId
+              roleName
+            }
+          }
+        }
+      `)
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        setUser(null)
-        return null
-      }
-
-      setUser(result.user)
-      return result.user
+      setUser(data.me)
+      return data.me
     } catch {
       setUser(null)
       return null
@@ -31,10 +55,14 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await fetch(`${apiUrl}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      })
+      await graphqlRequest(`
+        mutation Logout {
+          logout {
+            ok
+            message
+          }
+        }
+      `)
     } finally {
       setUser(null)
     }
@@ -65,3 +93,5 @@ export function useAuth() {
 
   return context
 }
+
+export { graphqlRequest }

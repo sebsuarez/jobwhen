@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
-import { useAuth } from '../context/AuthContext'
+import { graphqlRequest, useAuth } from '../context/AuthContext'
 import '../styles/Login.css'
 import '../styles/SignUp.css'
-
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:5001'
 
 export default function CompleteSignup() {
   const navigate = useNavigate()
@@ -20,18 +18,23 @@ export default function CompleteSignup() {
   useEffect(() => {
     const loadPendingSignup = async () => {
       try {
-        const response = await fetch(`${apiUrl}/auth/pending-signup`, {
-          credentials: 'include',
-        })
-        const result = await response.json()
+        const data = await graphqlRequest(`
+          query PendingSignup {
+            pendingSignup {
+              email
+              fullName
+              expiresAt
+            }
+          }
+        `)
 
-        if (!response.ok || !result.pending_signup) {
+        if (!data.pendingSignup) {
           navigate('/signup', { replace: true })
           return
         }
 
-        setPendingSignup(result.pending_signup)
-        setFullName(result.pending_signup.full_name)
+        setPendingSignup(data.pendingSignup)
+        setFullName(data.pendingSignup.fullName)
       } catch {
         navigate('/signup', { replace: true })
         return
@@ -49,22 +52,23 @@ export default function CompleteSignup() {
     setError('')
 
     try {
-      const response = await fetch(`${apiUrl}/auth/complete-signup`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
+      await graphqlRequest(
+        `
+          mutation CompleteSignup($fullName: String, $roleName: String) {
+            completeSignup(fullName: $fullName, roleName: $roleName) {
+              ok
+              message
+              user {
+                userId
+              }
+            }
+          }
+        `,
+        {
+          fullName,
+          roleName,
         },
-        body: JSON.stringify({
-          full_name: fullName,
-          role_name: roleName,
-        }),
-      })
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to create account.')
-      }
+      )
 
       await refreshUser()
       navigate('/dashboard', { replace: true })

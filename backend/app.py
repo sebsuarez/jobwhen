@@ -2,6 +2,7 @@ import os
 import secrets
 from datetime import datetime, timedelta, timezone
 
+import graphene
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from google.auth.transport import requests as google_requests
@@ -328,22 +329,12 @@ def clear_session(session_id):
         )
 
 
-# http://localhost:5001/health
-@app.route("/health")
-def health():
-    return {"status": "ok"}
-
-
-@app.post("/auth/google")
-def google_auth():
+def build_google_auth_result(credential):
     if not GOOGLE_CLIENT_ID:
-        return jsonify({"error": "GOOGLE_CLIENT_ID is not configured on the server."}), 500
-
-    data = request.get_json(silent=True) or {}
-    credential = data.get("credential")
+        raise RuntimeError("GOOGLE_CLIENT_ID is not configured on the server.")
 
     if not credential:
-        return jsonify({"error": "Missing Google credential."}), 400
+        raise RuntimeError("Missing Google credential.")
 
     try:
         payload = id_token.verify_oauth2_token(
@@ -351,152 +342,255 @@ def google_auth():
             google_requests.Request(),
             GOOGLE_CLIENT_ID,
         )
-    except ValueError:
-        return jsonify({"error": "Invalid Google token."}), 401
+    except ValueError as exc:
+        raise RuntimeError("Invalid Google token.") from exc
 
     if not payload.get("email_verified"):
-        return jsonify({"error": "Google account email is not verified."}), 401
+        raise RuntimeError("Google account email is not verified.")
 
-    user = None
-    try:
-        with engine.begin() as connection:
-            user = find_user_by_google_payload(connection, payload)
-            if user:
-                user = update_existing_google_user(connection, user["user_id"], payload)
-                session_id, expires_at = create_session(connection, user["user_id"])
-            else:
-                pending_signup = create_pending_signup(connection, payload)
-    except (RuntimeError, SQLAlchemyError) as exc:
-        return jsonify({"error": str(exc)}), 500
-
-    if not user:
-        response = jsonify(
-            {
-                "message": "Google account verified. Complete signup to create your account.",
-                "requires_signup": True,
-                "profile": {
-                    "email": pending_signup["email"],
-                    "full_name": pending_signup["full_name"],
-                },
-                "signup_expires_at": pending_signup["expires_at"],
+    with engine.begin() as connection:
+        user = find_user_by_google_payload(connection, payload)
+        if user:
+            user = update_existing_google_user(connection, user["user_id"], payload)
+            session_id, expires_at = create_session(connection, user["user_id"])
+            return {
+                "requires_signup": False,
+                "user": user,
+                "session_id": session_id,
+                "session_expires_at": expires_at.isoformat(),
+                "pending_signup": None,
             }
-        )
-        response.set_cookie(
-            PENDING_SIGNUP_COOKIE_NAME,
-            pending_signup["signup_token"],
-            httponly=True,
-            secure=SESSION_COOKIE_SECURE,
-            samesite="Lax",
-            max_age=PENDING_SIGNUP_TTL_MINUTES * 60,
-            path="/",
-        )
-        return response
 
-    response = jsonify(
-        {
-            "message": "Google sign-in successful.",
-            "user": user,
-            "session_expires_at": expires_at.isoformat(),
-        }
-    )
-    response.set_cookie(
-        SESSION_COOKIE_NAME,
-        session_id,
-        httponly=True,
-        secure=SESSION_COOKIE_SECURE,
-        samesite="Lax",
-        max_age=SESSION_TTL_DAYS * 24 * 60 * 60,
-        path="/",
-    )
-    return response
-
-
-@app.get("/auth/pending-signup")
-def auth_pending_signup():
-    try:
-        with engine.begin() as connection:
-            pending_signup = fetch_pending_signup(
-                connection,
-                request.cookies.get(PENDING_SIGNUP_COOKIE_NAME),
-            )
-    except SQLAlchemyError as exc:
-        return jsonify({"error": str(exc)}), 500
-
-    if not pending_signup:
-        response = jsonify({"pending_signup": None})
-        response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
-        return response, 401
-
-    return jsonify(
-        {
+        pending_signup = create_pending_signup(connection, payload)
+        return {
+            "requires_signup": True,
+            "user": None,
+            "session_id": None,
+            "session_expires_at": None,
             "pending_signup": {
                 "email": pending_signup["email"],
                 "full_name": pending_signup["full_name"],
-                "expires_at": pending_signup["expires_at"],
-            }
+                "expires_at": pending_signup["expires_at"].isoformat(),
+                "signup_token": pending_signup["signup_token"],
+            },
         }
-    )
 
 
-@app.post("/auth/complete-signup")
-def auth_complete_signup():
-    data = request.get_json(silent=True) or {}
-    role_name = data.get("role_name") or "job_seeker"
-    full_name = (data.get("full_name") or "").strip() or None
+def get_pending_signup_from_cookie():
+    with engine.begin() as connection:
+        pending_signup = fetch_pending_signup(
+            connection,
+            request.cookies.get(PENDING_SIGNUP_COOKIE_NAME),
+        )
 
-    try:
-        with engine.begin() as connection:
-            user = create_user_from_pending_signup(
-                connection,
-                request.cookies.get(PENDING_SIGNUP_COOKIE_NAME),
-                role_name=role_name,
-                full_name=full_name,
+    if not pending_signup:
+        return None
+
+    return {
+        "email": pending_signup["email"],
+        "full_name": pending_signup["full_name"],
+        "expires_at": pending_signup["expires_at"],
+    }
+
+
+def complete_signup_from_cookie(role_name=None, full_name=None):
+    with engine.begin() as connection:
+        user = create_user_from_pending_signup(
+            connection,
+            request.cookies.get(PENDING_SIGNUP_COOKIE_NAME),
+            role_name=role_name,
+            full_name=full_name,
+        )
+        session_id, expires_at = create_session(connection, user["user_id"])
+
+    return {
+        "user": user,
+        "session_id": session_id,
+        "session_expires_at": expires_at.isoformat(),
+    }
+
+
+class RoleType(graphene.ObjectType):
+    role_id = graphene.Int()
+    role_name = graphene.String()
+
+
+class UserType(graphene.ObjectType):
+    user_id = graphene.Int()
+    email = graphene.String()
+    full_name = graphene.String()
+    google_sub = graphene.String()
+    role = graphene.Field(RoleType)
+    created_at = graphene.String()
+
+
+class PendingSignupType(graphene.ObjectType):
+    email = graphene.String()
+    full_name = graphene.String()
+    expires_at = graphene.String()
+
+
+class AuthPayload(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
+    requires_signup = graphene.Boolean()
+    user = graphene.Field(UserType)
+    pending_signup = graphene.Field(PendingSignupType)
+    session_expires_at = graphene.String()
+
+
+class Query(graphene.ObjectType):
+    me = graphene.Field(UserType)
+    pending_signup = graphene.Field(PendingSignupType)
+
+    def resolve_me(root, info):
+        return fetch_session_user(request.cookies.get(SESSION_COOKIE_NAME))
+
+    def resolve_pending_signup(root, info):
+        return get_pending_signup_from_cookie()
+
+
+class GoogleAuth(graphene.Mutation):
+    class Arguments:
+        credential = graphene.String(required=True)
+
+    Output = AuthPayload
+
+    @staticmethod
+    def mutate(root, info, credential):
+        result = build_google_auth_result(credential)
+        response = info.context["response"]
+
+        if result["requires_signup"]:
+            response.set_cookie(
+                PENDING_SIGNUP_COOKIE_NAME,
+                result["pending_signup"]["signup_token"],
+                httponly=True,
+                secure=SESSION_COOKIE_SECURE,
+                samesite="Lax",
+                max_age=PENDING_SIGNUP_TTL_MINUTES * 60,
+                path="/",
             )
-            session_id, expires_at = create_session(connection, user["user_id"])
-    except (RuntimeError, SQLAlchemyError) as exc:
-        return jsonify({"error": str(exc)}), 400
+            response.delete_cookie(SESSION_COOKIE_NAME, path="/")
+            return AuthPayload(
+                ok=True,
+                message="Google account verified. Complete signup to create your account.",
+                requires_signup=True,
+                pending_signup=result["pending_signup"],
+            )
 
-    response = jsonify(
-        {
-            "message": "Account created successfully.",
-            "user": user,
-            "session_expires_at": expires_at.isoformat(),
-        }
-    )
-    response.set_cookie(
-        SESSION_COOKIE_NAME,
-        session_id,
-        httponly=True,
-        secure=SESSION_COOKIE_SECURE,
-        samesite="Lax",
-        max_age=SESSION_TTL_DAYS * 24 * 60 * 60,
-        path="/",
-    )
-    response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
-    return response
-
-
-@app.get("/auth/me")
-def auth_me():
-    try:
-        user = fetch_session_user(request.cookies.get(SESSION_COOKIE_NAME))
-    except SQLAlchemyError as exc:
-        return jsonify({"error": str(exc)}), 500
-
-    if not user:
-        return jsonify({"user": None}), 401
-
-    return jsonify({"user": user})
+        response.set_cookie(
+            SESSION_COOKIE_NAME,
+            result["session_id"],
+            httponly=True,
+            secure=SESSION_COOKIE_SECURE,
+            samesite="Lax",
+            max_age=SESSION_TTL_DAYS * 24 * 60 * 60,
+            path="/",
+        )
+        response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
+        return AuthPayload(
+            ok=True,
+            message="Google sign-in successful.",
+            requires_signup=False,
+            user=result["user"],
+            session_expires_at=result["session_expires_at"],
+        )
 
 
-@app.post("/auth/logout")
-def auth_logout():
-    try:
+class CompleteSignup(graphene.Mutation):
+    class Arguments:
+        role_name = graphene.String(required=False)
+        full_name = graphene.String(required=False)
+
+    Output = AuthPayload
+
+    @staticmethod
+    def mutate(root, info, role_name=None, full_name=None):
+        result = complete_signup_from_cookie(role_name=role_name, full_name=full_name)
+        response = info.context["response"]
+        response.set_cookie(
+            SESSION_COOKIE_NAME,
+            result["session_id"],
+            httponly=True,
+            secure=SESSION_COOKIE_SECURE,
+            samesite="Lax",
+            max_age=SESSION_TTL_DAYS * 24 * 60 * 60,
+            path="/",
+        )
+        response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
+        return AuthPayload(
+            ok=True,
+            message="Account created successfully.",
+            requires_signup=False,
+            user=result["user"],
+            session_expires_at=result["session_expires_at"],
+        )
+
+
+class Logout(graphene.Mutation):
+    ok = graphene.Boolean()
+    message = graphene.String()
+
+    @staticmethod
+    def mutate(root, info):
         clear_session(request.cookies.get(SESSION_COOKIE_NAME))
-    except SQLAlchemyError as exc:
-        return jsonify({"error": str(exc)}), 500
+        response = info.context["response"]
+        response.delete_cookie(SESSION_COOKIE_NAME, path="/")
+        response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
+        return Logout(ok=True, message="Logged out successfully.")
 
-    response = jsonify({"message": "Logged out successfully."})
-    response.delete_cookie(SESSION_COOKIE_NAME, path="/")
-    response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
+
+class Mutation(graphene.ObjectType):
+    google_auth = GoogleAuth.Field()
+    complete_signup = CompleteSignup.Field()
+    logout = Logout.Field()
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation, auto_camelcase=True)
+
+
+# http://localhost:5001/health
+@app.route("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.route("/graphql", methods=["GET", "POST"])
+def graphql_server():
+    if request.method == "GET":
+        return jsonify(
+            {
+                "message": "GraphQL endpoint ready. Send a POST request with `query`.",
+                "example": {
+                    "query": "query { me { userId email fullName role { roleName } } }"
+                },
+            }
+        )
+
+    data = request.get_json(silent=True) or {}
+    query = data.get("query")
+
+    if not query:
+        return jsonify({"errors": [{"message": "Missing GraphQL query."}]}), 400
+
+    response = jsonify({})
+    result = schema.execute(
+        query,
+        variable_values=data.get("variables"),
+        context_value={"request": request, "response": response},
+    )
+
+    body = {}
+    status_code = 200
+
+    if result.errors:
+        status_code = 400
+        body["errors"] = [{"message": error.message} for error in result.errors]
+    if result.data is not None:
+        body["data"] = result.data
+
+    response.set_data(app.json.dumps(body))
+    response.mimetype = "application/json"
+    response.status_code = status_code
     return response
