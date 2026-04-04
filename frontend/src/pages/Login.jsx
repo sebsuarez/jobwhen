@@ -50,6 +50,7 @@ export default function Login() {
           try {
             const response = await fetch(`${apiUrl}/auth/google`, {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
               },
