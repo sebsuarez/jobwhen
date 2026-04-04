@@ -1,17 +1,116 @@
 // pages/SignUp.jsx
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import "../styles/Login.css";
-import "../styles/SignUp.css";
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import '../styles/Login.css'
+import '../styles/SignUp.css'
+
+const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:5001'
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 export default function SignUp() {
-  const [role, setRole] = useState("jobseeker");
+  const navigate = useNavigate()
+  const { refreshUser } = useAuth()
+  const googleButtonRef = useRef(null)
+  const [role, setRole] = useState('jobseeker')
+  const [googleError, setGoogleError] = useState('')
+  const [googleLoading, setGoogleLoading] = useState(false)
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Register clicked");
-  };
+    e.preventDefault()
+    console.log('Register clicked')
+  }
+
+  useEffect(() => {
+    if (!googleClientId) {
+      setGoogleError('Missing `VITE_GOOGLE_CLIENT_ID` in your frontend environment.')
+      return
+    }
+
+    let isMounted = true
+
+    const renderGoogleButton = () => {
+      const googleAccounts = window.google?.accounts?.id
+
+      if (!googleAccounts || !googleButtonRef.current || !isMounted) {
+        return false
+      }
+
+      googleAccounts.initialize({
+        client_id: googleClientId,
+        callback: async ({ credential }) => {
+          if (!credential) {
+            setGoogleError('Google did not return a credential.')
+            return
+          }
+
+          setGoogleLoading(true)
+          setGoogleError('')
+
+          try {
+            const response = await fetch(`${apiUrl}/auth/google`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ credential }),
+            })
+
+            const result = await response.json()
+
+            if (!response.ok) {
+              throw new Error(result.error || 'Google sign-up failed.')
+            }
+
+            await refreshUser()
+            navigate('/dashboard')
+          } catch (error) {
+            setGoogleError(error.message)
+          } finally {
+            setGoogleLoading(false)
+          }
+        },
+      })
+
+      googleButtonRef.current.innerHTML = ''
+      googleAccounts.renderButton(googleButtonRef.current, {
+        theme: 'outline',
+        size: 'large',
+        shape: 'pill',
+        text: 'signup_with',
+        width: 360,
+      })
+
+      return true
+    }
+
+    if (renderGoogleButton()) {
+      return () => {
+        isMounted = false
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (renderGoogleButton()) {
+        window.clearInterval(intervalId)
+      }
+    }, 250)
+
+    const timeoutId = window.setTimeout(() => {
+      if (!window.google?.accounts?.id && isMounted) {
+        setGoogleError('Google Sign-Up failed to load. Check your network and refresh.')
+      }
+      window.clearInterval(intervalId)
+    }, 5000)
+
+    return () => {
+      isMounted = false
+      window.clearInterval(intervalId)
+      window.clearTimeout(timeoutId)
+    }
+  }, [navigate, refreshUser])
 
   return (
     <div className="login">
@@ -21,7 +120,7 @@ export default function SignUp() {
           Welcome back! Let's keep the momentum going.
         </p>
 
-        <div className={`signup-layout ${role === "mentor" ? "mentor-mode" : ""}`}>
+        <div className={`signup-layout ${role === 'mentor' ? 'mentor-mode' : ''}`}>
           <div className="login__card signup-main-card">
             <div className="login__tabs">
               <Link to="/" className="login__tab">
@@ -32,9 +131,11 @@ export default function SignUp() {
               </Link>
             </div>
 
-            <button type="button" className="btn btn--ghost btn--full login__google">
-              Sign Up with Google
-            </button>
+            <div className="login__google">
+              <div ref={googleButtonRef} className="login__google-button" />
+              {googleLoading ? <p className="login__status">Signing you up with Google...</p> : null}
+              {googleError ? <p className="login__error">{googleError}</p> : null}
+            </div>
 
             <div className="login__divider">
               <span>or use email</span>
@@ -44,16 +145,16 @@ export default function SignUp() {
 
             <div className="role-toggle">
               <button
-                className={role === "jobseeker" ? "role active" : "role"}
-                onClick={() => setRole("jobseeker")}
+                className={role === 'jobseeker' ? 'role active' : 'role'}
+                onClick={() => setRole('jobseeker')}
                 type="button"
               >
                 Job Seeker
               </button>
 
               <button
-                className={role === "mentor" ? "role active" : "role"}
-                onClick={() => setRole("mentor")}
+                className={role === 'mentor' ? 'role active' : 'role'}
+                onClick={() => setRole('mentor')}
                 type="button"
               >
                 Mentor
@@ -92,7 +193,7 @@ export default function SignUp() {
                   <input type="password" placeholder="*************" />
                 </div>
 
-                {role === "jobseeker" && (
+                {role === 'jobseeker' && (
                   <>
                     <div>
                       <label>Status</label>
@@ -108,12 +209,12 @@ export default function SignUp() {
               </div>
 
               <button className="btn btn--primary btn--full signup-submit" type="submit">
-                {role === "mentor" ? "Submit application for approval" : "Register"}
+                {role === 'mentor' ? 'Submit application for approval' : 'Register'}
               </button>
             </form>
           </div>
 
-          {role === "mentor" && (
+          {role === 'mentor' && (
             <div className="mentor-card">
               <div className="mentor-top-row">
                 <div>
@@ -136,5 +237,5 @@ export default function SignUp() {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -73,6 +73,10 @@
   line-height: 1.35;
 }
 
+.profile-card__logout {
+  margin-top: var(--space-6);
+}
+
 .profile-bio {
   padding: var(--space-6);
 }
