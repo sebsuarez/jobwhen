@@ -45,8 +45,29 @@ const friends = [
   },
 ]
 
+const reactions = ['🔥', '👏', '❤️']
+
 export default function Friends() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [encouragements, setEncouragements] = useState({})
+  const [activeReactionPicker, setActiveReactionPicker] = useState(null)
+
+  const handleEncourage = (friendId, reaction) => {
+    setEncouragements((prev) => {
+      const existing = prev[friendId]
+
+      return {
+        ...prev,
+        [friendId]: {
+          reaction,
+          count: existing ? existing.count + 1 : 1,
+          message: `You encouraged your friend with ${reaction}`,
+        },
+      }
+    })
+
+    setActiveReactionPicker(null)
+  }
 
   return (
     <div className="friends-page">
@@ -72,33 +93,80 @@ export default function Friends() {
           </div>
 
           <div className="friends-list">
-            {friends.map((friend) => (
-              <Card key={friend.id} className="friend-card">
-                <div className="friend-card__left">
-                  <div className="friend-card__avatar" />
-                  <div className="friend-card__info">
-                    <h3 className="friend-card__name">{friend.name}</h3>
-                    <p className="friend-card__status">{friend.status}</p>
-                  </div>
-                </div>
+            {friends.map((friend) => {
+              const encouragement = encouragements[friend.id]
 
-                <div className="friend-card__right">
-                  <div className="friend-card__stat">
-                    <span className="friend-card__value">{friend.applied}</span>
-                    <span className="friend-card__label">Applied</span>
+              return (
+                <Card key={friend.id} className="friend-card">
+                  <div className="friend-card__left">
+                    <div className="friend-card__avatar" />
+                    <div className="friend-card__info">
+                      <h3 className="friend-card__name">{friend.name}</h3>
+                      <p className="friend-card__status">{friend.status}</p>
+
+                      {encouragement && (
+                        <>
+                          <div className="friend-encouragement">
+                            <span className="friend-encouragement__badge">
+                              {encouragement.reaction}
+                            </span>
+                            <span className="friend-encouragement__count">
+                              {encouragement.count} Encouragement
+                              {encouragement.count > 1 ? 's' : ''}
+                            </span>
+                          </div>
+
+                          <p className="friend-encouragement__message">
+                            {encouragement.message}
+                          </p>
+                        </>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="friend-card__stat">
-                    <span className="friend-card__value">Lv. {friend.level}</span>
-                    <span className="friend-card__label">Level</span>
-                  </div>
+                  <div className="friend-card__right">
+                    <div className="friend-card__stat">
+                      <span className="friend-card__value">{friend.applied}</span>
+                      <span className="friend-card__label">Applied</span>
+                    </div>
 
-                  <Button variant="secondary" className="friend-card__btn">
-                    Encourage
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                    <div className="friend-card__stat">
+                      <span className="friend-card__value">Lv. {friend.level}</span>
+                      <span className="friend-card__label">Level</span>
+                    </div>
+
+                    <div className="friend-card__button-wrap">
+                      <Button
+                        variant="ghost"
+                        className="friend-card__btn"
+                        onClick={() =>
+                          setActiveReactionPicker(
+                            activeReactionPicker === friend.id ? null : friend.id
+                          )
+                        }
+                      >
+                        {activeReactionPicker === friend.id ? 'Choose' : 'Encourage'}
+                      </Button>
+
+                      {activeReactionPicker === friend.id && (
+                        <div className="reaction-picker">
+                          {reactions.map((reaction) => (
+                            <button
+                              key={reaction}
+                              type="button"
+                              className="reaction-picker__item"
+                              onClick={() => handleEncourage(friend.id, reaction)}
+                            >
+                              {reaction}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         </section>
       </main>
