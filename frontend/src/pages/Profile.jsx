@@ -38,11 +38,11 @@ export default function Profile() {
 
               <div className="profile-card__avatar" />
 
-              <h1 className="profile-card__name">{user?.full_name ?? 'User'}</h1>
+              <h1 className="profile-card__name">{user?.fullName ?? 'User'}</h1>
 
               <div className="profile-card__details">
                 <p>{user?.email ?? 'No email available'}</p>
-                <p>{user?.role?.role_name ?? 'job_seeker'}</p>
+                <p>{user?.role?.roleName ?? 'job_seeker'}</p>
               </div>
 
               <Button className="profile-card__logout" type="button" onClick={handleLogout}>
