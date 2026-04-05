@@ -1,7 +1,9 @@
 // pages/Profile.jsx
+import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
+import { useAuth } from '../hooks/useAuth'
 import '../styles/Profile.css'
 
 const stats = [
@@ -14,6 +16,14 @@ const stats = [
 ]
 
 export default function Profile() {
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/', { replace: true })
+  }
+
   return (
     <div className="profile-page">
       <Sidebar />
@@ -28,13 +38,16 @@ export default function Profile() {
 
               <div className="profile-card__avatar" />
 
-              <h1 className="profile-card__name">User 1</h1>
+              <h1 className="profile-card__name">{user?.fullName ?? 'User'}</h1>
 
               <div className="profile-card__details">
-                <p>Software Engineering Student</p>
-                <p>University of Calgary</p>
-                <p>Calgary, AB, Canada</p>
+                <p>{user?.email ?? 'No email available'}</p>
+                <p>{user?.role?.roleName ?? 'job_seeker'}</p>
               </div>
+
+              <Button className="profile-card__logout" type="button" onClick={handleLogout}>
+                Log Out
+              </Button>
             </Card>
 
             <Card className="profile-bio">

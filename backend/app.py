@@ -1,10 +1,12 @@
 import os
 
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from google.auth.transport import requests as google_requests
-from google.oauth2 import id_token
-from dotenv import load_dotenv
+
+# this is what makes the __init__.py file in the directory important
+# it allows us to import the schema directly from the graphql package
+from graphql.schema import schema
 
 load_dotenv()
 
@@ -12,50 +14,50 @@ app = Flask(__name__)
 CORS(
     app,
     resources={r"/*": {"origins": os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")}},
+    supports_credentials=True,
 )
 
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
-
-# http://localhost:5001/health
 @app.route("/health")
 def health():
     return {"status": "ok"}
 
 
-@app.post("/auth/google")
-def google_auth():
-    if not GOOGLE_CLIENT_ID:
-        return jsonify({"error": "GOOGLE_CLIENT_ID is not configured on the server."}), 500
+@app.route("/graphql", methods=["GET", "POST"])
+def graphql_server():
+    if request.method == "GET":
+        return jsonify(
+            {
+                "message": "GraphQL endpoint ready. Send a POST request with `query`.",
+                "example": {
+                    "query": "query { me { userId email fullName role { roleName } } }"
+                },
+            }
+        )
 
     data = request.get_json(silent=True) or {}
-    credential = data.get("credential")
+    query = data.get("query")
 
-    if not credential:
-        return jsonify({"error": "Missing Google credential."}), 400
+    if not query:
+        return jsonify({"errors": [{"message": "Missing GraphQL query."}]}), 400
 
-    try:
-        payload = id_token.verify_oauth2_token(
-            credential,
-            google_requests.Request(),
-            GOOGLE_CLIENT_ID,
-        )
-    except ValueError:
-        return jsonify({"error": "Invalid Google token."}), 401
-
-    if not payload.get("email_verified"):
-        return jsonify({"error": "Google account email is not verified."}), 401
-
-    return jsonify(
-        {
-            "message": "Google sign-in successful.",
-            "user": {
-                "google_id": payload.get("sub"),
-                "email": payload.get("email"),
-                "name": payload.get("name"),
-                "picture": payload.get("picture"),
-                "given_name": payload.get("given_name"),
-                "family_name": payload.get("family_name"),
-            },
-        }
+    response = jsonify({})
+    result = schema.execute(
+        query,
+        variable_values=data.get("variables"),
+        context_value={"request": request, "response": response},
     )
+
+    body = {}
+    status_code = 200
+
+    if result.errors:
+        status_code = 400
+        body["errors"] = [{"message": error.message} for error in result.errors]
+    if result.data is not None:
+        body["data"] = result.data
+
+    response.set_data(app.json.dumps(body))
+    response.mimetype = "application/json"
+    response.status_code = status_code
+    return response

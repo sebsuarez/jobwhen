@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
+import { useAuth } from '../hooks/useAuth'
+import { graphqlRequest } from '../lib/graphqlRequest'
 import '../styles/Login.css'
 
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:5001'
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 export default function Login() {
   const navigate = useNavigate()
+  const { refreshUser } = useAuth()
   const googleButtonRef = useRef(null)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -48,20 +50,25 @@ export default function Login() {
           setGoogleError('')
 
           try {
-            const response = await fetch(`${apiUrl}/auth/google`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ credential }),
-            })
+            const data = await graphqlRequest(
+              `
+                mutation GoogleAuth($credential: String!) {
+                  googleAuth(credential: $credential) {
+                    ok
+                    message
+                    requiresSignup
+                  }
+                }
+              `,
+              { credential },
+            )
 
-            const result = await response.json()
-
-            if (!response.ok) {
-              throw new Error(result.error || 'Google sign-in failed.')
+            if (data.googleAuth.requiresSignup) {
+              navigate('/complete-signup')
+              return
             }
 
+            await refreshUser()
             navigate('/dashboard')
           } catch (error) {
             setGoogleError(error.message)
@@ -107,7 +114,7 @@ export default function Login() {
       window.clearInterval(intervalId)
       window.clearTimeout(timeoutId)
     }
-  }, [navigate])
+  }, [navigate, refreshUser])
 
   return (
     <div className="login">
