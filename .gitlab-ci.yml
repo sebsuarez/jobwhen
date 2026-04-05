@@ -30,7 +30,7 @@ stages:          # List of stages for jobs, and their order of execution
 
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
-  image: node:20
+  image: public.ecr.aws/docker/library/node:20
   before_script:
     - cd frontend
     - npm ci
@@ -42,7 +42,7 @@ build-job:       # This job runs in the build stage, which runs first.
 # unit-test-job:   # This job runs in the test stage.
 backend-check-job:
   stage: test    # It only starts when the job in the build stage completes successfully.
-  image: python:3.11
+  image: public.ecr.aws/docker/library/python:3.11
   before_script:
     - python -m pip install --upgrade pip
     - pip install -r backend/requirements.txt
@@ -53,7 +53,7 @@ backend-check-job:
 
 lint-test-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
-  image: node:20
+  image: public.ecr.aws/docker/library/node:20
   before_script:
     - cd frontend
     - npm ci
