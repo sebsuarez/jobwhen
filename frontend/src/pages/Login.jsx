@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
-import { graphqlRequest, useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
+import { graphqlRequest } from '../lib/graphqlRequest'
 import '../styles/Login.css'
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
-import { graphqlRequest, useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
+import { graphqlRequest } from '../lib/graphqlRequest'
 import '../styles/Login.css'
 import '../styles/SignUp.css'
 

@@ -11,7 +11,7 @@ import Challenges from './pages/Challenges'
 import Friends from './pages/Friends'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
-import { useAuth } from './context/AuthContext'
+import { useAuth } from './hooks/useAuth'
 
 function AuthRedirect({ children }) {
   const { user, isLoading } = useAuth()
