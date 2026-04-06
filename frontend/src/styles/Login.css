@@ -164,3 +164,40 @@
     padding: 32px 32px 28px;
   }
 }
+
+@media (max-width: 480px) {
+  .login {
+    padding: var(--space-4) var(--space-4);
+  }
+
+  .login__title {
+    font-size: var(--text-3xl);
+  }
+
+  .login__subtitle {
+    font-size: var(--text-base);
+    text-align: center;
+  }
+
+  .login__card {
+    padding: 24px 20px 20px;
+    border-radius: 20px;
+  }
+
+  .login__tabs {
+    height: 52px;
+  }
+
+  .login__tab {
+    font-size: var(--text-base);
+  }
+
+  .login__form input {
+    height: 52px;
+  }
+
+  .login__signup {
+    font-size: var(--text-base);
+    text-align: center;
+  }
+}
