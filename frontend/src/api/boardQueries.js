@@ -1,4 +1,4 @@
-import { gql } from './graphql'
+import { graphqlRequest } from '../lib/graphqlRequest'
 
 
 // Job Board Queries (fetching data, think of it like a GET request)
@@ -57,16 +57,16 @@ const UPDATE_STATUS_MUTATION = `
 
 // Exported API functions
 export async function fetchJobApplications(userId) {
-  const data = await gql(JOB_APPLICATIONS_QUERY, { userId })
+  const data = await graphqlRequest(JOB_APPLICATIONS_QUERY, { userId })
   return data.jobApplications
 }
 
 export async function createJobApplication(input) {
-  const data = await gql(CREATE_JOB_APPLICATION_MUTATION, { input })
+  const data = await graphqlRequest(CREATE_JOB_APPLICATION_MUTATION, { input })
   return data.createJobApplication
 }
 
 export async function updateJobApplicationStatus(applicationId, newStatus, note = null) {
-  const data = await gql(UPDATE_STATUS_MUTATION, { applicationId, newStatus, note })
+  const data = await graphqlRequest(UPDATE_STATUS_MUTATION, { applicationId, newStatus, note })
   return data.updateJobApplicationStatus
 }
