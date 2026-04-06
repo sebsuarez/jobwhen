@@ -142,10 +142,6 @@
     grid-template-columns: 1fr;
   }
 
-  .role-toggle {
-    flex-direction: column;
-  }
-
   .role {
     width: 100%;
   }
