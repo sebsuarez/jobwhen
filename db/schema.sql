@@ -20,6 +20,8 @@ DROP TABLE IF EXISTS goals CASCADE;
 DROP TABLE IF EXISTS application_history CASCADE;
 DROP TABLE IF EXISTS job_applications CASCADE;
 DROP TABLE IF EXISTS user_settings CASCADE;
+DROP TABLE IF EXISTS pending_google_signups CASCADE;
+DROP TABLE IF EXISTS sessions CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
 -- ROLES
@@ -34,6 +36,7 @@ CREATE TABLE roles (
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     role_id INT NOT NULL,
+    google_sub VARCHAR(255) UNIQUE,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(120) NOT NULL UNIQUE,
     headline VARCHAR(150),
@@ -48,6 +51,30 @@ CREATE TABLE users (
     CONSTRAINT fk_users_role
         FOREIGN KEY (role_id) REFERENCES roles(role_id)
         ON DELETE RESTRICT
+);
+
+-- SESSIONS
+-- Server-side login sessions for authenticated users
+CREATE TABLE sessions (
+    session_id VARCHAR(255) PRIMARY KEY,
+    user_id INT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_sessions_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE
+);
+
+-- PENDING GOOGLE SIGNUPS
+-- Temporary signup records before a first-time Google user confirms account creation
+CREATE TABLE pending_google_signups (
+    signup_token VARCHAR(255) PRIMARY KEY,
+    google_sub VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    full_name VARCHAR(100) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- USER SETTINGS
@@ -411,6 +438,9 @@ CREATE INDEX idx_job_applications_status ON job_applications(status);
 CREATE INDEX idx_application_history_app ON application_history(application_id);
 CREATE INDEX idx_goals_user ON goals(user_id);
 CREATE INDEX idx_xp_events_user ON xp_events(user_id);
+CREATE INDEX idx_sessions_user ON sessions(user_id);
+CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+CREATE INDEX idx_pending_google_signups_expires_at ON pending_google_signups(expires_at);
 CREATE INDEX idx_friendships_requester ON friendships(requester_id);
 CREATE INDEX idx_friendships_addressee ON friendships(addressee_id);
 CREATE INDEX idx_encouragements_receiver ON encouragements(receiver_id);
