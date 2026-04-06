@@ -12,9 +12,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# @app.route("/")
-# def home():
-#     return {"status": "backend running"}
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+CORS(app, origins=[FRONTEND_ORIGIN], supports_credentials=True)
 
 
 # http://localhost:5001/health
