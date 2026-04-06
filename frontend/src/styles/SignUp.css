@@ -132,3 +132,21 @@
     margin-top: 0;
   }
 }
+
+@media (max-width: 480px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mentor-top-row {
+    grid-template-columns: 1fr;
+  }
+
+  .role-toggle {
+    flex-direction: column;
+  }
+
+  .role {
+    width: 100%;
+  }
+}
