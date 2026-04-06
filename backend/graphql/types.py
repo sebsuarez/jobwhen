@@ -28,3 +28,21 @@ class AuthPayload(graphene.ObjectType):
     user = graphene.Field(UserType)
     pending_signup = graphene.Field(PendingSignupType)
     session_expires_at = graphene.String()
+
+
+# JOB APPLICATION TYPES
+
+class JobApplicationType(graphene.ObjectType):
+    application_id = graphene.Int()
+    user_id = graphene.Int()
+    company_name = graphene.String()
+    role_title = graphene.String()
+    location = graphene.String()
+    job_link = graphene.String()
+    salary_range = graphene.String()
+    status = graphene.String()
+    notes = graphene.String()
+    application_deadline = graphene.String()
+    applied_date = graphene.String()
+    created_at = graphene.String()
+    updated_at = graphene.String()
