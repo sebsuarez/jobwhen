@@ -1,7 +1,7 @@
 import graphene
 
-from graphql.mutations.auth import AuthMutation
-from graphql.queries.auth import AuthQuery
+from gql.mutations.auth import AuthMutation
+from gql.queries.auth import AuthQuery
 
 
 class Query(AuthQuery, graphene.ObjectType):
