@@ -5,8 +5,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 # this is what makes the __init__.py file in the directory important
-# it allows us to import the schema directly from the graphql package
-from graphql.schema import schema
+# it allows us to import the schema directly from the gql package
+from gql.schema import schema
 
 load_dotenv()
 
@@ -23,8 +23,11 @@ def health():
     return {"status": "ok"}
 
 
-@app.route("/graphql", methods=["GET", "POST"])
+@app.route("/graphql", methods=["GET", "POST", "OPTIONS"])
 def graphql_server():
+    if request.method == "OPTIONS":
+        return ("", 204)
+
     if request.method == "GET":
         return jsonify(
             {
