@@ -178,23 +178,17 @@ def find_user_by_google_payload(connection, payload):
 
 
 def update_existing_google_user(connection, user_id, payload):
-    email = payload.get("email")
     google_sub = payload.get("sub")
-    full_name = payload.get("name") or email.split("@", 1)[0]
 
     connection.execute(
         text(
             """
             UPDATE users
-            SET email = :email,
-                full_name = :full_name,
-                google_sub = :google_sub
+            SET google_sub = :google_sub
             WHERE user_id = :user_id
             """
         ),
         {
-            "email": email,
-            "full_name": full_name,
             "google_sub": google_sub,
             "user_id": user_id,
         },
