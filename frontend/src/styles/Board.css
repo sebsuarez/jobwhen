@@ -26,6 +26,11 @@
   color: var(--form-label);
 }
 
+.board__form p {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
 .board__form-actions {
   display: flex;
   justify-content: flex-end;
