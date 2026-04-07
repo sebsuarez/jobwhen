@@ -52,6 +52,8 @@ export default function Board() {
   const [draggedId, setDraggedId] = useState(null)
   const [dragOverColumn, setDragOverColumn] = useState(null)
   const [selectedApp, setSelectedApp] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState(null)
 
   useEffect(() => {
     if (!user) return
