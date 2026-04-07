@@ -528,7 +528,9 @@ export default function Board() {
               />
               <div className="board__form-actions">
                 <Button variant="ghost" onClick={handleEditCancel}>Cancel</Button>
-                <Button variant="submit">Save Changes</Button>
+                <Button variant="submit" onClick={handleEditSubmit} disabled={editSubmitting}>
+                  {editSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
               </div>
             </div>
           )}
