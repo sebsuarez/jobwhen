@@ -83,7 +83,7 @@ export default function SignUp() {
         size: 'large',
         shape: 'pill',
         text: 'signup_with',
-        width: 360,
+        width: googleButtonRef.current.clientWidth || 400,
       })
 
       return true
@@ -135,10 +135,10 @@ export default function SignUp() {
                 </Link>
               </div>
 
-              <div className="login__google">
-                <div ref={googleButtonRef} className="login__google-button" />
-                {googleLoading ? <p className="login__status">Signing you up with Google...</p> : null}
-                {googleError ? <p className="login__error">{googleError}</p> : null}
+              <div className="signup__google">
+                <div ref={googleButtonRef} className="signup__google-button" />
+                {googleLoading ? <p className="signup__status">Signing you up with Google...</p> : null}
+                {googleError ? <p className="signup__error">{googleError}</p> : null}
               </div>
 
               <div className="login__divider">
