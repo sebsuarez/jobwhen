@@ -1,9 +1,11 @@
 // pages/Board.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import Card from '../components/Card'
+import { fetchJobApplications, createJobApplication, updateJobApplicationStatus } from '../api/boardQueries'
+import { useAuth } from '../hooks/useAuth'
 import '../styles/Board.css'
 
 const COLUMNS = [
@@ -17,26 +19,148 @@ const COLUMNS = [
 
 const FILTERS = ['All', 'Wishlist', 'Applied', 'Interview', 'Offer', 'Rejected', 'Ghosted']
 
-// TODO: REPLACE THIS WITH REAL DATA FROM BACKEND ONCE SETUP!
-const MOCK_JOBS = [
-  { id: 1, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'wishlist' },
-  { id: 2, company: 'Figma', role: 'UI/UX Designer', location: 'Seattle, WA', salary: '$90k', deadline: 'March 11, 2026', tags: ['remote', 'Figma'], status: 'wishlist' },
-  { id: 3, company: 'Google', role: 'SWE Intern (4m)', location: 'Waterloo, ON', salary: '$45/hr', deadline: 'March 1, 2026', tags: ['Hybrid'], status: 'applied' },
-  { id: 4, company: 'Stripe', role: 'Full Stack Engineer', location: 'Seattle, WA', salary: '$90k', deadline: 'February 28, 2026', tags: ['on-site', 'next.js'], status: 'applied' },
-  { id: 5, company: 'Vercel', role: 'Backend Engineer', location: 'Remote', salary: '$110k - $140k', deadline: 'March 11, 2026', tags: ['remote', 'next.js'], status: 'applied' },
-  { id: 6, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'interview' },
-  { id: 7, company: 'Figma', role: 'UI/UX Designer', location: 'Seattle, WA', salary: '$90k', deadline: 'March 11, 2026', tags: ['remote', 'Figma'], status: 'interview' },
-  { id: 8, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'rejected' },
-  { id: 9, company: 'Amazon', role: 'SDE New Grad', location: 'Vancouver, BC', salary: '$110k - $140k', deadline: 'March 10, 2026', tags: ['on-site', 'Java'], status: 'ghosted' },
-]
+const EMPTY_FORM = {
+  companyName: '',
+  roleTitle: '',
+  location: '',
+  salaryRange: '',
+  jobLink: '',
+  status: 'wishlist',
+  applicationDeadline: '',
+  appliedDate: '',
+  notes: '',
+}
+
+function formatDeadline(dateStr) {
+  if (!dateStr) return null
+  // Append time to avoid UTC offset shifting the date
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric',
+  })
+}
 
 export default function Board() {
+  const { user } = useAuth()
+  const [applications, setApplications] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [submitting, setSubmitting] = useState(false)
   const [activeFilter, setActiveFilter] = useState('All')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [draggedId, setDraggedId] = useState(null)
+  const [dragOverColumn, setDragOverColumn] = useState(null)
 
-  // TODO: REPLACE THIS WITH PROPER FUNCTIONALITY WITH BACKEND ONCE SETUP
-  const getColumnJobs = (columnId) =>
-    MOCK_JOBS.filter((job) => job.status === columnId)
+  useEffect(() => {
+    if (!user) return
+    fetchJobApplications(user.userId)
+      .then(setApplications)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [user])
+
+  const getColumnJobs = (columnId) => {
+    let jobs = applications.filter((app) => app.status === columnId)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      jobs = jobs.filter(
+        (app) =>
+          app.companyName.toLowerCase().includes(q) ||
+          app.roleTitle.toLowerCase().includes(q) ||
+          (app.location ?? '').toLowerCase().includes(q)
+      )
+    }
+    return jobs
+  }
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const closeModal = () => {
+    setShowAddModal(false)
+    setForm(EMPTY_FORM)
+  }
+
+  const handleAddSubmit = async () => {
+    if (!form.companyName.trim() || !form.roleTitle.trim()) return
+    setSubmitting(true)
+    try {
+      const result = await createJobApplication({
+        companyName: form.companyName,
+        roleTitle: form.roleTitle,
+        location: form.location || null,
+        salaryRange: form.salaryRange || null,
+        jobLink: form.jobLink || null,
+        status: form.status || 'wishlist',
+        applicationDeadline: form.applicationDeadline || null,
+        appliedDate: form.appliedDate || null,
+        notes: form.notes || null,
+      })
+      if (result.ok) {
+        setApplications((prev) => [result.application, ...prev])
+        closeModal()
+      }
+    } catch (err) {
+      console.error('Failed to add application:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDragStart = (e, applicationId) => {
+    setDraggedId(applicationId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('applicationId', String(applicationId))
+  }
+
+  const handleDragEnd = () => {
+    setDraggedId(null)
+    setDragOverColumn(null)
+  }
+
+  const handleDragOver = (e, columnId) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverColumn(columnId)
+  }
+
+  const handleDragLeave = (e) => {
+    // Only clear if leaving the column entirely (not entering a child)
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDragOverColumn(null)
+    }
+  }
+
+  const handleDrop = async (e, newStatus) => {
+    e.preventDefault()
+    setDragOverColumn(null)
+    const applicationId = Number(e.dataTransfer.getData('applicationId'))
+    const app = applications.find((a) => a.applicationId === applicationId)
+    if (!app || app.status === newStatus) return
+
+    // Optimistic update
+    setApplications((prev) =>
+      prev.map((a) => a.applicationId === applicationId ? { ...a, status: newStatus } : a)
+    )
+
+    try {
+      await updateJobApplicationStatus(applicationId, newStatus)
+    } catch (err) {
+      console.error('Failed to update status:', err)
+      // Revert on failure
+      setApplications((prev) =>
+        prev.map((a) => a.applicationId === applicationId ? { ...a, status: app.status } : a)
+      )
+    }
+  }
+
+  // When a filter is active, show only that column
+  const visibleColumns = activeFilter === 'All'
+    ? COLUMNS
+    : COLUMNS.filter((col) => col.id === activeFilter.toLowerCase())
 
   return (
     <div className="app-layout">
@@ -54,6 +178,8 @@ export default function Board() {
                 type="text"
                 className="board__search-input"
                 placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Button onClick={() => setShowAddModal(true)}>+ Add Job</Button>
@@ -63,8 +189,8 @@ export default function Board() {
         <div className="board__filters">
           {FILTERS.map((filter) => {
             const count = filter === 'All'
-              ? MOCK_JOBS.length
-              : MOCK_JOBS.filter((j) => j.status === filter.toLowerCase()).length
+              ? applications.length
+              : applications.filter((a) => a.status === filter.toLowerCase()).length
             return (
               <button
                 key={filter}
@@ -77,57 +203,139 @@ export default function Board() {
           })}
         </div>
 
-        <div className="board__columns">
-          {COLUMNS.map((col) => {
-            const jobs = getColumnJobs(col.id)
-            return (
-              <div key={col.id} className="board__column">
-                <div className="board__column-header">
-                  <span className={`board__column-label board__column-label--${col.id}`}>
-                    {col.label}
-                  </span>
-                  <span className="board__column-count">{jobs.length}</span>
+        {loading ? (
+          <p className="board__empty">Loading applications...</p>
+        ) : error ? (
+          <p className="board__empty">Failed to load: {error}</p>
+        ) : (
+          <div className="board__columns">
+            {visibleColumns.map((col) => {
+              const jobs = getColumnJobs(col.id)
+              return (
+                <div
+                  key={col.id}
+                  className={`board__column ${dragOverColumn === col.id ? 'board__column--drag-over' : ''}`}
+                  onDragOver={(e) => handleDragOver(e, col.id)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, col.id)}
+                >
+                  <div className="board__column-header">
+                    <span className={`board__column-label board__column-label--${col.id}`}>
+                      {col.label}
+                    </span>
+                    <span className="board__column-count">{jobs.length}</span>
+                  </div>
+                  <div className="board__column-body">
+                    {jobs.length === 0 ? (
+                      <p className="board__empty">No applications</p>
+                    ) : (
+                      jobs.map((app) => (
+                        <Card
+                          key={app.applicationId}
+                          className={`board__job board__job--${app.status} ${draggedId === app.applicationId ? 'board__job--dragging' : ''}`}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, app.applicationId)}
+                          onDragEnd={handleDragEnd}
+                          onClick={() => {}}
+                        >
+                          <h4 className="board__job-company">{app.companyName}</h4>
+                          <p className="board__job-role">{app.roleTitle}</p>
+                          {app.location && (
+                            <p className="board__job-location">{app.location}</p>
+                          )}
+                          {app.salaryRange && (
+                            <p className="board__job-salary">{app.salaryRange}</p>
+                          )}
+                          {app.applicationDeadline && (
+                            <span className="board__job-deadline">
+                              Deadline {formatDeadline(app.applicationDeadline)}
+                            </span>
+                          )}
+                        </Card>
+                      ))
+                    )}
+                  </div>
                 </div>
-                <div className="board__column-body">
-                  {jobs.length === 0 ? (
-                    <p className="board__empty">No applications</p>
-                  ) : (
-                    jobs.map((job) => (
-                      <Card key={job.id} className={`board__job board__job--${job.status}`} onClick={() => {}}>
-                        <h4 className="board__job-company">{job.company}</h4>
-                        <p className="board__job-role">{job.role}</p>
-                        <p className="board__job-location">{job.location}</p>
-                        <p className="board__job-salary">{job.salary}</p>
-                        <span className="board__job-deadline">Deadline {job.deadline}</span>
-                        <div className="board__job-tags">
-                          {job.tags.map((tag) => (
-                            <span key={tag} className="board__job-tag">{tag}</span>
-                          ))}
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
         
-        <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Application">
+        <Modal isOpen={showAddModal} onClose={closeModal} title="Add New Application">
           <div className="board__form">
-            <label className="board__form-label">Company</label>
-            <input type="text" placeholder="e.g. Google" />
-            <label className="board__form-label">Role</label>
-            <input type="text" placeholder="e.g. Frontend Developer" />
+            <label className="board__form-label">Company *</label>
+            <input
+              name="companyName"
+              type="text"
+              placeholder="e.g. Google"
+              value={form.companyName}
+              onChange={handleFormChange}
+            />
+            <label className="board__form-label">Role *</label>
+            <input
+              name="roleTitle"
+              type="text"
+              placeholder="e.g. Frontend Developer"
+              value={form.roleTitle}
+              onChange={handleFormChange}
+            />
             <label className="board__form-label">Location</label>
-            <input type="text" placeholder="e.g. Calgary, AB" />
+            <input
+              name="location"
+              type="text"
+              placeholder="e.g. Calgary, AB"
+              value={form.location}
+              onChange={handleFormChange}
+            />
+            <label className="board__form-label">Salary Range</label>
+            <input
+              name="salaryRange"
+              type="text"
+              placeholder="e.g. $80k–$100k"
+              value={form.salaryRange}
+              onChange={handleFormChange}
+            />
+            <label className="board__form-label">Job Link</label>
+            <input
+              name="jobLink"
+              type="url"
+              placeholder="e.g. https://careers.google.com/..."
+              value={form.jobLink}
+              onChange={handleFormChange}
+            />
+            <label className="board__form-label">Status</label>
+            <select name="status" value={form.status} onChange={handleFormChange}>
+              {COLUMNS.map((col) => (
+                <option key={col.id} value={col.id}>{col.label}</option>
+              ))}
+            </select>
+            <label className="board__form-label">Application Deadline</label>
+            <input
+              name="applicationDeadline"
+              type="date"
+              value={form.applicationDeadline}
+              onChange={handleFormChange}
+            />
             <label className="board__form-label">Date Applied</label>
-            <input type="date" />
+            <input
+              name="appliedDate"
+              type="date"
+              value={form.appliedDate}
+              onChange={handleFormChange}
+            />
             <label className="board__form-label">Notes</label>
-            <textarea rows={3} placeholder="Any notes..." />
+            <textarea
+              name="notes"
+              rows={3}
+              placeholder="Any notes..."
+              value={form.notes}
+              onChange={handleFormChange}
+            />
             <div className="board__form-actions">
-              <Button variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
-              <Button variant="submit">Add Application</Button>
+              <Button variant="ghost" onClick={closeModal}>Cancel</Button>
+              <Button variant="submit" onClick={handleAddSubmit} disabled={submitting}>
+                {submitting ? 'Adding...' : 'Add Application'}
+              </Button>
             </div>
           </div>
         </Modal>
