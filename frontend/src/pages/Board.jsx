@@ -35,6 +35,8 @@ export default function Board() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [activeFilter, setActiveFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
+  const [draggedId, setDraggedId] = useState(null)
+  const [dragOverColumn, setDragOverColumn] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -56,6 +58,53 @@ export default function Board() {
       )
     }
     return jobs
+  }
+
+  const handleDragStart = (e, applicationId) => {
+    setDraggedId(applicationId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('applicationId', String(applicationId))
+  }
+
+  const handleDragEnd = () => {
+    setDraggedId(null)
+    setDragOverColumn(null)
+  }
+
+  const handleDragOver = (e, columnId) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverColumn(columnId)
+  }
+
+  const handleDragLeave = (e) => {
+    // Only clear if leaving the column entirely (not entering a child)
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDragOverColumn(null)
+    }
+  }
+
+  const handleDrop = async (e, newStatus) => {
+    e.preventDefault()
+    setDragOverColumn(null)
+    const applicationId = Number(e.dataTransfer.getData('applicationId'))
+    const app = applications.find((a) => a.applicationId === applicationId)
+    if (!app || app.status === newStatus) return
+
+    // Optimistic update
+    setApplications((prev) =>
+      prev.map((a) => a.applicationId === applicationId ? { ...a, status: newStatus } : a)
+    )
+
+    try {
+      await updateJobApplicationStatus(applicationId, newStatus)
+    } catch (err) {
+      console.error('Failed to update status:', err)
+      // Revert on failure
+      setApplications((prev) =>
+        prev.map((a) => a.applicationId === applicationId ? { ...a, status: app.status } : a)
+      )
+    }
   }
 
   // When a filter is active, show only that column
@@ -113,7 +162,13 @@ export default function Board() {
             {visibleColumns.map((col) => {
               const jobs = getColumnJobs(col.id)
               return (
-                <div key={col.id} className="board__column">
+                <div
+                  key={col.id}
+                  className={`board__column ${dragOverColumn === col.id ? 'board__column--drag-over' : ''}`}
+                  onDragOver={(e) => handleDragOver(e, col.id)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, col.id)}
+                >
                   <div className="board__column-header">
                     <span className={`board__column-label board__column-label--${col.id}`}>
                       {col.label}
@@ -125,7 +180,14 @@ export default function Board() {
                       <p className="board__empty">No applications</p>
                     ) : (
                       jobs.map((app) => (
-                        <Card key={app.applicationId} className={`board__job board__job--${app.status}`} onClick={() => {}}>
+                        <Card
+                          key={app.applicationId}
+                          className={`board__job board__job--${app.status} ${draggedId === app.applicationId ? 'board__job--dragging' : ''}`}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, app.applicationId)}
+                          onDragEnd={handleDragEnd}
+                          onClick={() => {}}
+                        >
                           <h4 className="board__job-company">{app.companyName}</h4>
                           <p className="board__job-role">{app.roleTitle}</p>
                           {app.location && (
