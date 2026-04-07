@@ -1,6 +1,6 @@
 import graphene
 
-from graphql.types import JobApplicationType
+from gql.types import JobApplicationType
 from services.auth_service import SESSION_COOKIE_NAME, fetch_session_user
 from services.job_application_service import get_applications_by_user
 

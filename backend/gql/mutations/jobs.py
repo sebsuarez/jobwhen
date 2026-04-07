@@ -1,6 +1,6 @@
 import graphene
 
-from graphql.types import (
+from gql.types import (
     CreateJobApplicationInput,
     DeleteJobApplicationResponse,
     JobApplicationResponse,
