@@ -51,6 +51,7 @@ export default function Board() {
   const [searchQuery, setSearchQuery] = useState('')
   const [draggedId, setDraggedId] = useState(null)
   const [dragOverColumn, setDragOverColumn] = useState(null)
+  const [selectedApp, setSelectedApp] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -236,7 +237,7 @@ export default function Board() {
                           draggable
                           onDragStart={(e) => handleDragStart(e, app.applicationId)}
                           onDragEnd={handleDragEnd}
-                          onClick={() => {}}
+                          onClick={() => setSelectedApp(app)}
                         >
                           <h4 className="board__job-company">{app.companyName}</h4>
                           <p className="board__job-role">{app.roleTitle}</p>
@@ -338,6 +339,54 @@ export default function Board() {
               </Button>
             </div>
           </div>
+        </Modal>
+        <Modal
+          isOpen={!!selectedApp}
+          onClose={() => setSelectedApp(null)}
+          title={selectedApp ? `${selectedApp.companyName} — ${selectedApp.roleTitle}` : ''}
+        >
+          {selectedApp && (
+            <div className="board__form">
+              {selectedApp.location && (
+                <>
+                  <label className="board__form-label">Location</label>
+                  <p>{selectedApp.location}</p>
+                </>
+              )}
+              {selectedApp.salaryRange && (
+                <>
+                  <label className="board__form-label">Salary Range</label>
+                  <p>{selectedApp.salaryRange}</p>
+                </>
+              )}
+              {selectedApp.jobLink && (
+                <>
+                  <label className="board__form-label">Job Link</label>
+                  <p><a href={selectedApp.jobLink} target="_blank" rel="noreferrer">{selectedApp.jobLink}</a></p>
+                </>
+              )}
+              <label className="board__form-label">Status</label>
+              <p style={{ textTransform: 'capitalize' }}>{selectedApp.status}</p>
+              {selectedApp.applicationDeadline && (
+                <>
+                  <label className="board__form-label">Application Deadline</label>
+                  <p>{formatDeadline(selectedApp.applicationDeadline)}</p>
+                </>
+              )}
+              {selectedApp.appliedDate && (
+                <>
+                  <label className="board__form-label">Date Applied</label>
+                  <p>{formatDeadline(selectedApp.appliedDate)}</p>
+                </>
+              )}
+              {selectedApp.notes && (
+                <>
+                  <label className="board__form-label">Notes</label>
+                  <p style={{ whiteSpace: 'pre-wrap' }}>{selectedApp.notes}</p>
+                </>
+              )}
+            </div>
+          )}
         </Modal>
       </main>
     </div>

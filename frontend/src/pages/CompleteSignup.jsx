@@ -151,45 +151,45 @@ export default function CompleteSignup() {
           <div className={`signup-layout ${roleName === 'mentor' ? 'mentor-mode' : ''}`}>
             <div className="login__card signup-main-card">
               <div className="form-grid">
-              <div>
-                <label htmlFor="complete-signup-name">Full Name</label>
-                <input
-                  id="complete-signup-name"
-                  value={fullName}
-                  onChange={(event) => setFullName(event.target.value)}
-                />
-              </div>
+                <div>
+                  <label htmlFor="complete-signup-name">Full Name</label>
+                  <input
+                    id="complete-signup-name"
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="complete-signup-email">Email</label>
-                <input
-                  id="complete-signup-email"
-                  value={pendingSignup?.email ?? ''}
-                  disabled
-                />
-              </div>
+                <div>
+                  <label htmlFor="complete-signup-email">Email</label>
+                  <input
+                    id="complete-signup-email"
+                    value={pendingSignup?.email ?? ''}
+                    disabled
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="complete-signup-password">Password</label>
-                <input
-                  id="complete-signup-password"
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="At least 8 characters"
-                />
-              </div>
+                <div>
+                  <label htmlFor="complete-signup-password">Password</label>
+                  <input
+                    id="complete-signup-password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="At least 8 characters"
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="complete-signup-confirm-password">Confirm Password</label>
-                <input
-                  id="complete-signup-confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  placeholder="Confirm your password"
-                />
-              </div>
+                <div>
+                  <label htmlFor="complete-signup-confirm-password">Confirm Password</label>
+                  <input
+                    id="complete-signup-confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    placeholder="Confirm your password"
+                  />
+                </div>
               </div>
 
               <p className="register-label">Create account as:</p>
@@ -210,7 +210,6 @@ export default function CompleteSignup() {
                   Mentor
                 </button>
               </div>
-
             </div>
 
             {roleName === 'mentor' && (
@@ -252,8 +251,17 @@ export default function CompleteSignup() {
 
           {error ? <p className="login__error">{error}</p> : null}
 
-          <Button fullWidth type="submit" disabled={isSubmitting || !fullName.trim()}>
-            {isSubmitting ? 'Creating Account...' : 'Create Account'}
+          <Button
+            fullWidth
+            type="submit"
+            disabled={isSubmitting || !fullName.trim()}
+            className="signup-submit"
+          >
+            {isSubmitting
+              ? 'Creating Account...'
+              : roleName === 'mentor'
+                ? 'Submit application for approval'
+                : 'Create Account'}
           </Button>
         </form>
       </div>
