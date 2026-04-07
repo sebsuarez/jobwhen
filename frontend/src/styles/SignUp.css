@@ -100,7 +100,10 @@
 .signup-submit {
   width: 765px;
   height: 62px;
+  font-size: var(--text-xl);
+  font-weight: 600;
   border-radius: var(--radius-xl);
+  margin-bottom: var(--space-8);
 }
 
 .mentor-top-row {
