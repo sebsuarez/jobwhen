@@ -12,6 +12,9 @@ export default function CompleteSignup() {
   const [pendingSignup, setPendingSignup] = useState(null)
   const [fullName, setFullName] = useState('')
   const [roleName, setRoleName] = useState('job_seeker')
+  const [jobTitle, setJobTitle] = useState('')
+  const [company, setCompany] = useState('')
+  const [mentorReason, setMentorReason] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -92,54 +95,89 @@ export default function CompleteSignup() {
           We verified your Google account. Confirm a few details and continue.
         </p>
 
-        <div className="login__card signup-main-card">
-          <form className="signup-form" onSubmit={handleSubmit}>
-            <div className="form-grid">
-              <div>
-                <label htmlFor="complete-signup-name">Full Name</label>
-                <input
-                  id="complete-signup-name"
-                  value={fullName}
-                  onChange={(event) => setFullName(event.target.value)}
-                />
+        <form className="signup-form" onSubmit={handleSubmit}>
+          <div className={`signup-layout ${roleName === 'mentor' ? 'mentor-mode' : ''}`}>
+            <div className="login__card signup-main-card">
+              <div className="form-grid">
+                <div>
+                  <label htmlFor="complete-signup-name">Full Name</label>
+                  <input
+                    id="complete-signup-name"
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="complete-signup-email">Email</label>
+                  <input
+                    id="complete-signup-email"
+                    value={pendingSignup?.email ?? ''}
+                    disabled
+                  />
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="complete-signup-email">Email</label>
-                <input
-                  id="complete-signup-email"
-                  value={pendingSignup?.email ?? ''}
-                  disabled
-                />
+              <p className="register-label">Create account as:</p>
+
+              <div className="role-toggle">
+                <button
+                  className={roleName === 'job_seeker' ? 'role active' : 'role'}
+                  onClick={() => setRoleName('job_seeker')}
+                  type="button"
+                >
+                  Job Seeker
+                </button>
+                <button
+                  className={roleName === 'mentor' ? 'role active' : 'role'}
+                  onClick={() => setRoleName('mentor')}
+                  type="button"
+                >
+                  Mentor
+                </button>
               </div>
             </div>
 
-            <p className="register-label">Create account as:</p>
+            {roleName === 'mentor' && (
+              <div className="mentor-card">
+                <div className="mentor-top-row">
+                  <div>
+                    <label>Job Title</label>
+                    <input
+                      placeholder="e.g. UI/UX Designer"
+                      value={jobTitle}
+                      onChange={(e) => setJobTitle(e.target.value)}
+                    />
+                  </div>
 
-            <div className="role-toggle">
-              <button
-                className={roleName === 'job_seeker' ? 'role active' : 'role'}
-                onClick={() => setRoleName('job_seeker')}
-                type="button"
-              >
-                Job Seeker
-              </button>
-              <button
-                className={roleName === 'mentor' ? 'role active' : 'role'}
-                onClick={() => setRoleName('mentor')}
-                type="button"
-              >
-                Mentor
-              </button>
-            </div>
+                  <div>
+                    <label>Company</label>
+                    <input
+                      placeholder="e.g. Apple"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-            {error ? <p className="login__error">{error}</p> : null}
+                <div className="mentor-textarea-group">
+                  <label>Why do you want to be a mentor?</label>
+                  <textarea
+                    rows="6"
+                    value={mentorReason}
+                    onChange={(e) => setMentorReason(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
-            <Button fullWidth type="submit" disabled={isSubmitting || !fullName.trim()}>
-              {isSubmitting ? 'Creating Account...' : 'Create Account'}
-            </Button>
-          </form>
-        </div>
+          {error ? <p className="login__error">{error}</p> : null}
+
+          <Button fullWidth type="submit" disabled={isSubmitting || !fullName.trim()} className="signup-submit">
+            {isSubmitting ? 'Creating Account...' : roleName === 'mentor' ? 'Submit application for approval' : 'Create Account'}
+          </Button>
+        </form>
       </div>
     </div>
   )
