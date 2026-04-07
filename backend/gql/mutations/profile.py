@@ -1,6 +1,6 @@
 import graphene
 
-from graphql.types import UpdateProfileResponse
+from gql.types import UpdateProfileResponse
 from services.auth_service import SESSION_COOKIE_NAME, fetch_session_user
 from services.profile_service import update_profile
 
