@@ -160,6 +160,36 @@ export default function Board() {
     }
   }
 
+  const handleEditStart = () => {
+    setEditForm({
+      companyName: selectedApp.companyName,
+      roleTitle: selectedApp.roleTitle,
+      location: selectedApp.location ?? '',
+      salaryRange: selectedApp.salaryRange ?? '',
+      jobLink: selectedApp.jobLink ?? '',
+      applicationDeadline: selectedApp.applicationDeadline ?? '',
+      appliedDate: selectedApp.appliedDate ?? '',
+      notes: selectedApp.notes ?? '',
+    })
+    setIsEditing(true)
+  }
+
+  const handleEditCancel = () => {
+    setIsEditing(false)
+    setEditForm(null)
+  }
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target
+    setEditForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const closeDetailModal = () => {
+    setSelectedApp(null)
+    setIsEditing(false)
+    setEditForm(null)
+  }
+
   // When a filter is active, show only that column
   const visibleColumns = activeFilter === 'All'
     ? COLUMNS
