@@ -374,10 +374,14 @@ export default function Board() {
         </Modal>
         <Modal
           isOpen={!!selectedApp}
-          onClose={() => setSelectedApp(null)}
-          title={selectedApp ? `${selectedApp.companyName} — ${selectedApp.roleTitle}` : ''}
+          onClose={closeDetailModal}
+          title={
+            isEditing
+              ? 'Edit Application'
+              : selectedApp ? `${selectedApp.companyName} — ${selectedApp.roleTitle}` : ''
+          }
         >
-          {selectedApp && (
+          {selectedApp && !isEditing && (
             <div className="board__form">
               {selectedApp.location && (
                 <>
@@ -417,6 +421,73 @@ export default function Board() {
                   <p style={{ whiteSpace: 'pre-wrap' }}>{selectedApp.notes}</p>
                 </>
               )}
+              <div className="board__form-actions">
+                <Button variant="ghost" onClick={handleEditStart}>Edit</Button>
+              </div>
+            </div>
+          )}
+          {selectedApp && isEditing && editForm && (
+            <div className="board__form">
+              <label className="board__form-label">Company *</label>
+              <input
+                name="companyName"
+                type="text"
+                value={editForm.companyName}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Role *</label>
+              <input
+                name="roleTitle"
+                type="text"
+                value={editForm.roleTitle}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Location</label>
+              <input
+                name="location"
+                type="text"
+                value={editForm.location}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Salary Range</label>
+              <input
+                name="salaryRange"
+                type="text"
+                value={editForm.salaryRange}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Job Link</label>
+              <input
+                name="jobLink"
+                type="url"
+                value={editForm.jobLink}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Application Deadline</label>
+              <input
+                name="applicationDeadline"
+                type="date"
+                value={editForm.applicationDeadline}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Date Applied</label>
+              <input
+                name="appliedDate"
+                type="date"
+                value={editForm.appliedDate}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Notes</label>
+              <textarea
+                name="notes"
+                rows={3}
+                value={editForm.notes}
+                onChange={handleEditFormChange}
+              />
+              <div className="board__form-actions">
+                <Button variant="ghost" onClick={handleEditCancel}>Cancel</Button>
+                <Button variant="submit">Save Changes</Button>
+              </div>
             </div>
           )}
         </Modal>
