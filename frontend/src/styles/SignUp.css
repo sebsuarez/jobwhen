@@ -113,6 +113,39 @@
   margin-bottom: var(--space-4);
 }
 
+/* ── Google Button ── */
+
+.signup__google {
+  margin-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.signup__google-button {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.signup__status,
+.signup__error {
+  width: 100%;
+  margin: 0;
+  font-size: var(--text-base);
+}
+
+.signup__status {
+  color: var(--text-secondary);
+}
+
+.signup__error {
+  color: #b42318;
+}
+
 /* ── Responsive ── */
 
 @media (max-width: 900px) {
