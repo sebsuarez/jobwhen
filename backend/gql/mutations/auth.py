@@ -9,6 +9,7 @@ from services.auth_service import (
     SESSION_TTL_DAYS,
     build_google_auth_result,
     build_local_login_result,
+    build_local_signup_result,
     clear_session,
     complete_signup_from_cookie,
 )
@@ -92,6 +93,71 @@ class Login(graphene.Mutation):
         )
 
 
+class Register(graphene.Mutation):
+    class Arguments:
+        role_name = graphene.String(required=True)
+        first_name = graphene.String(required=True)
+        last_name = graphene.String(required=True)
+        username = graphene.String(required=True)
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+        job_seeker_status = graphene.String(required=False)
+        school_name = graphene.String(required=False)
+        mentor_job_title = graphene.String(required=False)
+        mentor_company = graphene.String(required=False)
+        mentor_reason = graphene.String(required=False)
+
+    Output = AuthPayload
+
+    @staticmethod
+    def mutate(
+        root,
+        info,
+        role_name,
+        first_name,
+        last_name,
+        username,
+        email,
+        password,
+        job_seeker_status=None,
+        school_name=None,
+        mentor_job_title=None,
+        mentor_company=None,
+        mentor_reason=None,
+    ):
+        response = info.context["response"]
+        result = build_local_signup_result(
+            role_name=role_name,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            email=email,
+            password=password,
+            job_seeker_status=job_seeker_status,
+            school_name=school_name,
+            mentor_job_title=mentor_job_title,
+            mentor_company=mentor_company,
+            mentor_reason=mentor_reason,
+        )
+        response.set_cookie(
+            SESSION_COOKIE_NAME,
+            result["session_id"],
+            httponly=True,
+            secure=SESSION_COOKIE_SECURE,
+            samesite="Lax",
+            max_age=SESSION_TTL_DAYS * 24 * 60 * 60,
+            path="/",
+        )
+        response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
+        return AuthPayload(
+            ok=True,
+            message="Account created successfully.",
+            requires_signup=False,
+            user=result["user"],
+            session_expires_at=result["session_expires_at"],
+        )
+
+
 class CompleteSignup(graphene.Mutation):
     class Arguments:
         role_name = graphene.String(required=False)
@@ -145,6 +211,7 @@ class Logout(graphene.Mutation):
 
 class AuthMutation(graphene.ObjectType):
     login = Login.Field()
+    register = Register.Field()
     google_auth = GoogleAuth.Field()
     complete_signup = CompleteSignup.Field()
     logout = Logout.Field()

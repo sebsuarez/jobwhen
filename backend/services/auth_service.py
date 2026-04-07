@@ -2,6 +2,7 @@ import os
 import secrets
 import hashlib
 import hmac
+import re
 from base64 import b64encode
 from datetime import datetime, timedelta, timezone
 
@@ -17,6 +18,7 @@ PENDING_SIGNUP_COOKIE_NAME = "jobwhen_pending_signup"
 SESSION_TTL_DAYS = int(os.getenv("SESSION_TTL_DAYS", "7"))
 PENDING_SIGNUP_TTL_MINUTES = int(os.getenv("PENDING_SIGNUP_TTL_MINUTES", "15"))
 SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
+EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 
 def serialize_user(row):
@@ -57,6 +59,10 @@ def hash_password(password, salt=None, iterations=260000):
         f"pbkdf2_sha256${iterations}${resolved_salt.hex()}$"
         f"{b64encode(derived_key).decode('utf-8')}"
     )
+
+
+def is_valid_email(email):
+    return bool(email and EMAIL_PATTERN.match(email))
 
 
 def verify_password(password, password_hash):
@@ -125,6 +131,24 @@ def find_local_auth_user(connection, email):
             """
         ),
         {"email": email},
+    ).mappings().first()
+
+
+def find_user_by_email_or_username(connection, email, username):
+    return connection.execute(
+        text(
+            """
+            SELECT
+                user_id,
+                email,
+                username
+            FROM users
+            WHERE LOWER(email) = LOWER(:email)
+               OR (:username IS NOT NULL AND LOWER(username) = LOWER(:username))
+            LIMIT 1
+            """
+        ),
+        {"email": email, "username": username},
     ).mappings().first()
 
 
@@ -478,6 +502,123 @@ def build_local_login_result(email, password):
             raise RuntimeError("Invalid email or password.")
 
         user = fetch_user_by_id(connection, user_record["user_id"])
+        session_id, expires_at = create_session(connection, user["user_id"])
+
+    return {
+        "user": user,
+        "session_id": session_id,
+        "session_expires_at": expires_at.isoformat(),
+    }
+
+
+def build_local_signup_result(
+    role_name,
+    first_name,
+    last_name,
+    username,
+    email,
+    password,
+    job_seeker_status=None,
+    school_name=None,
+    mentor_job_title=None,
+    mentor_company=None,
+    mentor_reason=None,
+):
+    if not first_name or not last_name:
+        raise RuntimeError("First name and last name are required.")
+    if not username:
+        raise RuntimeError("Username is required.")
+    if not email or not password:
+        raise RuntimeError("Email and password are required.")
+    if not is_valid_email(email.strip()):
+        raise RuntimeError("Please enter a valid email address.")
+    if len(password) < 8:
+        raise RuntimeError("Password must be at least 8 characters long.")
+
+    resolved_role_name = role_name or "job_seeker"
+    if resolved_role_name not in {"job_seeker", "mentor"}:
+        raise RuntimeError("Invalid signup role.")
+
+    full_name = f"{first_name.strip()} {last_name.strip()}".strip()
+    normalized_username = username.strip()
+    normalized_email = email.strip()
+
+    with engine.begin() as connection:
+        existing_user = find_user_by_email_or_username(
+            connection,
+            normalized_email,
+            normalized_username,
+        )
+        if existing_user:
+            if existing_user["email"].lower() == normalized_email.lower():
+                raise RuntimeError("An account with that email already exists.")
+            raise RuntimeError("That username is already taken.")
+
+        role_id = connection.execute(
+            text("SELECT role_id FROM roles WHERE role_name = :role_name"),
+            {"role_name": resolved_role_name},
+        ).scalar_one_or_none()
+
+        if role_id is None:
+            raise RuntimeError(f"Role `{resolved_role_name}` does not exist.")
+
+        user_id = connection.execute(
+            text(
+                """
+                INSERT INTO users (
+                    role_id,
+                    password_hash,
+                    username,
+                    full_name,
+                    email,
+                    job_search_status,
+                    school_name
+                )
+                VALUES (
+                    :role_id,
+                    :password_hash,
+                    :username,
+                    :full_name,
+                    :email,
+                    :job_search_status,
+                    :school_name
+                )
+                RETURNING user_id
+                """
+            ),
+            {
+                "role_id": role_id,
+                "password_hash": hash_password(password),
+                "username": normalized_username,
+                "full_name": full_name,
+                "email": normalized_email,
+                "job_search_status": job_seeker_status.strip() if job_seeker_status else None,
+                "school_name": school_name.strip() if school_name else None,
+            },
+        ).scalar_one()
+
+        connection.execute(
+            text("INSERT INTO user_settings (user_id) VALUES (:user_id)"),
+            {"user_id": user_id},
+        )
+
+        if resolved_role_name == "mentor":
+            connection.execute(
+                text(
+                    """
+                    INSERT INTO mentor_profiles (user_id, company, job_title, expertise, is_approved)
+                    VALUES (:user_id, :company, :job_title, :expertise, FALSE)
+                    """
+                ),
+                {
+                    "user_id": user_id,
+                    "company": mentor_company.strip() if mentor_company else None,
+                    "job_title": mentor_job_title.strip() if mentor_job_title else None,
+                    "expertise": mentor_reason.strip() if mentor_reason else None,
+                },
+            )
+
+        user = fetch_user_by_id(connection, user_id)
         session_id, expires_at = create_session(connection, user["user_id"])
 
     return {
