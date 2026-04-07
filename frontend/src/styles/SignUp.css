@@ -124,6 +124,11 @@
 }
 
 @media (max-width: 480px) {
+  .signup-submit {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-6);
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }
