@@ -261,21 +261,81 @@ export default function Board() {
           </div>
         )}
         
-        <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Application">
+        <Modal isOpen={showAddModal} onClose={closeModal} title="Add New Application">
           <div className="board__form">
-            <label className="board__form-label">Company</label>
-            <input type="text" placeholder="e.g. Google" />
-            <label className="board__form-label">Role</label>
-            <input type="text" placeholder="e.g. Frontend Developer" />
+            <label className="board__form-label">Company *</label>
+            <input
+              name="companyName"
+              type="text"
+              placeholder="e.g. Google"
+              value={form.companyName}
+              onChange={handleFormChange}
+            />
+            <label className="board__form-label">Role *</label>
+            <input
+              name="roleTitle"
+              type="text"
+              placeholder="e.g. Frontend Developer"
+              value={form.roleTitle}
+              onChange={handleFormChange}
+            />
             <label className="board__form-label">Location</label>
-            <input type="text" placeholder="e.g. Calgary, AB" />
+            <input
+              name="location"
+              type="text"
+              placeholder="e.g. Calgary, AB"
+              value={form.location}
+              onChange={handleFormChange}
+            />
+            <label className="board__form-label">Salary Range</label>
+            <input
+              name="salaryRange"
+              type="text"
+              placeholder="e.g. $80k–$100k"
+              value={form.salaryRange}
+              onChange={handleFormChange}
+            />
+            <label className="board__form-label">Job Link</label>
+            <input
+              name="jobLink"
+              type="url"
+              placeholder="e.g. https://careers.google.com/..."
+              value={form.jobLink}
+              onChange={handleFormChange}
+            />
+            <label className="board__form-label">Status</label>
+            <select name="status" value={form.status} onChange={handleFormChange}>
+              {COLUMNS.map((col) => (
+                <option key={col.id} value={col.id}>{col.label}</option>
+              ))}
+            </select>
+            <label className="board__form-label">Application Deadline</label>
+            <input
+              name="applicationDeadline"
+              type="date"
+              value={form.applicationDeadline}
+              onChange={handleFormChange}
+            />
             <label className="board__form-label">Date Applied</label>
-            <input type="date" />
+            <input
+              name="appliedDate"
+              type="date"
+              value={form.appliedDate}
+              onChange={handleFormChange}
+            />
             <label className="board__form-label">Notes</label>
-            <textarea rows={3} placeholder="Any notes..." />
+            <textarea
+              name="notes"
+              rows={3}
+              placeholder="Any notes..."
+              value={form.notes}
+              onChange={handleFormChange}
+            />
             <div className="board__form-actions">
-              <Button variant="ghost" onClick={() => setShowAddModal(false)}>Cancel</Button>
-              <Button variant="submit">Add Application</Button>
+              <Button variant="ghost" onClick={closeModal}>Cancel</Button>
+              <Button variant="submit" onClick={handleAddSubmit} disabled={submitting}>
+                {submitting ? 'Adding...' : 'Add Application'}
+              </Button>
             </div>
           </div>
         </Modal>
