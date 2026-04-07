@@ -30,6 +30,12 @@ def serialize_user(row):
             "role_name": row.role_name,
         },
         "created_at": row.created_at.isoformat() if row.created_at else None,
+        "headline": row.headline,
+        "bio": row.bio,
+        "location": row.location,
+        "current_level": row.current_level,
+        "current_xp": row.current_xp,
+        "streak_days": row.streak_days,
     }
 
 
@@ -43,6 +49,12 @@ def fetch_user_by_id(connection, user_id):
                 u.full_name,
                 u.google_sub,
                 u.created_at,
+                u.headline,
+                u.bio,
+                u.location,
+                u.current_level,
+                u.current_xp,
+                u.streak_days,
                 r.role_id,
                 r.role_name
             FROM users u
@@ -259,6 +271,12 @@ def fetch_session_user(session_id):
                     u.full_name,
                     u.google_sub,
                     u.created_at,
+                    u.headline,
+                    u.bio,
+                    u.location,
+                    u.current_level,
+                    u.current_xp,
+                    u.streak_days,
                     r.role_id,
                     r.role_name
                 FROM sessions s

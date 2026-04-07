@@ -13,6 +13,18 @@ class UserType(graphene.ObjectType):
     google_sub = graphene.String()
     role = graphene.Field(RoleType)
     created_at = graphene.String()
+    headline = graphene.String()
+    bio = graphene.String()
+    location = graphene.String()
+    current_level = graphene.Int()
+    current_xp = graphene.Int()
+    streak_days = graphene.Int()
+
+
+class UpdateProfileResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
+    user = graphene.Field(lambda: UserType)
 
 
 class PendingSignupType(graphene.ObjectType):
