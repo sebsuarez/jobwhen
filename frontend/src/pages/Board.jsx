@@ -19,6 +19,18 @@ const COLUMNS = [
 
 const FILTERS = ['All', 'Wishlist', 'Applied', 'Interview', 'Offer', 'Rejected', 'Ghosted']
 
+const EMPTY_FORM = {
+  companyName: '',
+  roleTitle: '',
+  location: '',
+  salaryRange: '',
+  jobLink: '',
+  status: 'wishlist',
+  applicationDeadline: '',
+  appliedDate: '',
+  notes: '',
+}
+
 function formatDeadline(dateStr) {
   if (!dateStr) return null
   // Append time to avoid UTC offset shifting the date
@@ -33,6 +45,8 @@ export default function Board() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [submitting, setSubmitting] = useState(false)
   const [activeFilter, setActiveFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [draggedId, setDraggedId] = useState(null)
