@@ -83,7 +83,7 @@ export default function SignUp() {
         size: 'large',
         shape: 'pill',
         text: 'signup_with',
-        width: 360,
+        width: googleButtonRef.current.clientWidth || 400,
       })
 
       return true

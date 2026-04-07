@@ -128,7 +128,6 @@
   min-height: 44px;
   display: flex;
   justify-content: center;
-  overflow: hidden;
 }
 
 .signup__status,
