@@ -226,6 +226,20 @@ export default function Board() {
     }
   }
 
+  const handleDeleteApp = async () => {
+    if (!window.confirm(`Delete "${selectedApp.companyName} — ${selectedApp.roleTitle}"? This cannot be undone.`)) return
+    const id = selectedApp.applicationId
+    closeDetailModal()
+    setApplications((prev) => prev.filter((a) => a.applicationId !== id))
+    try {
+      await deleteJobApplication(id)
+    } catch (err) {
+      console.error('Failed to delete application:', err)
+      // Re-fetch to restore state on failure
+      fetchJobApplications(user.userId).then(setApplications)
+    }
+  }
+
   const closeDetailModal = () => {
     setSelectedApp(null)
     setIsEditing(false)
