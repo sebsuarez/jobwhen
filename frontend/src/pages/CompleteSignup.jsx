@@ -12,8 +12,10 @@ export default function CompleteSignup() {
   const [pendingSignup, setPendingSignup] = useState(null)
   const [fullName, setFullName] = useState('')
   const [roleName, setRoleName] = useState('job_seeker')
-  const [jobTitle, setJobTitle] = useState('')
-  const [company, setCompany] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [mentorJobTitle, setMentorJobTitle] = useState('')
+  const [mentorCompany, setMentorCompany] = useState('')
   const [mentorReason, setMentorReason] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -52,14 +54,60 @@ export default function CompleteSignup() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    const trimmedPassword = password.trim()
+
+    if (!trimmedPassword) {
+      setError('Password is required.')
+      return
+    }
+
+    if (trimmedPassword.length < 8) {
+      setError('Password must be at least 8 characters long.')
+      return
+    }
+
+    if (trimmedPassword !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+
+    if (roleName === 'mentor' && !mentorJobTitle.trim()) {
+      setError('Job title is required for mentors.')
+      return
+    }
+
+    if (roleName === 'mentor' && !mentorCompany.trim()) {
+      setError('Company is required for mentors.')
+      return
+    }
+
+    if (roleName === 'mentor' && !mentorReason.trim()) {
+      setError('Please tell us why you want to be a mentor.')
+      return
+    }
+
     setIsSubmitting(true)
     setError('')
 
     try {
       await graphqlRequest(
         `
-          mutation CompleteSignup($fullName: String, $roleName: String) {
-            completeSignup(fullName: $fullName, roleName: $roleName) {
+          mutation CompleteSignup(
+            $fullName: String
+            $roleName: String
+            $password: String
+            $mentorJobTitle: String
+            $mentorCompany: String
+            $mentorReason: String
+          ) {
+            completeSignup(
+              fullName: $fullName
+              roleName: $roleName
+              password: $password
+              mentorJobTitle: $mentorJobTitle
+              mentorCompany: $mentorCompany
+              mentorReason: $mentorReason
+            ) {
               ok
               message
               user {
@@ -71,6 +119,10 @@ export default function CompleteSignup() {
         {
           fullName,
           roleName,
+          password: trimmedPassword || null,
+          mentorJobTitle: roleName === 'mentor' ? mentorJobTitle : null,
+          mentorCompany: roleName === 'mentor' ? mentorCompany : null,
+          mentorReason: roleName === 'mentor' ? mentorReason : null,
         },
       )
 
@@ -116,6 +168,28 @@ export default function CompleteSignup() {
                     disabled
                   />
                 </div>
+
+                <div>
+                  <label htmlFor="complete-signup-password">Password</label>
+                  <input
+                    id="complete-signup-password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="At least 8 characters"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="complete-signup-confirm-password">Confirm Password</label>
+                  <input
+                    id="complete-signup-confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    placeholder="Confirm your password"
+                  />
+                </div>
               </div>
 
               <p className="register-label">Create account as:</p>
@@ -142,30 +216,33 @@ export default function CompleteSignup() {
               <div className="mentor-card">
                 <div className="mentor-top-row">
                   <div>
-                    <label>Job Title</label>
+                    <label htmlFor="complete-signup-mentor-job-title">Job Title</label>
                     <input
+                      id="complete-signup-mentor-job-title"
+                      value={mentorJobTitle}
+                      onChange={(event) => setMentorJobTitle(event.target.value)}
                       placeholder="e.g. UI/UX Designer"
-                      value={jobTitle}
-                      onChange={(e) => setJobTitle(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label>Company</label>
+                    <label htmlFor="complete-signup-mentor-company">Company</label>
                     <input
+                      id="complete-signup-mentor-company"
+                      value={mentorCompany}
+                      onChange={(event) => setMentorCompany(event.target.value)}
                       placeholder="e.g. Apple"
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
                     />
                   </div>
                 </div>
 
                 <div className="mentor-textarea-group">
-                  <label>Why do you want to be a mentor?</label>
+                  <label htmlFor="complete-signup-mentor-reason">Why do you want to be a mentor?</label>
                   <textarea
+                    id="complete-signup-mentor-reason"
                     rows="6"
                     value={mentorReason}
-                    onChange={(e) => setMentorReason(e.target.value)}
+                    onChange={(event) => setMentorReason(event.target.value)}
                   />
                 </div>
               </div>
@@ -174,8 +251,17 @@ export default function CompleteSignup() {
 
           {error ? <p className="login__error">{error}</p> : null}
 
-          <Button fullWidth type="submit" disabled={isSubmitting || !fullName.trim()} className="signup-submit">
-            {isSubmitting ? 'Creating Account...' : roleName === 'mentor' ? 'Submit application for approval' : 'Create Account'}
+          <Button
+            fullWidth
+            type="submit"
+            disabled={isSubmitting || !fullName.trim()}
+            className="signup-submit"
+          >
+            {isSubmitting
+              ? 'Creating Account...'
+              : roleName === 'mentor'
+                ? 'Submit application for approval'
+                : 'Create Account'}
           </Button>
         </form>
       </div>

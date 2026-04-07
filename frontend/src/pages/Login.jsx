@@ -15,12 +15,39 @@ export default function Login() {
   const googleButtonRef = useRef(null)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [formError, setFormError] = useState("")
+  const [formLoading, setFormLoading] = useState(false)
   const [googleError, setGoogleError] = useState("")
   const [googleLoading, setGoogleLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log({ email, password })
+    setFormLoading(true)
+    setFormError("")
+
+    try {
+      await graphqlRequest(
+        `
+          mutation Login($email: String!, $password: String!) {
+            login(email: $email, password: $password) {
+              ok
+              message
+              user {
+                userId
+              }
+            }
+          }
+        `,
+        { email, password },
+      )
+
+      await refreshUser()
+      navigate('/dashboard')
+    } catch (error) {
+      setFormError(error.message)
+    } finally {
+      setFormLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -165,8 +192,10 @@ export default function Login() {
 
             <a href="#" className="login__forgot">Forgot Password</a>
 
-            <Button variant="primary" fullWidth type="submit">
-              Log In
+            {formError ? <p className="login__error">{formError}</p> : null}
+
+            <Button variant="primary" fullWidth type="submit" disabled={formLoading}>
+              {formLoading ? 'Logging In...' : 'Log In'}
             </Button>
           </form>
         </div>
