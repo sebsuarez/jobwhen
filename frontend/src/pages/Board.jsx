@@ -478,7 +478,8 @@ export default function Board() {
                 </>
               )}
               <div className="board__form-actions">
-                <Button variant="ghost" onClick={handleEditStart}>Edit</Button>
+                <Button variant="ghost" onClick={handleDeleteApp}>Delete</Button>
+                <Button variant="submit" onClick={handleEditStart}>Edit</Button>
               </div>
             </div>
           )}
