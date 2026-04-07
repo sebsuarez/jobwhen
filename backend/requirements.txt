@@ -7,7 +7,6 @@ python-dotenv
 
 # GraphQL
 graphene
-Flask-GraphQL
 
 # not sure which one we will use for GraphQL,
 # but these are the two most popular ones (after graphene)

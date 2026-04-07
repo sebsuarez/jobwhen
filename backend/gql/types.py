@@ -13,6 +13,18 @@ class UserType(graphene.ObjectType):
     google_sub = graphene.String()
     role = graphene.Field(RoleType)
     created_at = graphene.String()
+    headline = graphene.String()
+    bio = graphene.String()
+    location = graphene.String()
+    current_level = graphene.Int()
+    current_xp = graphene.Int()
+    streak_days = graphene.Int()
+
+
+class UpdateProfileResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
+    user = graphene.Field(lambda: UserType)
 
 
 class PendingSignupType(graphene.ObjectType):
@@ -28,3 +40,64 @@ class AuthPayload(graphene.ObjectType):
     user = graphene.Field(UserType)
     pending_signup = graphene.Field(PendingSignupType)
     session_expires_at = graphene.String()
+
+
+# JOB APPLICATION TYPES
+
+class JobApplicationType(graphene.ObjectType):
+    application_id = graphene.Int()
+    user_id = graphene.Int()
+    company_name = graphene.String()
+    role_title = graphene.String()
+    location = graphene.String()
+    job_link = graphene.String()
+    salary_range = graphene.String()
+    status = graphene.String()
+    notes = graphene.String()
+    application_deadline = graphene.String()
+    applied_date = graphene.String()
+    created_at = graphene.String()
+    updated_at = graphene.String()
+
+
+class StatusChangeType(graphene.ObjectType):
+    history_id = graphene.Int()
+    application_id = graphene.Int()
+    old_status = graphene.String()
+    new_status = graphene.String()
+    changed_at = graphene.String()
+    note = graphene.String()
+
+
+class CreateJobApplicationInput(graphene.InputObjectType):
+    company_name = graphene.String(required=True)
+    role_title = graphene.String(required=True)
+    location = graphene.String()
+    job_link = graphene.String()
+    salary_range = graphene.String()
+    status = graphene.String()
+    notes = graphene.String()
+    application_deadline = graphene.String()
+    applied_date = graphene.String()
+
+
+class UpdateJobApplicationInput(graphene.InputObjectType):
+    company_name = graphene.String()
+    role_title = graphene.String()
+    location = graphene.String()
+    job_link = graphene.String()
+    salary_range = graphene.String()
+    notes = graphene.String()
+    application_deadline = graphene.String()
+    applied_date = graphene.String()
+
+
+class JobApplicationResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
+    application = graphene.Field(JobApplicationType)
+
+
+class DeleteJobApplicationResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
