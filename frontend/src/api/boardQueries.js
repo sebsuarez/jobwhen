@@ -55,6 +55,36 @@ const UPDATE_STATUS_MUTATION = `
   }
 `
 
+const UPDATE_JOB_APPLICATION_MUTATION = `
+  mutation UpdateJobApplication($applicationId: Int!, $input: UpdateJobApplicationInput!) {
+    updateJobApplication(applicationId: $applicationId, input: $input) {
+      ok
+      application {
+        applicationId
+        companyName
+        roleTitle
+        location
+        salaryRange
+        status
+        notes
+        jobLink
+        applicationDeadline
+        appliedDate
+        updatedAt
+      }
+    }
+  }
+`
+
+const DELETE_JOB_APPLICATION_MUTATION = `
+  mutation DeleteJobApplication($applicationId: Int!) {
+    deleteJobApplication(applicationId: $applicationId) {
+      ok
+      message
+    }
+  }
+`
+
 // Exported API functions
 export async function fetchJobApplications(userId) {
   const data = await graphqlRequest(JOB_APPLICATIONS_QUERY, { userId })
@@ -69,4 +99,14 @@ export async function createJobApplication(input) {
 export async function updateJobApplicationStatus(applicationId, newStatus, note = null) {
   const data = await graphqlRequest(UPDATE_STATUS_MUTATION, { applicationId, newStatus, note })
   return data.updateJobApplicationStatus
+}
+
+export async function updateJobApplication(applicationId, input) {
+  const data = await graphqlRequest(UPDATE_JOB_APPLICATION_MUTATION, { applicationId, input })
+  return data.updateJobApplication
+}
+
+export async function deleteJobApplication(applicationId) {
+  const data = await graphqlRequest(DELETE_JOB_APPLICATION_MUTATION, { applicationId })
+  return data.deleteJobApplication
 }
