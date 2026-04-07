@@ -34,6 +34,7 @@ export default function Board() {
   const [error, setError] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [activeFilter, setActiveFilter] = useState('All')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -43,8 +44,24 @@ export default function Board() {
       .finally(() => setLoading(false))
   }, [user])
 
-  const getColumnJobs = (columnId) =>
-    applications.filter((app) => app.status === columnId)
+  const getColumnJobs = (columnId) => {
+    let jobs = applications.filter((app) => app.status === columnId)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      jobs = jobs.filter(
+        (app) =>
+          app.companyName.toLowerCase().includes(q) ||
+          app.roleTitle.toLowerCase().includes(q) ||
+          (app.location ?? '').toLowerCase().includes(q)
+      )
+    }
+    return jobs
+  }
+
+  // When a filter is active, show only that column
+  const visibleColumns = activeFilter === 'All'
+    ? COLUMNS
+    : COLUMNS.filter((col) => col.id === activeFilter.toLowerCase())
 
   return (
     <div className="app-layout">
@@ -62,6 +79,8 @@ export default function Board() {
                 type="text"
                 className="board__search-input"
                 placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Button onClick={() => setShowAddModal(true)}>+ Add Job</Button>
@@ -91,7 +110,7 @@ export default function Board() {
           <p className="board__empty">Failed to load: {error}</p>
         ) : (
           <div className="board__columns">
-            {COLUMNS.map((col) => {
+            {visibleColumns.map((col) => {
               const jobs = getColumnJobs(col.id)
               return (
                 <div key={col.id} className="board__column">
