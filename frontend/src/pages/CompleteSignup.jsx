@@ -12,6 +12,8 @@ export default function CompleteSignup() {
   const [pendingSignup, setPendingSignup] = useState(null)
   const [fullName, setFullName] = useState('')
   const [roleName, setRoleName] = useState('job_seeker')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -49,14 +51,31 @@ export default function CompleteSignup() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    const trimmedPassword = password.trim()
+
+    if (!trimmedPassword) {
+      setError('Password is required.')
+      return
+    }
+
+    if (trimmedPassword.length < 8) {
+      setError('Password must be at least 8 characters long.')
+      return
+    }
+
+    if (trimmedPassword !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+
     setIsSubmitting(true)
     setError('')
 
     try {
       await graphqlRequest(
         `
-          mutation CompleteSignup($fullName: String, $roleName: String) {
-            completeSignup(fullName: $fullName, roleName: $roleName) {
+          mutation CompleteSignup($fullName: String, $roleName: String, $password: String) {
+            completeSignup(fullName: $fullName, roleName: $roleName, password: $password) {
               ok
               message
               user {
@@ -68,6 +87,7 @@ export default function CompleteSignup() {
         {
           fullName,
           roleName,
+          password: trimmedPassword || null,
         },
       )
 
@@ -110,6 +130,28 @@ export default function CompleteSignup() {
                   id="complete-signup-email"
                   value={pendingSignup?.email ?? ''}
                   disabled
+                />
+              </div>
+
+              <div>
+                <label htmlFor="complete-signup-password">Password</label>
+                <input
+                  id="complete-signup-password"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="At least 8 characters"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="complete-signup-confirm-password">Confirm Password</label>
+                <input
+                  id="complete-signup-confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  placeholder="Confirm your password"
                 />
               </div>
             </div>

@@ -2,7 +2,7 @@ import os
 import secrets
 import hashlib
 import hmac
-from base64 import b64decode, b64encode
+from base64 import b64encode
 from datetime import datetime, timedelta, timezone
 
 from google.auth.transport import requests as google_requests
@@ -253,11 +253,20 @@ def fetch_pending_signup(connection, signup_token):
     }
 
 
-def create_user_from_pending_signup(connection, signup_token, role_name=None, full_name=None):
+def create_user_from_pending_signup(
+    connection,
+    signup_token,
+    role_name=None,
+    full_name=None,
+    password=None,
+):
     pending_signup = fetch_pending_signup(connection, signup_token)
 
     if not pending_signup:
         raise RuntimeError("Pending signup session is missing or expired.")
+
+    if not password:
+        raise RuntimeError("Password is required to complete signup.")
 
     resolved_role_name = role_name or "job_seeker"
     role_id = connection.execute(
@@ -268,16 +277,19 @@ def create_user_from_pending_signup(connection, signup_token, role_name=None, fu
     if role_id is None:
         raise RuntimeError(f"Role `{resolved_role_name}` does not exist.")
 
+    password_hash = hash_password(password)
+
     user_id = connection.execute(
         text(
             """
-            INSERT INTO users (role_id, full_name, email, google_sub)
-            VALUES (:role_id, :full_name, :email, :google_sub)
+            INSERT INTO users (role_id, password_hash, full_name, email, google_sub)
+            VALUES (:role_id, :password_hash, :full_name, :email, :google_sub)
             RETURNING user_id
             """
         ),
         {
             "role_id": role_id,
+            "password_hash": password_hash,
             "full_name": full_name or pending_signup["full_name"],
             "email": pending_signup["email"],
             "google_sub": pending_signup["google_sub"],
@@ -437,13 +449,14 @@ def get_pending_signup_from_cookie(cookie_value):
     }
 
 
-def complete_signup_from_cookie(cookie_value, role_name=None, full_name=None):
+def complete_signup_from_cookie(cookie_value, role_name=None, full_name=None, password=None):
     with engine.begin() as connection:
         user = create_user_from_pending_signup(
             connection,
             cookie_value,
             role_name=role_name,
             full_name=full_name,
+            password=password,
         )
         session_id, expires_at = create_session(connection, user["user_id"])
 

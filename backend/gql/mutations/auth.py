@@ -96,17 +96,19 @@ class CompleteSignup(graphene.Mutation):
     class Arguments:
         role_name = graphene.String(required=False)
         full_name = graphene.String(required=False)
+        password = graphene.String(required=False)
 
     Output = AuthPayload
 
     @staticmethod
-    def mutate(root, info, role_name=None, full_name=None):
+    def mutate(root, info, role_name=None, full_name=None, password=None):
         request = info.context["request"]
         response = info.context["response"]
         result = complete_signup_from_cookie(
             request.cookies.get(PENDING_SIGNUP_COOKIE_NAME),
             role_name=role_name,
             full_name=full_name,
+            password=password,
         )
         response.set_cookie(
             SESSION_COOKIE_NAME,
