@@ -1,5 +1,8 @@
 import os
 import secrets
+import hashlib
+import hmac
+from base64 import b64decode, b64encode
 from datetime import datetime, timedelta, timezone
 
 from google.auth.transport import requests as google_requests
@@ -39,6 +42,47 @@ def serialize_user(row):
     }
 
 
+def hash_password(password, salt=None, iterations=260000):
+    if not password:
+        raise RuntimeError("Password is required.")
+
+    resolved_salt = salt or secrets.token_bytes(16)
+    derived_key = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        resolved_salt,
+        iterations,
+    )
+    return (
+        f"pbkdf2_sha256${iterations}${resolved_salt.hex()}$"
+        f"{b64encode(derived_key).decode('utf-8')}"
+    )
+
+
+def verify_password(password, password_hash):
+    if not password_hash:
+        return False
+
+    try:
+        algorithm, iteration_count, salt_hex, encoded_hash = password_hash.split("$", 3)
+    except ValueError:
+        return False
+
+    if algorithm != "pbkdf2_sha256":
+        return False
+
+    derived_key = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        bytes.fromhex(salt_hex),
+        int(iteration_count),
+    )
+    return hmac.compare_digest(
+        b64encode(derived_key).decode("utf-8"),
+        encoded_hash,
+    )
+
+
 def fetch_user_by_id(connection, user_id):
     row = connection.execute(
         text(
@@ -66,6 +110,22 @@ def fetch_user_by_id(connection, user_id):
     ).mappings().first()
 
     return serialize_user(row)
+
+
+def find_local_auth_user(connection, email):
+    return connection.execute(
+        text(
+            """
+            SELECT
+                u.user_id,
+                u.password_hash
+            FROM users u
+            WHERE LOWER(u.email) = LOWER(:email)
+            LIMIT 1
+            """
+        ),
+        {"email": email},
+    ).mappings().first()
 
 
 def find_user_by_google_payload(connection, payload):
@@ -385,6 +445,26 @@ def complete_signup_from_cookie(cookie_value, role_name=None, full_name=None):
             role_name=role_name,
             full_name=full_name,
         )
+        session_id, expires_at = create_session(connection, user["user_id"])
+
+        return {
+            "user": user,
+            "session_id": session_id,
+            "session_expires_at": expires_at.isoformat(),
+        }
+
+
+def build_local_login_result(email, password):
+    if not email or not password:
+        raise RuntimeError("Email and password are required.")
+
+    with engine.begin() as connection:
+        user_record = find_local_auth_user(connection, email.strip())
+
+        if not user_record or not verify_password(password, user_record["password_hash"]):
+            raise RuntimeError("Invalid email or password.")
+
+        user = fetch_user_by_id(connection, user_record["user_id"])
         session_id, expires_at = create_session(connection, user["user_id"])
 
     return {

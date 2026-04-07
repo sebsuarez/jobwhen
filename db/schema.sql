@@ -37,6 +37,7 @@ CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     role_id INT NOT NULL,
     google_sub VARCHAR(255) UNIQUE,
+    password_hash TEXT,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(120) NOT NULL UNIQUE,
     headline VARCHAR(150),

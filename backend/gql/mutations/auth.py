@@ -8,6 +8,7 @@ from services.auth_service import (
     SESSION_COOKIE_SECURE,
     SESSION_TTL_DAYS,
     build_google_auth_result,
+    build_local_login_result,
     clear_session,
     complete_signup_from_cookie,
 )
@@ -55,6 +56,36 @@ class GoogleAuth(graphene.Mutation):
         return AuthPayload(
             ok=True,
             message="Google sign-in successful.",
+            requires_signup=False,
+            user=result["user"],
+            session_expires_at=result["session_expires_at"],
+        )
+
+
+class Login(graphene.Mutation):
+    class Arguments:
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    Output = AuthPayload
+
+    @staticmethod
+    def mutate(root, info, email, password):
+        response = info.context["response"]
+        result = build_local_login_result(email, password)
+        response.set_cookie(
+            SESSION_COOKIE_NAME,
+            result["session_id"],
+            httponly=True,
+            secure=SESSION_COOKIE_SECURE,
+            samesite="Lax",
+            max_age=SESSION_TTL_DAYS * 24 * 60 * 60,
+            path="/",
+        )
+        response.delete_cookie(PENDING_SIGNUP_COOKIE_NAME, path="/")
+        return AuthPayload(
+            ok=True,
+            message="Logged in successfully.",
             requires_signup=False,
             user=result["user"],
             session_expires_at=result["session_expires_at"],
@@ -111,6 +142,7 @@ class Logout(graphene.Mutation):
 
 
 class AuthMutation(graphene.ObjectType):
+    login = Login.Field()
     google_auth = GoogleAuth.Field()
     complete_signup = CompleteSignup.Field()
     logout = Logout.Field()
