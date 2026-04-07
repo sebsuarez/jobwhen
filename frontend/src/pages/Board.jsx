@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import Card from '../components/Card'
-import { fetchJobApplications, createJobApplication, updateJobApplicationStatus } from '../api/boardQueries'
+import { fetchJobApplications, createJobApplication, updateJobApplicationStatus, updateJobApplication, deleteJobApplication } from '../api/boardQueries'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Board.css'
 
