@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import Card from '../components/Card'
-import { fetchJobApplications, createJobApplication, updateJobApplicationStatus } from '../api/boardQueries'
+import { fetchJobApplications, createJobApplication, updateJobApplicationStatus, updateJobApplication, deleteJobApplication } from '../api/boardQueries'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Board.css'
 
@@ -52,6 +52,9 @@ export default function Board() {
   const [draggedId, setDraggedId] = useState(null)
   const [dragOverColumn, setDragOverColumn] = useState(null)
   const [selectedApp, setSelectedApp] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState(null)
+  const [editSubmitting, setEditSubmitting] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -156,6 +159,91 @@ export default function Board() {
         prev.map((a) => a.applicationId === applicationId ? { ...a, status: app.status } : a)
       )
     }
+  }
+
+  const handleEditStart = () => {
+    setEditForm({
+      companyName: selectedApp.companyName,
+      roleTitle: selectedApp.roleTitle,
+      location: selectedApp.location ?? '',
+      salaryRange: selectedApp.salaryRange ?? '',
+      jobLink: selectedApp.jobLink ?? '',
+      applicationDeadline: selectedApp.applicationDeadline ?? '',
+      appliedDate: selectedApp.appliedDate ?? '',
+      notes: selectedApp.notes ?? '',
+    })
+    setIsEditing(true)
+  }
+
+  const handleEditCancel = () => {
+    setIsEditing(false)
+    setEditForm(null)
+  }
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target
+    setEditForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleEditSubmit = async () => {
+    if (!editForm.companyName.trim() || !editForm.roleTitle.trim()) return
+    setEditSubmitting(true)
+    const original = selectedApp
+    const updated = { ...selectedApp, ...editForm }
+    // Optimistic update
+    setApplications((prev) =>
+      prev.map((a) => a.applicationId === selectedApp.applicationId ? updated : a)
+    )
+    setSelectedApp(updated)
+    try {
+      const result = await updateJobApplication(selectedApp.applicationId, {
+        companyName: editForm.companyName,
+        roleTitle: editForm.roleTitle,
+        location: editForm.location || null,
+        salaryRange: editForm.salaryRange || null,
+        jobLink: editForm.jobLink || null,
+        applicationDeadline: editForm.applicationDeadline || null,
+        appliedDate: editForm.appliedDate || null,
+        notes: editForm.notes || null,
+      })
+      if (result.ok) {
+        setApplications((prev) =>
+          prev.map((a) => a.applicationId === result.application.applicationId ? result.application : a)
+        )
+        setSelectedApp(result.application)
+        setIsEditing(false)
+        setEditForm(null)
+      }
+    } catch (err) {
+      console.error('Failed to update application:', err)
+      // Revert on failure
+      setApplications((prev) =>
+        prev.map((a) => a.applicationId === original.applicationId ? original : a)
+      )
+      setSelectedApp(original)
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
+  const handleDeleteApp = async () => {
+    if (!window.confirm(`Delete "${selectedApp.companyName} — ${selectedApp.roleTitle}"? This cannot be undone.`)) return
+    const id = selectedApp.applicationId
+    closeDetailModal()
+    setApplications((prev) => prev.filter((a) => a.applicationId !== id))
+    try {
+      await deleteJobApplication(id)
+    } catch (err) {
+      console.error('Failed to delete application:', err)
+      // Re-fetch to restore state on failure
+      fetchJobApplications(user.userId).then(setApplications)
+    }
+  }
+
+  const closeDetailModal = () => {
+    setSelectedApp(null)
+    setIsEditing(false)
+    setEditForm(null)
   }
 
   // When a filter is active, show only that column
@@ -342,10 +430,14 @@ export default function Board() {
         </Modal>
         <Modal
           isOpen={!!selectedApp}
-          onClose={() => setSelectedApp(null)}
-          title={selectedApp ? `${selectedApp.companyName} — ${selectedApp.roleTitle}` : ''}
+          onClose={closeDetailModal}
+          title={
+            isEditing
+              ? 'Edit Application'
+              : selectedApp ? `${selectedApp.companyName} — ${selectedApp.roleTitle}` : ''
+          }
         >
-          {selectedApp && (
+          {selectedApp && !isEditing && (
             <div className="board__form">
               {selectedApp.location && (
                 <>
@@ -385,6 +477,76 @@ export default function Board() {
                   <p style={{ whiteSpace: 'pre-wrap' }}>{selectedApp.notes}</p>
                 </>
               )}
+              <div className="board__form-actions">
+                <Button variant="ghost" onClick={handleDeleteApp}>Delete</Button>
+                <Button variant="submit" onClick={handleEditStart}>Edit</Button>
+              </div>
+            </div>
+          )}
+          {selectedApp && isEditing && editForm && (
+            <div className="board__form">
+              <label className="board__form-label">Company *</label>
+              <input
+                name="companyName"
+                type="text"
+                value={editForm.companyName}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Role *</label>
+              <input
+                name="roleTitle"
+                type="text"
+                value={editForm.roleTitle}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Location</label>
+              <input
+                name="location"
+                type="text"
+                value={editForm.location}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Salary Range</label>
+              <input
+                name="salaryRange"
+                type="text"
+                value={editForm.salaryRange}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Job Link</label>
+              <input
+                name="jobLink"
+                type="url"
+                value={editForm.jobLink}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Application Deadline</label>
+              <input
+                name="applicationDeadline"
+                type="date"
+                value={editForm.applicationDeadline}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Date Applied</label>
+              <input
+                name="appliedDate"
+                type="date"
+                value={editForm.appliedDate}
+                onChange={handleEditFormChange}
+              />
+              <label className="board__form-label">Notes</label>
+              <textarea
+                name="notes"
+                rows={3}
+                value={editForm.notes}
+                onChange={handleEditFormChange}
+              />
+              <div className="board__form-actions">
+                <Button variant="ghost" onClick={handleEditCancel}>Cancel</Button>
+                <Button variant="submit" onClick={handleEditSubmit} disabled={editSubmitting}>
+                  {editSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
             </div>
           )}
         </Modal>
