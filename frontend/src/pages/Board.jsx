@@ -54,6 +54,7 @@ export default function Board() {
   const [selectedApp, setSelectedApp] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState(null)
+  const [editSubmitting, setEditSubmitting] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -182,6 +183,47 @@ export default function Board() {
   const handleEditFormChange = (e) => {
     const { name, value } = e.target
     setEditForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleEditSubmit = async () => {
+    if (!editForm.companyName.trim() || !editForm.roleTitle.trim()) return
+    setEditSubmitting(true)
+    const original = selectedApp
+    const updated = { ...selectedApp, ...editForm }
+    // Optimistic update
+    setApplications((prev) =>
+      prev.map((a) => a.applicationId === selectedApp.applicationId ? updated : a)
+    )
+    setSelectedApp(updated)
+    try {
+      const result = await updateJobApplication(selectedApp.applicationId, {
+        companyName: editForm.companyName,
+        roleTitle: editForm.roleTitle,
+        location: editForm.location || null,
+        salaryRange: editForm.salaryRange || null,
+        jobLink: editForm.jobLink || null,
+        applicationDeadline: editForm.applicationDeadline || null,
+        appliedDate: editForm.appliedDate || null,
+        notes: editForm.notes || null,
+      })
+      if (result.ok) {
+        setApplications((prev) =>
+          prev.map((a) => a.applicationId === result.application.applicationId ? result.application : a)
+        )
+        setSelectedApp(result.application)
+        setIsEditing(false)
+        setEditForm(null)
+      }
+    } catch (err) {
+      console.error('Failed to update application:', err)
+      // Revert on failure
+      setApplications((prev) =>
+        prev.map((a) => a.applicationId === original.applicationId ? original : a)
+      )
+      setSelectedApp(original)
+    } finally {
+      setEditSubmitting(false)
+    }
   }
 
   const closeDetailModal = () => {
