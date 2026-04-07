@@ -74,6 +74,42 @@ export default function Board() {
     return jobs
   }
 
+  const handleFormChange = (e) => {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const closeModal = () => {
+    setShowAddModal(false)
+    setForm(EMPTY_FORM)
+  }
+
+  const handleAddSubmit = async () => {
+    if (!form.companyName.trim() || !form.roleTitle.trim()) return
+    setSubmitting(true)
+    try {
+      const result = await createJobApplication({
+        companyName: form.companyName,
+        roleTitle: form.roleTitle,
+        location: form.location || null,
+        salaryRange: form.salaryRange || null,
+        jobLink: form.jobLink || null,
+        status: form.status || 'wishlist',
+        applicationDeadline: form.applicationDeadline || null,
+        appliedDate: form.appliedDate || null,
+        notes: form.notes || null,
+      })
+      if (result.ok) {
+        setApplications((prev) => [result.application, ...prev])
+        closeModal()
+      }
+    } catch (err) {
+      console.error('Failed to add application:', err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const handleDragStart = (e, applicationId) => {
     setDraggedId(applicationId)
     e.dataTransfer.effectAllowed = 'move'
