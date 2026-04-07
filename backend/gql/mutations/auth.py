@@ -163,11 +163,23 @@ class CompleteSignup(graphene.Mutation):
         role_name = graphene.String(required=False)
         full_name = graphene.String(required=False)
         password = graphene.String(required=False)
+        mentor_job_title = graphene.String(required=False)
+        mentor_company = graphene.String(required=False)
+        mentor_reason = graphene.String(required=False)
 
     Output = AuthPayload
 
     @staticmethod
-    def mutate(root, info, role_name=None, full_name=None, password=None):
+    def mutate(
+        root,
+        info,
+        role_name=None,
+        full_name=None,
+        password=None,
+        mentor_job_title=None,
+        mentor_company=None,
+        mentor_reason=None,
+    ):
         request = info.context["request"]
         response = info.context["response"]
         result = complete_signup_from_cookie(
@@ -175,6 +187,9 @@ class CompleteSignup(graphene.Mutation):
             role_name=role_name,
             full_name=full_name,
             password=password,
+            mentor_job_title=mentor_job_title,
+            mentor_company=mentor_company,
+            mentor_reason=mentor_reason,
         )
         response.set_cookie(
             SESSION_COOKIE_NAME,

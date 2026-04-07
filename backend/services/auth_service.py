@@ -283,6 +283,9 @@ def create_user_from_pending_signup(
     role_name=None,
     full_name=None,
     password=None,
+    mentor_job_title=None,
+    mentor_company=None,
+    mentor_reason=None,
 ):
     pending_signup = fetch_pending_signup(connection, signup_token)
 
@@ -323,6 +326,23 @@ def create_user_from_pending_signup(
         text("INSERT INTO user_settings (user_id) VALUES (:user_id)"),
         {"user_id": user_id},
     )
+
+    if resolved_role_name == "mentor":
+        connection.execute(
+            text(
+                """
+                INSERT INTO mentor_profiles (user_id, company, job_title, expertise, is_approved)
+                VALUES (:user_id, :company, :job_title, :expertise, FALSE)
+                """
+            ),
+            {
+                "user_id": user_id,
+                "company": mentor_company.strip() if mentor_company else None,
+                "job_title": mentor_job_title.strip() if mentor_job_title else None,
+                "expertise": mentor_reason.strip() if mentor_reason else None,
+            },
+        )
+
     connection.execute(
         text("DELETE FROM pending_google_signups WHERE signup_token = :signup_token"),
         {"signup_token": signup_token},
@@ -473,7 +493,15 @@ def get_pending_signup_from_cookie(cookie_value):
     }
 
 
-def complete_signup_from_cookie(cookie_value, role_name=None, full_name=None, password=None):
+def complete_signup_from_cookie(
+    cookie_value,
+    role_name=None,
+    full_name=None,
+    password=None,
+    mentor_job_title=None,
+    mentor_company=None,
+    mentor_reason=None,
+):
     with engine.begin() as connection:
         user = create_user_from_pending_signup(
             connection,
@@ -481,6 +509,9 @@ def complete_signup_from_cookie(cookie_value, role_name=None, full_name=None, pa
             role_name=role_name,
             full_name=full_name,
             password=password,
+            mentor_job_title=mentor_job_title,
+            mentor_company=mentor_company,
+            mentor_reason=mentor_reason,
         )
         session_id, expires_at = create_session(connection, user["user_id"])
 
