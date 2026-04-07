@@ -83,7 +83,7 @@ export default function SignUp() {
         size: 'large',
         shape: 'pill',
         text: 'signup_with',
-        width: 360,
+        width: googleButtonRef.current.clientWidth || 400,
       })
 
       return true
@@ -123,48 +123,48 @@ export default function SignUp() {
           Welcome back! Let's keep the momentum going.
         </p>
 
-        <div className={`signup-layout ${role === 'mentor' ? 'mentor-mode' : ''}`}>
-          <div className="login__card signup-main-card">
-            <div className="login__tabs">
-              <Link to="/" className="login__tab">
-                Log In
-              </Link>
-              <Link to="/signup" className="login__tab login__tab--active">
-                Sign Up
-              </Link>
-            </div>
+        <form className="signup-form" onSubmit={handleSubmit}>
+          <div className={`signup-layout ${role === 'mentor' ? 'mentor-mode' : ''}`}>
+            <div className="login__card signup-main-card">
+              <div className="login__tabs">
+                <Link to="/" className="login__tab">
+                  Log In
+                </Link>
+                <Link to="/signup" className="login__tab login__tab--active">
+                  Sign Up
+                </Link>
+              </div>
 
-            <div className="login__google">
-              <div ref={googleButtonRef} className="login__google-button" />
-              {googleLoading ? <p className="login__status">Signing you up with Google...</p> : null}
-              {googleError ? <p className="login__error">{googleError}</p> : null}
-            </div>
+              <div className="signup__google">
+                <div ref={googleButtonRef} className="signup__google-button" />
+                {googleLoading ? <p className="signup__status">Signing you up with Google...</p> : null}
+                {googleError ? <p className="signup__error">{googleError}</p> : null}
+              </div>
 
-            <div className="login__divider">
-              <span>or use email</span>
-            </div>
+              <div className="login__divider">
+                <span>or use email</span>
+              </div>
 
-            <p className="register-label">Register as:</p>
+              <p className="register-label">Register as:</p>
 
-            <div className="role-toggle">
-              <button
-                className={role === 'jobseeker' ? 'role active' : 'role'}
-                onClick={() => setRole('jobseeker')}
-                type="button"
-              >
-                Job Seeker
-              </button>
+              <div className="role-toggle">
+                <button
+                  className={role === 'jobseeker' ? 'role active' : 'role'}
+                  onClick={() => setRole('jobseeker')}
+                  type="button"
+                >
+                  Job Seeker
+                </button>
 
-              <button
-                className={role === 'mentor' ? 'role active' : 'role'}
-                onClick={() => setRole('mentor')}
-                type="button"
-              >
-                Mentor
-              </button>
-            </div>
+                <button
+                  className={role === 'mentor' ? 'role active' : 'role'}
+                  onClick={() => setRole('mentor')}
+                  type="button"
+                >
+                  Mentor
+                </button>
+              </div>
 
-            <form className="signup-form" onSubmit={handleSubmit}>
               <div className="form-grid">
                 <div>
                   <label>First Name</label>
@@ -210,34 +210,34 @@ export default function SignUp() {
                   </>
                 )}
               </div>
+            </div>
 
-              <button className="btn btn--primary btn--full signup-submit" type="submit">
-                {role === 'mentor' ? 'Submit application for approval' : 'Register'}
-              </button>
-            </form>
+            {role === 'mentor' && (
+              <div className="mentor-card">
+                <div className="mentor-top-row">
+                  <div>
+                    <label>Job Title</label>
+                    <input placeholder="e.g. UI/UX Designer" />
+                  </div>
+
+                  <div>
+                    <label>Company</label>
+                    <input placeholder="e.g. Apple" />
+                  </div>
+                </div>
+
+                <div className="mentor-textarea-group">
+                  <label>Why do you want to be a mentor?</label>
+                  <textarea rows="6" />
+                </div>
+              </div>
+            )}
           </div>
 
-          {role === 'mentor' && (
-            <div className="mentor-card">
-              <div className="mentor-top-row">
-                <div>
-                  <label>Job Title</label>
-                  <input placeholder="e.g. UI/UX Designer" />
-                </div>
-
-                <div>
-                  <label>Company</label>
-                  <input placeholder="e.g. Apple" />
-                </div>
-              </div>
-
-              <div className="mentor-textarea-group">
-                <label>Why do you want to be a mentor?</label>
-                <textarea rows="6" />
-              </div>
-            </div>
-          )}
-        </div>
+          <button className="btn btn--primary signup-submit" type="submit">
+            {role === 'mentor' ? 'Submit application for approval' : 'Register'}
+          </button>
+        </form>
       </div>
     </div>
   )

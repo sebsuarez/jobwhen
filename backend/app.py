@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 # this is what makes the __init__.py file in the directory important
 # it allows us to import the schema directly from the graphql package
-from graphql.schema import schema
+from gql.schema import schema
 
 load_dotenv()
 

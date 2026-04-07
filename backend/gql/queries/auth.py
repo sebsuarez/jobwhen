@@ -1,6 +1,6 @@
 import graphene
 
-from graphql.types import PendingSignupType, UserType
+from gql.types import PendingSignupType, UserType
 from services.auth_service import (
     PENDING_SIGNUP_COOKIE_NAME,
     SESSION_COOKIE_NAME,

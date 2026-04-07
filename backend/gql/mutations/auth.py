@@ -1,6 +1,6 @@
 import graphene
 
-from graphql.types import AuthPayload
+from gql.types import AuthPayload
 from services.auth_service import (
     PENDING_SIGNUP_COOKIE_NAME,
     PENDING_SIGNUP_TTL_MINUTES,
