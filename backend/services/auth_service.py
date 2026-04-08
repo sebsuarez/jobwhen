@@ -42,6 +42,7 @@ def serialize_user(row):
         "current_level": row.current_level,
         "current_xp": row.current_xp,
         "streak_days": row.streak_days,
+        "is_active": row.is_active,
     }
 
 
@@ -107,6 +108,7 @@ def fetch_user_by_id(connection, user_id):
                 u.current_level,
                 u.current_xp,
                 u.streak_days,
+                u.is_active,
                 r.role_id,
                 r.role_name
             FROM users u
@@ -390,6 +392,7 @@ def fetch_session_user(session_id):
                     u.current_level,
                     u.current_xp,
                     u.streak_days,
+                    u.is_active,
                     r.role_id,
                     r.role_name
                 FROM sessions s
@@ -451,6 +454,8 @@ def build_google_auth_result(credential):
     with engine.begin() as connection:
         user = find_user_by_google_payload(connection, payload)
         if user:
+            if not user.get("is_active"):
+                raise RuntimeError("This account has been suspended.")
             user = update_existing_google_user(connection, user["user_id"], payload)
             session_id, expires_at = create_session(connection, user["user_id"])
             return {
@@ -530,6 +535,10 @@ def build_local_login_result(email, password):
             raise RuntimeError("Invalid email or password.")
 
         user = fetch_user_by_id(connection, user_record["user_id"])
+
+        if not user.get("is_active"):
+            raise RuntimeError("This account has been suspended.")
+
         session_id, expires_at = create_session(connection, user["user_id"])
 
     return {
