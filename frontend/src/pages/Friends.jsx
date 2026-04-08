@@ -1,5 +1,5 @@
 // pages/Friends.jsx
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -45,29 +45,33 @@ const friends = [
   },
 ]
 
-const reactions = ['🔥', '👏', '❤️']
-
 export default function Friends() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [encouragements, setEncouragements] = useState({})
-  const [activeReactionPicker, setActiveReactionPicker] = useState(null)
+  const [notification, setNotification] = useState('')
 
-  const handleEncourage = (friendId, reaction) => {
+  const handleEncourage = (friend) => {
     setEncouragements((prev) => {
-      const existing = prev[friendId]
+      const existing = prev[friend.id]
 
       return {
         ...prev,
-        [friendId]: {
-          reaction,
+        [friend.id]: {
           count: existing ? existing.count + 1 : 1,
-          message: `You encouraged your friend with ${reaction}`,
         },
       }
     })
 
-    setActiveReactionPicker(null)
+    setNotification(`You encouraged ${friend.name}`)
   }
+
+  useEffect(() => {
+    if (!notification) return
+
+    const timer = setTimeout(() => {
+      setNotification('')}, 2000)
+
+    return () => clearTimeout(timer)}, [notification])
 
   return (
     <div className="friends-page">
@@ -86,10 +90,8 @@ export default function Friends() {
             <Button
               variant="primary"
               className="friends-panel__add-btn"
-              onClick={() => setIsModalOpen(true)}
-            >
-              Add Friend
-            </Button>
+              onClick={() => setIsModalOpen(true)}>Add Friend</Button>
+      
           </div>
 
           <div className="friends-list">
@@ -105,21 +107,12 @@ export default function Friends() {
                       <p className="friend-card__status">{friend.status}</p>
 
                       {encouragement && (
-                        <>
-                          <div className="friend-encouragement">
-                            <span className="friend-encouragement__badge">
-                              {encouragement.reaction}
-                            </span>
-                            <span className="friend-encouragement__count">
-                              {encouragement.count} Encouragement
-                              {encouragement.count > 1 ? 's' : ''}
-                            </span>
-                          </div>
-
-                          <p className="friend-encouragement__message">
-                            {encouragement.message}
-                          </p>
-                        </>
+                        <div className="friend-encouragement">
+                          <span className="friend-encouragement__count">
+                            {encouragement.count} encouragement
+                            {encouragement.count > 1 ? 's' : ''} sent
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -135,34 +128,11 @@ export default function Friends() {
                       <span className="friend-card__label">Level</span>
                     </div>
 
-                    <div className="friend-card__button-wrap">
-                      <Button
-                        variant="ghost"
-                        className="friend-card__btn"
-                        onClick={() =>
-                          setActiveReactionPicker(
-                            activeReactionPicker === friend.id ? null : friend.id
-                          )
-                        }
-                      >
-                        {activeReactionPicker === friend.id ? 'Choose' : 'Encourage'}
-                      </Button>
-
-                      {activeReactionPicker === friend.id && (
-                        <div className="reaction-picker">
-                          {reactions.map((reaction) => (
-                            <button
-                              key={reaction}
-                              type="button"
-                              className="reaction-picker__item"
-                              onClick={() => handleEncourage(friend.id, reaction)}
-                            >
-                              {reaction}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <Button
+                      variant="ghost"
+                      className="friend-card__btn"
+                      onClick={() => handleEncourage(friend)}>Encourge</Button>
+      
                   </div>
                 </Card>
               )
@@ -174,16 +144,13 @@ export default function Friends() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Add Friend"
-      >
+        title="Add Friend">
         <div className="friends-modal">
           <label className="friends-modal__label">Friend Username or Email</label>
           <input
             className="friends-modal__input"
             type="text"
-            placeholder="Enter username or email"
-          />
-
+            placeholder="Enter username or email"/>
           <div className="friends-modal__actions">
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
               Cancel
@@ -192,6 +159,7 @@ export default function Friends() {
           </div>
         </div>
       </Modal>
+       {notification && <div className="notification-popup">{notification}</div>}
     </div>
   )
 }

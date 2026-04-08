@@ -141,8 +141,6 @@
   border-color: var(--text-accent);
   color: var(--text-accent);
 }
-
-/* modal */
 .friends-modal {
   display: flex;
   flex-direction: column;
@@ -167,24 +165,24 @@
 }
 
 .friend-encouragement {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
   margin-top: var(--space-2);
-}
-
-.friend-encouragement__badge {
-  font-size: 18px;
 }
 
 .friend-encouragement__count {
   font-size: var(--text-sm);
-  color: var(--text-secondary);
+  color: var(--text-accent);
 }
 
-.reaction-picker {
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-  cursor: pointer;
+.notification-popup {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  padding: 12px 18px;
+  border-radius: var(--radius-lg);
+  background: rgba(30, 41, 59, 0.96);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
