@@ -16,3 +16,8 @@
 ## Backend Test
 - we can test if the backend is alive
 `http://localhost:5001/health`
+
+## Neon (optional)
+- set `DATABASE_URL` in `.env`
+- run without the local `db` container:
+`docker compose -f docker-compose.yml -f docker-compose.neon.yml up --build --no-deps frontend backend`

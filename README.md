@@ -21,6 +21,14 @@ cd seng513-202601-pg-21
 docker compose up --build
 ```
 
+### Using Neon (instead of the local Docker DB)
+
+Set `DATABASE_URL` in `.env`, then run:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.neon.yml up --build --no-deps frontend backend
+```
+
 | Service | URL |
 |---|---|
 | Frontend | http://localhost:5173 |

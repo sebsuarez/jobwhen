@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
             headline
             bio
             location
+            avatar
             currentLevel
             currentXp
             streakDays

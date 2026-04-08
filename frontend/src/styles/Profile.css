@@ -58,6 +58,15 @@
   border-radius: 50%;
   background: linear-gradient(135deg, var(--text-accent), var(--btn-primary-bg));
   margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-card__avatar-emoji {
+  font-size: 4.5rem;
+  line-height: 1;
+  user-select: none;
 }
 
 .profile-card__name {
@@ -189,4 +198,100 @@
 
 .profile-stat__value--encouraged {
   color: #fb7185;
+}
+
+/* ── Edit profile modal ── */
+
+.profile-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.profile-edit__preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.profile-edit__avatar-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--text-accent), var(--btn-primary-bg));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.profile-edit__avatar-placeholder {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.profile-edit__preview-name {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.profile-edit__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-edit__name-input {
+  width: 100%;
+  font-size: var(--text-base);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+.profile-edit__name-input:focus {
+  outline: none;
+  border-color: var(--text-accent);
+}
+
+.profile-edit__emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: var(--space-2);
+}
+
+.profile-edit__emoji-btn {
+  aspect-ratio: 1;
+  font-size: 1.6rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  background: transparent;
+}
+.profile-edit__emoji-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.15);
+}
+.profile-edit__emoji-btn--selected {
+  background: rgba(168, 85, 247, 0.25);
+  outline: 2px solid var(--text-accent);
+}
+
+.profile-edit__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
 }
