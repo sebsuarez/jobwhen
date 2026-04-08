@@ -3,37 +3,16 @@
 -- SENG 513 Database Schema Milestone
 -- Database: PostgreSQL
 
--- Drop tables for easy reset during development
-DROP TABLE IF EXISTS admin_actions CASCADE;
-DROP TABLE IF EXISTS content_reports CASCADE;
-DROP TABLE IF EXISTS challenge_participants CASCADE;
-DROP TABLE IF EXISTS challenges CASCADE;
-DROP TABLE IF EXISTS mentor_profiles CASCADE;
-DROP TABLE IF EXISTS burnout_alerts CASCADE;
-DROP TABLE IF EXISTS mood_checkins CASCADE;
-DROP TABLE IF EXISTS encouragements CASCADE;
-DROP TABLE IF EXISTS friendships CASCADE;
-DROP TABLE IF EXISTS user_badges CASCADE;
-DROP TABLE IF EXISTS badges CASCADE;
-DROP TABLE IF EXISTS xp_events CASCADE;
-DROP TABLE IF EXISTS goals CASCADE;
-DROP TABLE IF EXISTS application_history CASCADE;
-DROP TABLE IF EXISTS job_applications CASCADE;
-DROP TABLE IF EXISTS user_settings CASCADE;
-DROP TABLE IF EXISTS pending_google_signups CASCADE;
-DROP TABLE IF EXISTS sessions CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS roles CASCADE;
 -- ROLES
 -- Supports: job seekers, mentors, admins
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
     role_id SERIAL PRIMARY KEY,
     role_name VARCHAR(30) NOT NULL UNIQUE
 );
 
--- USERS 
+-- USERS
 -- User profile and gamification summary
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     user_id SERIAL PRIMARY KEY,
     role_id INT NOT NULL,
     google_sub VARCHAR(255) UNIQUE,
@@ -60,7 +39,7 @@ CREATE TABLE users (
 
 -- SESSIONS
 -- Server-side login sessions for authenticated users
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
     session_id VARCHAR(255) PRIMARY KEY,
     user_id INT NOT NULL,
     expires_at TIMESTAMP NOT NULL,
@@ -73,7 +52,7 @@ CREATE TABLE sessions (
 
 -- PENDING GOOGLE SIGNUPS
 -- Temporary signup records before a first-time Google user confirms account creation
-CREATE TABLE pending_google_signups (
+CREATE TABLE IF NOT EXISTS pending_google_signups (
     signup_token VARCHAR(255) PRIMARY KEY,
     google_sub VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(120) NOT NULL UNIQUE,
@@ -85,7 +64,7 @@ CREATE TABLE pending_google_signups (
 -- USER SETTINGS
 -- Supports settings UI and MVP profile/privacy toggles
 -- One settings row per user
-CREATE TABLE user_settings (
+CREATE TABLE IF NOT EXISTS user_settings (
     setting_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL UNIQUE,
     dark_mode BOOLEAN NOT NULL DEFAULT TRUE,
@@ -104,7 +83,7 @@ CREATE TABLE user_settings (
 
 -- JOB APPLICATIONS
 -- Core job board table
-CREATE TABLE job_applications (
+CREATE TABLE IF NOT EXISTS job_applications (
     application_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     company_name VARCHAR(120) NOT NULL,
@@ -129,7 +108,7 @@ CREATE TABLE job_applications (
 
 -- APPLICATION HISTORY
 -- Supports chronological application timeline MVP
-CREATE TABLE application_history (
+CREATE TABLE IF NOT EXISTS application_history (
     history_id SERIAL PRIMARY KEY,
     application_id INT NOT NULL,
     old_status VARCHAR(20),
@@ -155,7 +134,7 @@ CREATE TABLE application_history (
 
 -- GOALS
 -- Supports daily and weekly goals
-CREATE TABLE goals (
+CREATE TABLE IF NOT EXISTS goals (
     goal_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     goal_type VARCHAR(20) NOT NULL,
@@ -178,7 +157,7 @@ CREATE TABLE goals (
 
 -- XP EVENTS
 -- Tracks why users gained XP
-CREATE TABLE xp_events (
+CREATE TABLE IF NOT EXISTS xp_events (
     xp_event_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     event_type VARCHAR(40) NOT NULL,
@@ -196,7 +175,7 @@ CREATE TABLE xp_events (
 
 -- BADGES
 -- Master badge list for collection page
-CREATE TABLE badges (
+CREATE TABLE IF NOT EXISTS badges (
     badge_id SERIAL PRIMARY KEY,
     badge_name VARCHAR(80) NOT NULL UNIQUE,
     description TEXT,
@@ -206,7 +185,7 @@ CREATE TABLE badges (
 
 -- USER BADGES
 -- Stores earned badges per user
-CREATE TABLE user_badges (
+CREATE TABLE IF NOT EXISTS user_badges (
     user_badge_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     badge_id INT NOT NULL,
@@ -225,7 +204,7 @@ CREATE TABLE user_badges (
 
 -- FRIENDSHIPS
 -- Supports add friend / accepted / blocked
-CREATE TABLE friendships (
+CREATE TABLE IF NOT EXISTS friendships (
     friendship_id SERIAL PRIMARY KEY,
     requester_id INT NOT NULL,
     addressee_id INT NOT NULL,
@@ -251,7 +230,7 @@ CREATE TABLE friendships (
 
 -- ENCOURAGEMENTS
 -- Supports social encouragement button/messages
-CREATE TABLE encouragements (
+CREATE TABLE IF NOT EXISTS encouragements (
     encouragement_id SERIAL PRIMARY KEY,
     sender_id INT NOT NULL,
     receiver_id INT NOT NULL,
@@ -272,7 +251,7 @@ CREATE TABLE encouragements (
 
 -- MOOD CHECK-INS
 -- Supports emotional reflection feature
-CREATE TABLE mood_checkins (
+CREATE TABLE IF NOT EXISTS mood_checkins (
     mood_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     mood_score INT NOT NULL,
@@ -289,7 +268,7 @@ CREATE TABLE mood_checkins (
 
 -- BURNOUT ALERTS
 -- Supports burnout detection + supportive prompts feature
-CREATE TABLE burnout_alerts (
+CREATE TABLE IF NOT EXISTS burnout_alerts (
     alert_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     trigger_reason TEXT NOT NULL,
@@ -304,7 +283,7 @@ CREATE TABLE burnout_alerts (
 
 -- MENTOR PROFILES
 -- Supports public mentor/alumni profiles
-CREATE TABLE mentor_profiles (
+CREATE TABLE IF NOT EXISTS mentor_profiles (
     mentor_profile_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL UNIQUE,
     company VARCHAR(120),
@@ -320,7 +299,7 @@ CREATE TABLE mentor_profiles (
 
 -- CHALLENGES
 -- Mentor-created community challenges
-CREATE TABLE challenges (
+CREATE TABLE IF NOT EXISTS challenges (
     challenge_id SERIAL PRIMARY KEY,
     mentor_user_id INT NOT NULL,
     title VARCHAR(120) NOT NULL,
@@ -350,7 +329,7 @@ CREATE TABLE challenges (
 
 -- CHALLENGE PARTICIPANTS
 -- Users participating in challenges
-CREATE TABLE challenge_participants (
+CREATE TABLE IF NOT EXISTS challenge_participants (
     challenge_participant_id SERIAL PRIMARY KEY,
     challenge_id INT NOT NULL,
     user_id INT NOT NULL,
@@ -379,7 +358,7 @@ CREATE TABLE challenge_participants (
 
 -- CONTENT REPORTS
 -- Supports moderation of users/challenges/profile content
-CREATE TABLE content_reports (
+CREATE TABLE IF NOT EXISTS content_reports (
     report_id SERIAL PRIMARY KEY,
     reporter_user_id INT NOT NULL,
     reported_user_id INT,
@@ -410,7 +389,7 @@ CREATE TABLE content_reports (
 
 -- ADMIN ACTIONS
 -- Stores admin decisions and approvals
-CREATE TABLE admin_actions (
+CREATE TABLE IF NOT EXISTS admin_actions (
     action_id SERIAL PRIMARY KEY,
     admin_user_id INT NOT NULL,
     report_id INT,
@@ -438,19 +417,19 @@ CREATE TABLE admin_actions (
 -- ---------------------------------------------------------
 -- Helpful indexes
 -- ---------------------------------------------------------
-CREATE INDEX idx_job_applications_user ON job_applications(user_id);
-CREATE INDEX idx_job_applications_status ON job_applications(status);
-CREATE INDEX idx_application_history_app ON application_history(application_id);
-CREATE INDEX idx_goals_user ON goals(user_id);
-CREATE INDEX idx_xp_events_user ON xp_events(user_id);
-CREATE INDEX idx_sessions_user ON sessions(user_id);
-CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
-CREATE INDEX idx_pending_google_signups_expires_at ON pending_google_signups(expires_at);
-CREATE INDEX idx_friendships_requester ON friendships(requester_id);
-CREATE INDEX idx_friendships_addressee ON friendships(addressee_id);
-CREATE INDEX idx_encouragements_receiver ON encouragements(receiver_id);
-CREATE INDEX idx_mood_checkins_user ON mood_checkins(user_id);
-CREATE INDEX idx_challenges_mentor ON challenges(mentor_user_id);
-CREATE INDEX idx_challenges_status ON challenges(challenge_status);
-CREATE INDEX idx_challenge_participants_user ON challenge_participants(user_id);
-CREATE INDEX idx_reports_status ON content_reports(report_status);
+CREATE INDEX IF NOT EXISTS idx_job_applications_user ON job_applications(user_id);
+CREATE INDEX IF NOT EXISTS idx_job_applications_status ON job_applications(status);
+CREATE INDEX IF NOT EXISTS idx_application_history_app ON application_history(application_id);
+CREATE INDEX IF NOT EXISTS idx_goals_user ON goals(user_id);
+CREATE INDEX IF NOT EXISTS idx_xp_events_user ON xp_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_pending_google_signups_expires_at ON pending_google_signups(expires_at);
+CREATE INDEX IF NOT EXISTS idx_friendships_requester ON friendships(requester_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_addressee ON friendships(addressee_id);
+CREATE INDEX IF NOT EXISTS idx_encouragements_receiver ON encouragements(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_mood_checkins_user ON mood_checkins(user_id);
+CREATE INDEX IF NOT EXISTS idx_challenges_mentor ON challenges(mentor_user_id);
+CREATE INDEX IF NOT EXISTS idx_challenges_status ON challenges(challenge_status);
+CREATE INDEX IF NOT EXISTS idx_challenge_participants_user ON challenge_participants(user_id);
+CREATE INDEX IF NOT EXISTS idx_reports_status ON content_reports(report_status);
