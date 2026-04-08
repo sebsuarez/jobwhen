@@ -1,0 +1,97 @@
+.collection-page {
+  min-height: 100vh;
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.collection-page__main {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  padding: var(--space-8);
+}
+
+.collection-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.collection-panel__title {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.collection-panel__subtitle {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Hexagon grid — staggered layout using clip-path */
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px 0;
+}
+
+/* Offset every other column down by half a hex to create honeycomb stagger */
+.badge-hex:nth-child(4n+2),
+.badge-hex:nth-child(4n+3) {
+  margin-top: calc(var(--badge-size) * 0.5);
+}
+
+.badge-hex {
+  --badge-size: min(28vw, 260px);
+  width: var(--badge-size);
+  height: var(--badge-size);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: var(--badge-locked-bg);
+  position: relative;
+  transition: filter var(--transition-base);
+  justify-self: center;
+}
+
+.badge-hex--unlocked {
+  background: var(--badge-unlocked-bg);
+}
+
+/* Glowing current-level badge using a pseudo-element border overlay */
+.badge-hex--current::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(135deg, #F19EDC, #A855F7);
+  z-index: 0;
+}
+
+.badge-hex--current .badge-hex__inner {
+  background: #1a1a2e;
+}
+
+.badge-hex__inner {
+  position: absolute;
+  inset: 3px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.badge-hex__label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0 var(--space-3);
+  line-height: 1.4;
+  z-index: 2;
+  position: relative;
+}
+
+.badge-hex--current .badge-hex__label {
+  color: var(--text-primary);
+}
