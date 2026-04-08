@@ -28,57 +28,69 @@
   color: var(--text-secondary);
 }
 
-/* Hexagon grid — staggered layout using clip-path */
+/* Honeycomb grid — alternating rows are offset by half a badge width */
 .badge-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px 0;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Offset every other column down by half a hex to create honeycomb stagger */
-.badge-hex:nth-child(4n+2),
-.badge-hex:nth-child(4n+3) {
-  margin-top: calc(var(--badge-size) * 0.5);
+.badge-row {
+  display: flex;
+  margin-top: calc(var(--badge-size, min(33.6vw, 312px)) * -0.26);
+}
+
+.badge-row:first-child {
+  margin-top: 0;
+}
+
+.badge-row--offset {
+  padding-left: calc(var(--badge-size, min(33.6vw, 312px)) * 0.5);
 }
 
 .badge-hex {
-  --badge-size: min(28vw, 260px);
+  --badge-size: min(33.6vw, 312px);
   width: var(--badge-size);
   height: var(--badge-size);
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: var(--badge-locked-bg);
   position: relative;
-  transition: filter var(--transition-base);
-  justify-self: center;
-}
-
-.badge-hex--unlocked {
-  background: var(--badge-unlocked-bg);
-}
-
-/* Glowing current-level badge using a pseudo-element border overlay */
-.badge-hex--current::before {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: linear-gradient(135deg, #F19EDC, #A855F7);
-  z-index: 0;
-}
-
-.badge-hex--current .badge-hex__inner {
-  background: #1a1a2e;
-}
-
-.badge-hex__inner {
-  position: absolute;
-  inset: 3px;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: transparent;
+  flex-shrink: 0;
+  margin: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.badge-hex__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.badge-hex__shape {
+  fill: var(--badge-locked-bg);
+}
+
+.badge-hex--unlocked .badge-hex__shape {
+  fill: #334155;
+}
+
+/* Glowing border on current-level badge */
+.badge-hex--current .badge-hex__svg {
+  filter: drop-shadow(0 0 6px #F19EDC) drop-shadow(0 0 3px #A855F7);
+}
+
+.badge-hex--current .badge-hex__shape {
+  fill: #1a1a2e;
+  stroke: #F19EDC;
+  stroke-width: 2;
+}
+
+.badge-hex__inner {
+  position: relative;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .badge-hex__label {
@@ -88,8 +100,10 @@
   text-align: center;
   padding: 0 var(--space-3);
   line-height: 1.4;
-  z-index: 2;
-  position: relative;
+}
+
+.badge-hex--unlocked .badge-hex__label {
+  color: var(--text-secondary);
 }
 
 .badge-hex--current .badge-hex__label {

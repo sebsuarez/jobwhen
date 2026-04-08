@@ -14,11 +14,21 @@ export default function Collection() {
     const level = i + 1
     return {
       level,
-      label: `Level ${level} Badge`,
       unlocked: level < currentLevel,
       current: level === currentLevel,
     }
   })
+
+  // chunk badges into alternating rows of 4 and 3
+  const rows = []
+  let i = 0
+  let rowIndex = 0
+  while (i < badges.length) {
+    const size = rowIndex % 2 === 0 ? 4 : 3
+    rows.push(badges.slice(i, i + size))
+    i += size
+    rowIndex++
+  }
 
   return (
     <div className="collection-page">
@@ -31,8 +41,12 @@ export default function Collection() {
           </div>
 
           <div className="badge-grid">
-            {badges.map(({ level, unlocked, current }) => (
-              <BadgeHex key={level} level={level} unlocked={unlocked} current={current} />
+            {rows.map((row, rowIndex) => (
+              <div key={rowIndex} className={`badge-row${rowIndex % 2 === 1 ? ' badge-row--offset' : ''}`}>
+                {row.map(({ level, unlocked, current }) => (
+                  <BadgeHex key={level} level={level} unlocked={unlocked} current={current} />
+                ))}
+              </div>
             ))}
           </div>
         </div>
