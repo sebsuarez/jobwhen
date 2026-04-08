@@ -1,7 +1,14 @@
 // pages/AdminChallenges.jsx
 
+import { useState } from 'react'
 import AdminSidebar  from "../components/AdminSidebar";
 import '../styles/AdminChallenges.css'
+
+const PENDING_CHALLENGES = [
+    { id: 1, title: 'Cold Email Challenge', submittedBy: 'Dr Chen', submittedAt: '2h ago' },
+    { id: 2, title: 'Mock Interview: Behavioural', submittedBy: 'Prof. Liu', submittedAt: '5h ago' },
+    { id: 3, title: 'LinkedIn Profile Audit', submittedBy: 'Jane S.', submittedAt: '1d ago' },
+]
 
 export default function AdminChallenges() {
     return (
