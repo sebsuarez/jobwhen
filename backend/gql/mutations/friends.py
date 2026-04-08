@@ -11,7 +11,7 @@ from services.friendship_service import (
 
 
 def _require_auth(info):
-    # shared helper — pulls the session user from the cookie, raises if not logged in
+    # pulls the session user from the cookie, raises if not logged in
     request = info.context["request"]
     user = fetch_session_user(request.cookies.get(SESSION_COOKIE_NAME))
     if not user:
@@ -82,6 +82,7 @@ class BlockUser(graphene.Mutation):
     @staticmethod
     def mutate(root, info, target_user_id):
         user = _require_auth(info)
+        # this also deletes any existing friendship before inserting the block
         block_user(user_id=user["user_id"], target_user_id=target_user_id)
         return FriendshipResponse(ok=True, message="User blocked.")
 

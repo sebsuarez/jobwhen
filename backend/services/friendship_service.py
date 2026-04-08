@@ -38,7 +38,7 @@ def serialize_search_result(row):
 
 def get_friends(user_id):
     # returns all accepted friends for a user
-    # the CASE handles both directions — the friend could be the requester or addressee
+    # the CASE handles both directions because the friend could be the requester or addressee
     with engine.connect() as conn:
         rows = conn.execute(
             text(
@@ -102,7 +102,7 @@ def search_users(current_user_id, query):
                 WHERE (u.full_name ILIKE :pattern OR u.email ILIKE :pattern)
                   AND u.user_id != :uid
                   AND u.is_active = TRUE
-                LIMIT 20
+                LIMIT 20  -- safety cap so a broad query doesn't return thousands of rows
                 """
             ),
             {"pattern": pattern, "uid": current_user_id},
@@ -133,6 +133,7 @@ def send_friend_request(requester_id, addressee_id):
             if existing["status"] == "pending":
                 raise RuntimeError("Friend request already pending.")
             if existing["status"] == "blocked":
+                # intentionally vague as we don't want to reveal which side blocked the other
                 raise RuntimeError("Unable to send request.")
 
         conn.execute(
@@ -168,6 +169,7 @@ def respond_to_friend_request(friendship_id, addressee_id, accept):
 
 def block_user(user_id, target_user_id):
     # removes any existing friendship first, then inserts a blocked record
+    # requester_id is always set to the blocker so we know who initiated it
     with engine.begin() as conn:
         conn.execute(
             text(
