@@ -1,0 +1,16 @@
+/* AdminChallenges.css */
+
+.admin-challenges__main {
+    flex: 1;
+}
+
+.admin-challenges__title {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+}
+
+.admin-challenges__subtitle {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-1);
+}
