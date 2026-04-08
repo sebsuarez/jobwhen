@@ -1,0 +1,63 @@
+/* AdminChallenges.css */
+
+.admin-challenges__main {
+    flex: 1;
+}
+
+.admin-challenges__title {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+}
+
+.admin-challenges__subtitle {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-1);
+}
+
+.admin-challenges__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+}
+
+.admin-challenges__card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+}
+
+.admin-challenges__card-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.admin-challenges__card-title {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.admin-challenges__card-meta {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.admin-challenges__modal-meta {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+.admin-challenges__modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+}
