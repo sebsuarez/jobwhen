@@ -166,9 +166,9 @@ export default function Friends() {
           {searchLoading && <p className="friends-modal__status">Searching...</p>}
 
           {searchResults.length > 0 && (
-            <ul className="friends-modal__results">
+            <div className="friends-modal__results">
               {searchResults.map((user) => (
-                <li key={user.userId} className="friends-modal__result">
+                <div key={user.userId} className="friends-modal__result">
                   <div className="friends-modal__result-info">
                     <span className="friends-modal__result-name">{user.fullName}</span>
                     <span className="friends-modal__result-email">{user.email}</span>
@@ -179,9 +179,9 @@ export default function Friends() {
                     onClick={() => handleSendRequest(user)}>
                     {sentRequests[user.userId] ? 'Sent' : 'Add'}
                   </Button>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
 
           {!searchLoading && searchQuery.length >= 2 && searchResults.length === 0 && (
