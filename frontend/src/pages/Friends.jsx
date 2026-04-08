@@ -151,19 +151,17 @@ export default function Friends() {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal}
         title="Add Friend">
         <div className="friends-modal">
-          <label className="friends-modal__label">Friend Username or Email</label>
+          <label className="friends-modal__label">Search by name or email</label>
           <input
             className="friends-modal__input"
             type="text"
-            placeholder="Enter username or email"/>
+            placeholder="Enter name or email"
+          />
           <div className="friends-modal__actions">
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary">Send Request</Button>
+            <Button variant="ghost" onClick={handleCloseModal}>Cancel</Button>
           </div>
         </div>
       </Modal>
