@@ -4,13 +4,17 @@ import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
-import { fetchMyFriends, sendEncouragement } from '../api/friendQueries'
+import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest } from '../api/friendQueries'
 import '../styles/Friends.css'
 
 export default function Friends() {
   const [friends, setFriends] = useState([])
   const [loadingFriends, setLoadingFriends] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [sentRequests, setSentRequests] = useState({})
   const [encouragements, setEncouragements] = useState({})
   const [notification, setNotification] = useState('')
 
@@ -20,6 +24,40 @@ export default function Friends() {
       .catch((err) => console.error('Failed to load friends:', err))
       .finally(() => setLoadingFriends(false))
   }, [])
+
+  const handleSearch = async (e) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    setSearchResults([])
+
+    if (query.length < 2) return
+
+    setSearchLoading(true)
+    try {
+      const results = await searchUsers(query)
+      setSearchResults(results)
+    } catch (err) {
+      console.error('Search failed:', err)
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
+  const handleSendRequest = async (user) => {
+    try {
+      await sendFriendRequest(user.userId)
+      setSentRequests((prev) => ({ ...prev, [user.userId]: true }))
+      setNotification(`Friend request sent to ${user.fullName}`)
+    } catch (err) {
+      setNotification(err.message || `Failed to send request to ${user.fullName}`)
+    }
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSearchQuery('')
+    setSearchResults([])
+  }
 
   const handleEncourage = async (friend) => {
     try {
