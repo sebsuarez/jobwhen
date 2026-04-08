@@ -26,6 +26,11 @@
   color: var(--form-label);
 }
 
+.board__form p {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
 .board__form-actions {
   display: flex;
   justify-content: flex-end;
@@ -114,6 +119,23 @@
  
 .board__search-input:focus {
   border-color: transparent;
+}
+
+/* Drag and Drop */
+
+.board__column--drag-over {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-focus, #6c8ebf);
+  outline: 2px dashed var(--border-focus, #6c8ebf);
+  outline-offset: -2px;
+}
+
+.board__job {
+  cursor: grab;
+}
+
+.board__job--dragging {
+  cursor: grabbing;
 }
 
 /* Job Cards (overrides base Card styling) */
