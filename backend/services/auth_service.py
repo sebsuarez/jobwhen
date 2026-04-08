@@ -1,5 +1,9 @@
 import os
 import secrets
+import hashlib
+import hmac
+import re
+from base64 import b64encode
 from datetime import datetime, timedelta, timezone
 
 from google.auth.transport import requests as google_requests
@@ -14,6 +18,7 @@ PENDING_SIGNUP_COOKIE_NAME = "jobwhen_pending_signup"
 SESSION_TTL_DAYS = int(os.getenv("SESSION_TTL_DAYS", "7"))
 PENDING_SIGNUP_TTL_MINUTES = int(os.getenv("PENDING_SIGNUP_TTL_MINUTES", "15"))
 SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
+EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 
 def serialize_user(row):
@@ -33,10 +38,56 @@ def serialize_user(row):
         "headline": row.headline,
         "bio": row.bio,
         "location": row.location,
+        "avatar": row.avatar,
         "current_level": row.current_level,
         "current_xp": row.current_xp,
         "streak_days": row.streak_days,
     }
+
+
+def hash_password(password, salt=None, iterations=260000):
+    if not password:
+        raise RuntimeError("Password is required.")
+
+    resolved_salt = salt or secrets.token_bytes(16)
+    derived_key = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        resolved_salt,
+        iterations,
+    )
+    return (
+        f"pbkdf2_sha256${iterations}${resolved_salt.hex()}$"
+        f"{b64encode(derived_key).decode('utf-8')}"
+    )
+
+
+def is_valid_email(email):
+    return bool(email and EMAIL_PATTERN.match(email))
+
+
+def verify_password(password, password_hash):
+    if not password_hash:
+        return False
+
+    try:
+        algorithm, iteration_count, salt_hex, encoded_hash = password_hash.split("$", 3)
+    except ValueError:
+        return False
+
+    if algorithm != "pbkdf2_sha256":
+        return False
+
+    derived_key = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        bytes.fromhex(salt_hex),
+        int(iteration_count),
+    )
+    return hmac.compare_digest(
+        b64encode(derived_key).decode("utf-8"),
+        encoded_hash,
+    )
 
 
 def fetch_user_by_id(connection, user_id):
@@ -52,6 +103,7 @@ def fetch_user_by_id(connection, user_id):
                 u.headline,
                 u.bio,
                 u.location,
+                u.avatar,
                 u.current_level,
                 u.current_xp,
                 u.streak_days,
@@ -66,6 +118,40 @@ def fetch_user_by_id(connection, user_id):
     ).mappings().first()
 
     return serialize_user(row)
+
+
+def find_local_auth_user(connection, email):
+    return connection.execute(
+        text(
+            """
+            SELECT
+                u.user_id,
+                u.password_hash
+            FROM users u
+            WHERE LOWER(u.email) = LOWER(:email)
+            LIMIT 1
+            """
+        ),
+        {"email": email},
+    ).mappings().first()
+
+
+def find_user_by_email_or_username(connection, email, username):
+    return connection.execute(
+        text(
+            """
+            SELECT
+                user_id,
+                email,
+                username
+            FROM users
+            WHERE LOWER(email) = LOWER(:email)
+               OR (:username IS NOT NULL AND LOWER(username) = LOWER(:username))
+            LIMIT 1
+            """
+        ),
+        {"email": email, "username": username},
+    ).mappings().first()
 
 
 def find_user_by_google_payload(connection, payload):
@@ -94,23 +180,17 @@ def find_user_by_google_payload(connection, payload):
 
 
 def update_existing_google_user(connection, user_id, payload):
-    email = payload.get("email")
     google_sub = payload.get("sub")
-    full_name = payload.get("name") or email.split("@", 1)[0]
 
     connection.execute(
         text(
             """
             UPDATE users
-            SET email = :email,
-                full_name = :full_name,
-                google_sub = :google_sub
+            SET google_sub = :google_sub
             WHERE user_id = :user_id
             """
         ),
         {
-            "email": email,
-            "full_name": full_name,
             "google_sub": google_sub,
             "user_id": user_id,
         },
@@ -193,11 +273,23 @@ def fetch_pending_signup(connection, signup_token):
     }
 
 
-def create_user_from_pending_signup(connection, signup_token, role_name=None, full_name=None):
+def create_user_from_pending_signup(
+    connection,
+    signup_token,
+    role_name=None,
+    full_name=None,
+    password=None,
+    mentor_job_title=None,
+    mentor_company=None,
+    mentor_reason=None,
+):
     pending_signup = fetch_pending_signup(connection, signup_token)
 
     if not pending_signup:
         raise RuntimeError("Pending signup session is missing or expired.")
+
+    if not password:
+        raise RuntimeError("Password is required to complete signup.")
 
     resolved_role_name = role_name or "job_seeker"
     role_id = connection.execute(
@@ -208,16 +300,19 @@ def create_user_from_pending_signup(connection, signup_token, role_name=None, fu
     if role_id is None:
         raise RuntimeError(f"Role `{resolved_role_name}` does not exist.")
 
+    password_hash = hash_password(password)
+
     user_id = connection.execute(
         text(
             """
-            INSERT INTO users (role_id, full_name, email, google_sub)
-            VALUES (:role_id, :full_name, :email, :google_sub)
+            INSERT INTO users (role_id, password_hash, full_name, email, google_sub)
+            VALUES (:role_id, :password_hash, :full_name, :email, :google_sub)
             RETURNING user_id
             """
         ),
         {
             "role_id": role_id,
+            "password_hash": password_hash,
             "full_name": full_name or pending_signup["full_name"],
             "email": pending_signup["email"],
             "google_sub": pending_signup["google_sub"],
@@ -227,6 +322,23 @@ def create_user_from_pending_signup(connection, signup_token, role_name=None, fu
         text("INSERT INTO user_settings (user_id) VALUES (:user_id)"),
         {"user_id": user_id},
     )
+
+    if resolved_role_name == "mentor":
+        connection.execute(
+            text(
+                """
+                INSERT INTO mentor_profiles (user_id, company, job_title, expertise, is_approved)
+                VALUES (:user_id, :company, :job_title, :expertise, FALSE)
+                """
+            ),
+            {
+                "user_id": user_id,
+                "company": mentor_company.strip() if mentor_company else None,
+                "job_title": mentor_job_title.strip() if mentor_job_title else None,
+                "expertise": mentor_reason.strip() if mentor_reason else None,
+            },
+        )
+
     connection.execute(
         text("DELETE FROM pending_google_signups WHERE signup_token = :signup_token"),
         {"signup_token": signup_token},
@@ -274,6 +386,7 @@ def fetch_session_user(session_id):
                     u.headline,
                     u.bio,
                     u.location,
+                    u.avatar,
                     u.current_level,
                     u.current_xp,
                     u.streak_days,
@@ -377,14 +490,163 @@ def get_pending_signup_from_cookie(cookie_value):
     }
 
 
-def complete_signup_from_cookie(cookie_value, role_name=None, full_name=None):
+def complete_signup_from_cookie(
+    cookie_value,
+    role_name=None,
+    full_name=None,
+    password=None,
+    mentor_job_title=None,
+    mentor_company=None,
+    mentor_reason=None,
+):
     with engine.begin() as connection:
         user = create_user_from_pending_signup(
             connection,
             cookie_value,
             role_name=role_name,
             full_name=full_name,
+            password=password,
+            mentor_job_title=mentor_job_title,
+            mentor_company=mentor_company,
+            mentor_reason=mentor_reason,
         )
+        session_id, expires_at = create_session(connection, user["user_id"])
+
+        return {
+            "user": user,
+            "session_id": session_id,
+            "session_expires_at": expires_at.isoformat(),
+        }
+
+
+def build_local_login_result(email, password):
+    if not email or not password:
+        raise RuntimeError("Email and password are required.")
+
+    with engine.begin() as connection:
+        user_record = find_local_auth_user(connection, email.strip())
+
+        if not user_record or not verify_password(password, user_record["password_hash"]):
+            raise RuntimeError("Invalid email or password.")
+
+        user = fetch_user_by_id(connection, user_record["user_id"])
+        session_id, expires_at = create_session(connection, user["user_id"])
+
+    return {
+        "user": user,
+        "session_id": session_id,
+        "session_expires_at": expires_at.isoformat(),
+    }
+
+
+def build_local_signup_result(
+    role_name,
+    first_name,
+    last_name,
+    username,
+    email,
+    password,
+    job_seeker_status=None,
+    school_name=None,
+    mentor_job_title=None,
+    mentor_company=None,
+    mentor_reason=None,
+):
+    if not first_name or not last_name:
+        raise RuntimeError("First name and last name are required.")
+    if not username:
+        raise RuntimeError("Username is required.")
+    if not email or not password:
+        raise RuntimeError("Email and password are required.")
+    if not is_valid_email(email.strip()):
+        raise RuntimeError("Please enter a valid email address.")
+    if len(password) < 8:
+        raise RuntimeError("Password must be at least 8 characters long.")
+
+    resolved_role_name = role_name or "job_seeker"
+    if resolved_role_name not in {"job_seeker", "mentor"}:
+        raise RuntimeError("Invalid signup role.")
+
+    full_name = f"{first_name.strip()} {last_name.strip()}".strip()
+    normalized_username = username.strip()
+    normalized_email = email.strip()
+
+    with engine.begin() as connection:
+        existing_user = find_user_by_email_or_username(
+            connection,
+            normalized_email,
+            normalized_username,
+        )
+        if existing_user:
+            if existing_user["email"].lower() == normalized_email.lower():
+                raise RuntimeError("An account with that email already exists.")
+            raise RuntimeError("That username is already taken.")
+
+        role_id = connection.execute(
+            text("SELECT role_id FROM roles WHERE role_name = :role_name"),
+            {"role_name": resolved_role_name},
+        ).scalar_one_or_none()
+
+        if role_id is None:
+            raise RuntimeError(f"Role `{resolved_role_name}` does not exist.")
+
+        user_id = connection.execute(
+            text(
+                """
+                INSERT INTO users (
+                    role_id,
+                    password_hash,
+                    username,
+                    full_name,
+                    email,
+                    job_search_status,
+                    school_name
+                )
+                VALUES (
+                    :role_id,
+                    :password_hash,
+                    :username,
+                    :full_name,
+                    :email,
+                    :job_search_status,
+                    :school_name
+                )
+                RETURNING user_id
+                """
+            ),
+            {
+                "role_id": role_id,
+                "password_hash": hash_password(password),
+                "username": normalized_username,
+                "full_name": full_name,
+                "email": normalized_email,
+                "job_search_status": job_seeker_status.strip() if job_seeker_status else None,
+                "school_name": school_name.strip() if school_name else None,
+            },
+        ).scalar_one()
+
+        connection.execute(
+            text("INSERT INTO user_settings (user_id) VALUES (:user_id)"),
+            {"user_id": user_id},
+        )
+
+        if resolved_role_name == "mentor":
+            connection.execute(
+                text(
+                    """
+                    INSERT INTO mentor_profiles (user_id, company, job_title, expertise, is_approved)
+                    VALUES (:user_id, :company, :job_title, :expertise, FALSE)
+                    """
+                ),
+                {
+                    "user_id": user_id,
+                    "company": mentor_company.strip() if mentor_company else None,
+                    "job_title": mentor_job_title.strip() if mentor_job_title else None,
+                    "expertise": mentor_reason.strip() if mentor_reason else None,
+                },
+            )
+
+        user = fetch_user_by_id(connection, user_id)
         session_id, expires_at = create_session(connection, user["user_id"])
 
     return {

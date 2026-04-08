@@ -1,9 +1,12 @@
 // pages/Profile.jsx
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
+import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
+import { updateProfile } from '../api/profileQueries'
 import '../styles/Profile.css'
 
 const stats = [
@@ -15,13 +18,49 @@ const stats = [
   { label: 'Friends Encouraged', value: '13', className: 'profile-stat__value--encouraged' },
 ]
 
+const EMOJIS = [
+  // Faces
+  '😀','😂','😍','😎','🥳','😴','🤔','😤','🥰','😭','🤩','🥺',
+  // Animals
+  '🐶','🐱','🐻','🦊','🐼','🐨','🐯','🦁','🦝','🐸','🦄','🐺',
+  // Nature & objects
+  '🌟','🔥','💎','🎯','🚀','⚡','🌈','🍀','👾','🎮','💻','🎵',
+  // Food & fun
+  '🍕','🍜','🧃','🍉','🎂','🧁','🍩','☕','🏆','🎲','🎸','🛸',
+]
+
 export default function Profile() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user, refreshUser, logout } = useAuth()
+
+  const [editOpen, setEditOpen] = useState(false)
+  const [draftName, setDraftName] = useState('')
+  const [draftEmoji, setDraftEmoji] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const handleLogout = async () => {
     await logout()
     navigate('/', { replace: true })
+  }
+
+  const openEdit = () => {
+    setDraftName(user?.fullName ?? '')
+    setDraftEmoji(user?.avatar ?? '')
+    setEditOpen(true)
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await updateProfile({
+        fullName: draftName.trim() || undefined,
+        avatar: draftEmoji || undefined,
+      })
+      await refreshUser()
+      setEditOpen(false)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -32,11 +71,13 @@ export default function Profile() {
         <div className="profile-layout">
           <div className="profile-layout__left">
             <Card className="profile-card">
-              <button className="profile-card__edit" type="button" aria-label="Edit profile">
+              <button className="profile-card__edit" type="button" aria-label="Edit profile" onClick={openEdit}>
                 ✎
               </button>
 
-              <div className="profile-card__avatar" />
+              <div className="profile-card__avatar">
+                {user?.avatar && <span className="profile-card__avatar-emoji">{user.avatar}</span>}
+              </div>
 
               <h1 className="profile-card__name">{user?.fullName ?? 'User'}</h1>
 
@@ -90,6 +131,49 @@ export default function Profile() {
           </div>
         </div>
       </main>
+
+      <Modal isOpen={editOpen} onClose={() => setEditOpen(false)} title="Edit Profile">
+        <div className="profile-edit">
+          <div className="profile-edit__preview">
+            <div className="profile-edit__avatar-preview">
+              {draftEmoji || <span className="profile-edit__avatar-placeholder">?</span>}
+            </div>
+            <p className="profile-edit__preview-name">{draftName || 'Your Name'}</p>
+          </div>
+
+          <label className="profile-edit__label">Display Name</label>
+          <input
+            className="profile-edit__name-input"
+            type="text"
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            placeholder="Enter display name"
+            maxLength={40}
+          />
+
+          <label className="profile-edit__label">Choose an Emoji Avatar</label>
+          <div className="profile-edit__emoji-grid">
+            {EMOJIS.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                className={`profile-edit__emoji-btn${draftEmoji === emoji ? ' profile-edit__emoji-btn--selected' : ''}`}
+                onClick={() => setDraftEmoji(emoji)}
+                aria-label={emoji}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+
+          <div className="profile-edit__actions">
+            <Button type="button" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

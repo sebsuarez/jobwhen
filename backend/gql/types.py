@@ -16,6 +16,7 @@ class UserType(graphene.ObjectType):
     headline = graphene.String()
     bio = graphene.String()
     location = graphene.String()
+    avatar = graphene.String()
     current_level = graphene.Int()
     current_xp = graphene.Int()
     streak_days = graphene.Int()
