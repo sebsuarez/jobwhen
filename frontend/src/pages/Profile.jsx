@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
+import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
 import { updateProfile } from '../api/profileQueries'
 import '../styles/Profile.css'
@@ -130,6 +131,49 @@ export default function Profile() {
           </div>
         </div>
       </main>
+
+      <Modal isOpen={editOpen} onClose={() => setEditOpen(false)} title="Edit Profile">
+        <div className="profile-edit">
+          <div className="profile-edit__preview">
+            <div className="profile-edit__avatar-preview">
+              {draftEmoji || <span className="profile-edit__avatar-placeholder">?</span>}
+            </div>
+            <p className="profile-edit__preview-name">{draftName || 'Your Name'}</p>
+          </div>
+
+          <label className="profile-edit__label">Display Name</label>
+          <input
+            className="profile-edit__name-input"
+            type="text"
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            placeholder="Enter display name"
+            maxLength={40}
+          />
+
+          <label className="profile-edit__label">Choose an Emoji Avatar</label>
+          <div className="profile-edit__emoji-grid">
+            {EMOJIS.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                className={`profile-edit__emoji-btn${draftEmoji === emoji ? ' profile-edit__emoji-btn--selected' : ''}`}
+                onClick={() => setDraftEmoji(emoji)}
+                aria-label={emoji}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+
+          <div className="profile-edit__actions">
+            <Button type="button" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
