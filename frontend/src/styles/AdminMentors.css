@@ -14,3 +14,52 @@
     color: var(--text-secondary);
     margin-top: var(--space-1);
 }
+
+.admin-mentors__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+}
+
+.admin-mentors__card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+}
+
+.admin-mentors__card-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.admin-mentors__name {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.admin-mentors__meta {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.admin-mentors__review-btn {
+    padding: var(--space-2) var(--space-6);
+    border-radius: var(--radius-full);
+    background: var(--btn-primary-bg);
+    color: #fff;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.admin-mentors__review-btn:hover {
+    background: var(--btn-primary-hover);
+}
