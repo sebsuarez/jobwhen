@@ -1,9 +1,11 @@
 // pages/Profile.jsx
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import { useAuth } from '../hooks/useAuth'
+import { updateProfile } from '../api/profileQueries'
 import '../styles/Profile.css'
 
 const stats = [
@@ -28,11 +30,36 @@ const EMOJIS = [
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user, refreshUser, logout } = useAuth()
+
+  const [editOpen, setEditOpen] = useState(false)
+  const [draftName, setDraftName] = useState('')
+  const [draftEmoji, setDraftEmoji] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const handleLogout = async () => {
     await logout()
     navigate('/', { replace: true })
+  }
+
+  const openEdit = () => {
+    setDraftName(user?.fullName ?? '')
+    setDraftEmoji(user?.avatar ?? '')
+    setEditOpen(true)
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await updateProfile({
+        fullName: draftName.trim() || undefined,
+        avatar: draftEmoji || undefined,
+      })
+      await refreshUser()
+      setEditOpen(false)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
