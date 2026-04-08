@@ -19,6 +19,17 @@ export default function AdminChallenges() {
                     <h1 className="admin-challenges__title">Challenge Review</h1>
                     <p className="admin-challenges__subtitle">Challenges pending moderation approval</p>
                 </div>
+                
+                <div className="admin-challenges__list">
+                    {PENDING_CHALLENGES.map((challenge) => (
+                        <div key={challenge.id} className="admin-challenges__card">
+                            <div className="admin-challenges__card-info">
+                                <span className="admin-challenges__card-title">{challenge.title}</span>
+                                <span className="admin-challenges__card-meta">By {challenge.submittedBy} · {challenge.submittedAt}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </main>
         </div>
     )
