@@ -14,8 +14,8 @@ const initialActiveChallenges = [
     creator: 'Dr Chen',
     due: 'Mar 2nd',
     description: 'Submit 5 applications this week',
-    progressText: '3/5',
-    progressPercent: 60,
+    current: 3,
+    total: 5,
   },
   {
     id: 2,
@@ -23,8 +23,8 @@ const initialActiveChallenges = [
     creator: 'Lisa Wong',
     due: 'Mar 5th',
     description: 'Complete 3 mock interview questions',
-    progressText: '1/3',
-    progressPercent: 33,
+    current: 1,
+    total: 3,
   },
   {
     id: 3,
@@ -32,8 +32,8 @@ const initialActiveChallenges = [
     creator: 'James Park',
     due: 'Mar 7th',
     description: 'Reach out to 2 new connections',
-    progressText: '0/2',
-    progressPercent: 0,
+    current: 0,
+    total: 2,
   },
 ]
 
@@ -47,8 +47,8 @@ const initialNewChallenges = [
     description: 'Encourage/Motivate 5 of your friends',
     creator: 'Lisa Wong',
     due: 'Mar 10th',
-    progressText: '0/5',
-    progressPercent: 0,
+    current: 0,
+    total: 5,
   },
   {
     id: 5,
@@ -59,20 +59,20 @@ const initialNewChallenges = [
     description: 'Log your mood 3 times',
     creator: 'James Park',
     due: 'Mar 12th',
-    progressText: '0/3',
-    progressPercent: 0,
+    current: 0,
+    total: 3,
   },
   {
     id: 6,
-    name: 'Maya Patel',
-    role: 'Product Manager @ Google',
-    days: '4 days',
-    title: 'Resume Refresh',
-    description: 'Update one resume and one cover letter',
-    creator: 'Maya Patel',
-    due: 'Mar 11th',
-    progressText: '0/2',
-    progressPercent: 0,
+    name: 'James Park',
+    role: 'Recruiter @ Shopify',
+    days: '5 days',
+    title: 'How are you?',
+    description: 'Log your mood 3 times',
+    creator: 'James Park',
+    due: 'Mar 12th',
+    current: 0,
+    total: 3,
   },
 ]
 
@@ -90,20 +90,23 @@ export default function Challenges() {
     setNewChallenges((prev) => [...prev, challenge])
   }
 
-  const updateProgress = (challengeId) => {
+  const increaseProgress = (id) => {
     setActiveChallenges((prev) =>
-      prev.map((challenge) => {
-        if (challenge.id !== challengeId) return challenge
+      prev.map((c) =>
+        c.id === id && c.current < c.total
+          ? { ...c, current: c.current + 1 }
+          : c
+      )
+    )
+  }
 
-        const [current, total] = challenge.progressText.split('/').map(Number)
-        const newCurrent = Math.min(current + 1, total)
-
-        return {
-          ...challenge,
-          progressText: `${newCurrent}/${total}`,
-          progressPercent: (newCurrent / total) * 100,
-        }
-      })
+  const decreaseProgress = (id) => {
+    setActiveChallenges((prev) =>
+      prev.map((c) =>
+        c.id === id && c.current > 0
+          ? { ...c, current: c.current - 1 }
+          : c
+      )
     )
   }
 
@@ -134,36 +137,40 @@ export default function Challenges() {
                   <Button
                     variant="danger"
                     className="challenge-card__remove"
-                    onClick={() => handleRemoveChallenge(challenge)}
-                  >
-                    Remove
-                  </Button>
+                    onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
                 </div>
-
                 <p className="challenge-card__description">
                   {challenge.description}
                 </p>
 
                 <div className="challenge-card__progress-row">
+                  <div className="challenge-card__controls">
+                    <button
+                      type="button"
+                      className="challenge-card__control-btn"
+                      onClick={() => decreaseProgress(challenge.id)}
+                      disabled={challenge.current === 0}>-</button>
+                   
+                    <button
+                      type="button"
+                      className="challenge-card__control-btn"
+                      onClick={() => increaseProgress(challenge.id)}
+                      disabled={challenge.current === challenge.total}>+</button>
+                  </div>
+
                   <span className="challenge-card__progress-text">
-                    {challenge.progressText}
+                    {challenge.current}/{challenge.total}
                   </span>
                 </div>
 
                 <div className="challenge-card__progress">
                   <div
                     className="challenge-card__progress-fill"
-                    style={{ width: `${challenge.progressPercent}%` }}
+                    style={{
+                      width: `${(challenge.current / challenge.total) * 100}%`,
+                    }}
                   />
                 </div>
-
-                <Button
-                  variant="primary"
-                  className="challenge-card__progress-btn"
-                  onClick={() => updateProgress(challenge.id)}
-                >
-                  + Progress
-                </Button>
               </Card>
             ))}
           </div>
@@ -177,24 +184,29 @@ export default function Challenges() {
                   <div className="new-challenge-card__top">
                     <div className="new-challenge-card__person">
                       <div>
-                        <h3 className="new-challenge-card__name">{challenge.name}</h3>
-                        <p className="new-challenge-card__role">{challenge.role}</p>
+                        <h3 className="new-challenge-card__name">
+                          {challenge.name}
+                        </h3>
+                        <p className="new-challenge-card__role">
+                          {challenge.role}
+                        </p>
                       </div>
                     </div>
-
-                    <span className="new-challenge-card__days">{challenge.days}</span>
+                    <span className="new-challenge-card__days">
+                      {challenge.days}
+                    </span>
                   </div>
-
-                  <h4 className="new-challenge-card__title">{challenge.title}</h4>
-                  <p className="new-challenge-card__desc">{challenge.description}</p>
-
+                  <h4 className="new-challenge-card__title">
+                    {challenge.title}
+                  </h4>
+                  <p className="new-challenge-card__desc">
+                    {challenge.description}
+                  </p>
+                  
                   <Button
                     variant="primary"
                     className="new-challenge-card__btn"
-                    onClick={() => handleAddChallenge(challenge)}
-                  >
-                    ADD
-                  </Button>
+                    onClick={() => handleAddChallenge(challenge)}>ADD</Button>
                 </Card>
               ))}
             </div>

@@ -70,13 +70,30 @@
 
 .challenge-card__progress-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: var(--space-2);
 }
 
 .challenge-card__progress-text {
   font-size: var(--text-sm);
   color: var(--text-primary);
+}
+
+.challenge-card__controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.challenge-card__control-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+  line-height: 1;
 }
 
 .challenge-card__progress {
@@ -171,4 +188,8 @@
   width: 140px;
   border-radius: var(--radius-full);
   align-self: center;
+}
+.challenge-card__control-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
