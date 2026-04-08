@@ -70,11 +70,13 @@ export default function Profile() {
         <div className="profile-layout">
           <div className="profile-layout__left">
             <Card className="profile-card">
-              <button className="profile-card__edit" type="button" aria-label="Edit profile">
+              <button className="profile-card__edit" type="button" aria-label="Edit profile" onClick={openEdit}>
                 ✎
               </button>
 
-              <div className="profile-card__avatar" />
+              <div className="profile-card__avatar">
+                {user?.avatar && <span className="profile-card__avatar-emoji">{user.avatar}</span>}
+              </div>
 
               <h1 className="profile-card__name">{user?.fullName ?? 'User'}</h1>
 
