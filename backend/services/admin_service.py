@@ -194,7 +194,7 @@ def approve_mentor(admin_id, user_id):
 
 def reject_mentor(admin_id, user_id):
     # removes the pending mentor profile
-    #the user keeps their account but loses mentor status
+    # the user keeps their account but loses mentor status
     with engine.begin() as conn:
         row = conn.execute(
             text(
