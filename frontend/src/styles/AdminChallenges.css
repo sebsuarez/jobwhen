@@ -48,3 +48,16 @@
     font-size: var(--text-sm);
     color: var(--text-secondary);
 }
+
+.admin-challenges__modal-meta {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+.admin-challenges__modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+}
