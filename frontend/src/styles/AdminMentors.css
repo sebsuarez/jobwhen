@@ -63,3 +63,61 @@
 .admin-mentors__review-btn:hover {
     background: var(--btn-primary-hover);
 }
+
+.admin-mentors__modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-bottom: var(--space-4);
+}
+
+.admin-mentors__modal-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.admin-mentors__modal-value {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.admin-mentors__modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+}
+
+.admin-mentors__btn {
+    padding: var(--space-2) var(--space-6);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.admin-mentors__btn--reject {
+    background: transparent;
+    border: 1px solid var(--border-default);
+    color: var(--text-secondary);
+}
+
+.admin-mentors__btn--reject:hover {
+    border-color: var(--btn-destructive-bg);
+    color: var(--btn-destructive-bg);
+}
+
+.admin-mentors__btn--approve {
+    background: var(--btn-primary-bg);
+    color: #fff;
+    border: 1px solid transparent;
+}
+
+.admin-mentors__btn--approve:hover {
+    background: var(--btn-primary-hover);
+}

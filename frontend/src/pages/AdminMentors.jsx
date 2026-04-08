@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
+import Modal from "../components/Modal"
 import '../styles/AdminMentors.css'
 
 const PENDING_MENTORS = [
@@ -36,6 +37,29 @@ export default function AdminMentors() {
                     ))}
                 </div>
             </main>
+
+            <Modal
+                isOpen={!!selected}
+                onClose={() => setSelected(null)}
+                title={selected?.name}
+            >
+                <div className="admin-mentors__modal-field">
+                    <span className="admin-mentors__modal-label">Job Title</span>
+                    <p className="admin-mentors__modal-value">{selected?.jobTitle}</p>
+                </div>
+                <div className="admin-mentors__modal-field">
+                    <span className="admin-mentors__modal-label">Company</span>
+                    <p className="admin-mentors__modal-value">{selected?.company}</p>
+                </div>
+                <div className="admin-mentors__modal-field">
+                    <span className="admin-mentors__modal-label">Why they want to mentor</span>
+                    <p className="admin-mentors__modal-value">{selected?.notes}</p>
+                </div>
+                <div className="admin-mentors__modal-actions">
+                    <button className="admin-mentors__btn admin-mentors__btn--reject" onClick={() => setSelected(null)}>Reject</button>
+                    <button className="admin-mentors__btn admin-mentors__btn--approve" onClick={() => setSelected(null)}>Approve</button>
+                </div>
+            </Modal>
         </div>
     )
 }
