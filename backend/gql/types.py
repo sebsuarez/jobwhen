@@ -139,3 +139,39 @@ class FriendshipResponse(graphene.ObjectType):
 class EncouragementResponse(graphene.ObjectType):
     ok = graphene.Boolean()
     message = graphene.String()
+
+
+# CHALLENGE TYPES
+
+class ChallengeType(graphene.ObjectType):
+    challenge_id = graphene.Int()
+    mentor_user_id = graphene.Int()
+    mentor_name = graphene.String()
+    title = graphene.String()
+    description = graphene.String()
+    xp_reward = graphene.Int()
+    challenge_status = graphene.String()
+    participant_limit = graphene.Int()
+    start_date = graphene.String()
+    due_date = graphene.String()
+    created_at = graphene.String()
+
+
+class ChallengeParticipantType(graphene.ObjectType):
+    challenge_participant_id = graphene.Int()
+    challenge_id = graphene.Int()
+    user_id = graphene.Int()
+    title = graphene.String()
+    description = graphene.String()
+    mentor_name = graphene.String()
+    due_date = graphene.String()
+    xp_reward = graphene.Int()
+    progress_count = graphene.Int()
+    target_count = graphene.Int()
+    participation_status = graphene.String()
+    joined_at = graphene.String()
+
+
+class ChallengeResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
