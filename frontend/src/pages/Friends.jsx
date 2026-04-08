@@ -159,7 +159,35 @@ export default function Friends() {
             className="friends-modal__input"
             type="text"
             placeholder="Enter name or email"
+            value={searchQuery}
+            onChange={handleSearch}
           />
+
+          {searchLoading && <p className="friends-modal__status">Searching...</p>}
+
+          {searchResults.length > 0 && (
+            <ul className="friends-modal__results">
+              {searchResults.map((user) => (
+                <li key={user.userId} className="friends-modal__result">
+                  <div className="friends-modal__result-info">
+                    <span className="friends-modal__result-name">{user.fullName}</span>
+                    <span className="friends-modal__result-email">{user.email}</span>
+                  </div>
+                  <Button
+                    variant="primary"
+                    disabled={sentRequests[user.userId]}
+                    onClick={() => handleSendRequest(user)}>
+                    {sentRequests[user.userId] ? 'Sent' : 'Add'}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {!searchLoading && searchQuery.length >= 2 && searchResults.length === 0 && (
+            <p className="friends-modal__status">No users found.</p>
+          )}
+
           <div className="friends-modal__actions">
             <Button variant="ghost" onClick={handleCloseModal}>Cancel</Button>
           </div>
