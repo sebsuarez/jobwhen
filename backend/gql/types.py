@@ -102,3 +102,40 @@ class JobApplicationResponse(graphene.ObjectType):
 class DeleteJobApplicationResponse(graphene.ObjectType):
     ok = graphene.Boolean()
     message = graphene.String()
+
+
+# FRIENDSHIP & ENCOURAGEMENT TYPES
+
+class FriendType(graphene.ObjectType):
+    friendship_id = graphene.Int()
+    user_id = graphene.Int()
+    full_name = graphene.String()
+    headline = graphene.String()
+    current_level = graphene.Int()
+    current_xp = graphene.Int()
+
+
+class PendingRequestType(graphene.ObjectType):
+    friendship_id = graphene.Int()
+    user_id = graphene.Int()
+    full_name = graphene.String()
+    headline = graphene.String()
+    current_level = graphene.Int()
+
+
+class UserSearchResultType(graphene.ObjectType):
+    user_id = graphene.Int()
+    full_name = graphene.String()
+    email = graphene.String()
+    headline = graphene.String()
+    current_level = graphene.Int()
+
+
+class FriendshipResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
+
+
+class EncouragementResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
