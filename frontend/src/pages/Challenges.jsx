@@ -81,6 +81,10 @@ export default function Challenges() {
   const [newChallenges, setNewChallenges] = useState(initialNewChallenges)
 
   const handleAddChallenge = (challenge) => {
+    if (activeChallenges.length >= 5) {
+      alert('You can only have 5 active challenges at a time.')
+      return
+    }
     setActiveChallenges((prev) => [...prev, challenge])
     setNewChallenges((prev) => prev.filter((item) => item.id !== challenge.id))
   }
@@ -202,7 +206,7 @@ export default function Challenges() {
                   <p className="new-challenge-card__desc">
                     {challenge.description}
                   </p>
-                  
+
                   <Button
                     variant="primary"
                     className="new-challenge-card__btn"
