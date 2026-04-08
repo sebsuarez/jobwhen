@@ -1,1 +1,16 @@
 /* AdminMentors.css */
+
+.admin-mentors__main {
+    flex: 1;
+}
+
+.admin-mentors__title {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+}
+
+.admin-mentors__subtitle {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-1);
+}
