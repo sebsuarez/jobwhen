@@ -6,6 +6,7 @@ import '../styles/AdminSidebar.css'
 const navItems = [
   { path: '/admin/challenges', label: 'Review Challenges', icon: '📋' },
   { path: '/admin/users', label: 'Review Users', icon: '👥' },
+  { path: '/admin/mentors', label: 'Review Mentors', icon: '🎓' },
 ]
 
 export default function AdminSidebar() {

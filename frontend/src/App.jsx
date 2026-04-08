@@ -14,6 +14,7 @@ import Settings from './pages/Settings'
 import { useAuth } from './hooks/useAuth'
 import AdminChallenges from './pages/AdminChallenges'
 import AdminUsers from './pages/AdminUsers'
+import AdminMentors from './pages/AdminMentors'
 
 function AuthRedirect({ children }) {
   const { user, isLoading } = useAuth()
@@ -84,6 +85,7 @@ function App() {
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/admin/challenges" element={<AdminRoute><AdminChallenges /></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+      <Route path="/admin/mentors" element={<AdminRoute><AdminMentors /></AdminRoute>} />
     </Routes>
   )
 }
