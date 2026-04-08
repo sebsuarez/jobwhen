@@ -46,6 +46,7 @@ CREATE TABLE users (
     headline VARCHAR(150),
     bio TEXT,
     location VARCHAR(120),
+    avatar VARCHAR(10),
     current_level INT NOT NULL DEFAULT 1,
     current_xp INT NOT NULL DEFAULT 0,
     streak_days INT NOT NULL DEFAULT 0,
