@@ -175,3 +175,31 @@ class ChallengeParticipantType(graphene.ObjectType):
 class ChallengeResponse(graphene.ObjectType):
     ok = graphene.Boolean()
     message = graphene.String()
+
+
+# ADMIN TYPES
+
+class AdminUserType(graphene.ObjectType):
+    user_id = graphene.Int()
+    full_name = graphene.String()
+    email = graphene.String()
+    role_name = graphene.String()
+    is_active = graphene.Boolean()
+    current_level = graphene.Int()
+    headline = graphene.String()
+    created_at = graphene.String()
+
+
+class PendingMentorType(graphene.ObjectType):
+    mentor_profile_id = graphene.Int()
+    user_id = graphene.Int()
+    full_name = graphene.String()
+    headline = graphene.String()
+    company = graphene.String()
+    job_title = graphene.String()
+    expertise = graphene.String()
+
+
+class AdminResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
