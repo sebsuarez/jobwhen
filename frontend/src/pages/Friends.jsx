@@ -4,12 +4,13 @@ import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
-import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest } from '../api/friendQueries'
+import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest,  fetchPendingRequests, respondToFriendRequest } from '../api/friendQueries'
 import '../styles/Friends.css'
 
 export default function Friends() {
   const [friends, setFriends] = useState([])
   const [loadingFriends, setLoadingFriends] = useState(true)
+  const [pendingRequests, setPendingRequests] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
@@ -23,7 +24,26 @@ export default function Friends() {
       .then(setFriends)
       .catch((err) => console.error('Failed to load friends:', err))
       .finally(() => setLoadingFriends(false))
+
+    fetchPendingRequests()
+      .then(setPendingRequests)
+      .catch((err) => console.error('Failed to load pending requests:', err))
   }, [])
+
+  const handleRespondToRequest = async (request, accept) => {
+    try {
+      await respondToFriendRequest(request.friendshipId, accept)
+      setPendingRequests((prev) => prev.filter((r) => r.friendshipId !== request.friendshipId))
+      if (accept) {
+        setFriends((prev) => [...prev, { userId: request.userId, fullName: request.fullName, headline: request.headline, currentLevel: request.currentLevel }])
+        setNotification(`You are now friends with ${request.fullName}`)
+      } else {
+        setNotification(`Declined request from ${request.fullName}`)
+      }
+    } catch (err) {
+      setNotification(err.message || 'Failed to respond to request')
+    }
+  }
 
   const handleSearch = async (e) => {
     const query = e.target.value
