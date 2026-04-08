@@ -4,65 +4,37 @@ import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
+import { fetchMyFriends, sendEncouragement } from '../api/friendQueries'
 import '../styles/Friends.css'
 
-// TODO: REPLACE THIS WITH REAL DATA FROM BACKEND ONCE SETUP!
-const friends = [
-  {
-    id: 1,
-    name: 'Armin S.',
-    status: 'Google, Hire Me!',
-    applied: 10,
-    level: 7,
-  },
-  {
-    id: 2,
-    name: 'Ryan O.',
-    status: 'Rejected Again :(',
-    applied: 20,
-    level: 13,
-  },
-  {
-    id: 3,
-    name: 'Jason N.',
-    status: 'Just got HIRED!',
-    applied: 67,
-    level: 20,
-  },
-  {
-    id: 4,
-    name: 'Sebastian S.',
-    status: 'Interviewing Tomorrow',
-    applied: 10,
-    level: 10,
-  },
-  {
-    id: 5,
-    name: 'Omar A.',
-    status: 'Grinding Today',
-    applied: 13,
-    level: 5,
-  },
-]
-
 export default function Friends() {
+  const [friends, setFriends] = useState([])
+  const [loadingFriends, setLoadingFriends] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [encouragements, setEncouragements] = useState({})
   const [notification, setNotification] = useState('')
 
-  const handleEncourage = (friend) => {
-    setEncouragements((prev) => {
-      const existing = prev[friend.id]
+  useEffect(() => {
+    fetchMyFriends()
+      .then(setFriends)
+      .catch((err) => console.error('Failed to load friends:', err))
+      .finally(() => setLoadingFriends(false))
+  }, [])
 
-      return {
-        ...prev,
-        [friend.id]: {
-          count: existing ? existing.count + 1 : 1,
-        },
-      }
-    })
-
-    setNotification(`You encouraged ${friend.name}`)
+  const handleEncourage = async (friend) => {
+    try {
+      await sendEncouragement(friend.userId)
+      setEncouragements((prev) => {
+        const existing = prev[friend.userId]
+        return {
+          ...prev,
+          [friend.userId]: { count: existing ? existing.count + 1 : 1 },
+        }
+      })
+      setNotification(`You encouraged ${friend.fullName}`)
+    } catch (err) {
+      setNotification(`Failed to encourage ${friend.fullName}`)
+    }
   }
 
   useEffect(() => {
