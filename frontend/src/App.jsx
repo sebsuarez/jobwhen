@@ -24,7 +24,9 @@ function AuthRedirect({ children }) {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />
+    // admins land on the review queue, everyone else goes to the dashboard
+    const isAdmin = user.role?.roleName === 'admin'
+    return <Navigate to={isAdmin ? '/admin/challenges' : '/dashboard'} replace />
   }
 
   return children
@@ -39,6 +41,30 @@ function ProtectedRoute({ children }) {
 
   if (!user) {
     return <Navigate to="/" replace />
+  }
+
+  // admins have no business on regular job seeker pages
+  if (user.role?.roleName === 'admin') {
+    return <Navigate to="/admin/challenges" replace />
+  }
+
+  return children
+}
+
+function AdminRoute({ children }) {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) {
+    return null
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />
+  }
+
+  // non-admins who try to access an admin route get sent to their dashboard
+  if (user.role?.roleName !== 'admin') {
+    return <Navigate to="/dashboard" replace />
   }
 
   return children
@@ -57,9 +83,9 @@ function App() {
       <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-      <Route path="/admin/challenges" element={<ProtectedRoute><AdminChallenges /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
-      <Route path="/admin/mentors" element={<ProtectedRoute><AdminMentors /></ProtectedRoute>} />
+      <Route path="/admin/challenges" element={<AdminRoute><AdminChallenges /></AdminRoute>} />
+      <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+      <Route path="/admin/mentors" element={<AdminRoute><AdminMentors /></AdminRoute>} />
     </Routes>
   )
 }
