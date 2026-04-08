@@ -15,6 +15,17 @@ const stats = [
   { label: 'Friends Encouraged', value: '13', className: 'profile-stat__value--encouraged' },
 ]
 
+const EMOJIS = [
+  // Faces
+  '😀','😂','😍','😎','🥳','😴','🤔','😤','🥰','😭','🤩','🥺',
+  // Animals
+  '🐶','🐱','🐻','🦊','🐼','🐨','🐯','🦁','🦝','🐸','🦄','🐺',
+  // Nature & objects
+  '🌟','🔥','💎','🎯','🚀','⚡','🌈','🍀','👾','🎮','💻','🎵',
+  // Food & fun
+  '🍕','🍜','🧃','🍉','🎂','🧁','🍩','☕','🏆','🎲','🎸','🛸',
+]
+
 export default function Profile() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
