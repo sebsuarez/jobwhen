@@ -67,16 +67,20 @@ export default function Friends() {
           </div>
 
           <div className="friends-list">
-            {friends.map((friend) => {
-              const encouragement = encouragements[friend.id]
+            {loadingFriends ? (
+              <p className="friends-panel__empty">Loading friends...</p>
+            ) : friends.length === 0 ? (
+              <p className="friends-panel__empty">No friends yet, go add some!</p>
+            ) : friends.map((friend) => {
+              const encouragement = encouragements[friend.userId]
 
               return (
-                <Card key={friend.id} className="friend-card">
+                <Card key={friend.userId} className="friend-card">
                   <div className="friend-card__left">
                     <div className="friend-card__avatar" />
                     <div className="friend-card__info">
-                      <h3 className="friend-card__name">{friend.name}</h3>
-                      <p className="friend-card__status">{friend.status}</p>
+                      <h3 className="friend-card__name">{friend.fullName}</h3>
+                      <p className="friend-card__status">{friend.headline}</p>
 
                       {encouragement && (
                         <div className="friend-encouragement">
@@ -91,20 +95,14 @@ export default function Friends() {
 
                   <div className="friend-card__right">
                     <div className="friend-card__stat">
-                      <span className="friend-card__value">{friend.applied}</span>
-                      <span className="friend-card__label">Applied</span>
-                    </div>
-
-                    <div className="friend-card__stat">
-                      <span className="friend-card__value">Lv. {friend.level}</span>
+                      <span className="friend-card__value">Lv. {friend.currentLevel}</span>
                       <span className="friend-card__label">Level</span>
                     </div>
 
                     <Button
                       variant="ghost"
                       className="friend-card__btn"
-                      onClick={() => handleEncourage(friend)}>Encourge</Button>
-      
+                      onClick={() => handleEncourage(friend)}>Encourage</Button>
                   </div>
                 </Card>
               )
