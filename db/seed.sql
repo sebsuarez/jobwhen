@@ -8,45 +8,45 @@ INSERT INTO roles (role_name) VALUES
 
 -- USERS
 INSERT INTO users (
-    role_id, full_name, email, headline, bio, location,
+    role_id, password_hash, full_name, email, headline, bio, location,
     current_level, current_xp, streak_days, is_active
 ) VALUES
 -- Job seekers
-(1, 'Ryan Khryss Obiar', 'ryankhryss.obiar@ucalgary.ca',
+(1, 'pbkdf2_sha256$260000$0123456789abcdeffedcba9876543210$ggkZxAJv8eD0H18sU/LCCnCaYbc4+O6G0DhRQu96aOM=', 'Ryan Khryss Obiar', 'ryankhryss.obiar@ucalgary.ca',
  'Software Engineering Student', 'Grinding applications and staying consistent.',
  'Calgary, AB, Canada', 7, 300, 9, TRUE),
 
-(1, 'Armin Sandhu', 'armin.sandhu@ucalgary.ca',
+(1, 'pbkdf2_sha256$260000$0123456789abcdeffedcba9876543210$ggkZxAJv8eD0H18sU/LCCnCaYbc4+O6G0DhRQu96aOM=', 'Armin Sandhu', 'armin.sandhu@ucalgary.ca',
  'Software Engineering Student', 'Google, hire me!',
  'Calgary, AB, Canada', 7, 340, 12, TRUE),
 
-(1, 'Jason Nguyen', 'jason.nguyen2@ucalgary.ca',
+(1, 'pbkdf2_sha256$260000$0123456789abcdeffedcba9876543210$ggkZxAJv8eD0H18sU/LCCnCaYbc4+O6G0DhRQu96aOM=', 'Jason Nguyen', 'jason.nguyen2@ucalgary.ca',
  'Software Engineering Student', 'Just got hired!',
  'Calgary, AB, Canada', 20, 1200, 21, TRUE),
 
-(1, 'Sebastian Suarez', 'sebastian.suarez@ucalgary.ca',
+(1, 'pbkdf2_sha256$260000$0123456789abcdeffedcba9876543210$ggkZxAJv8eD0H18sU/LCCnCaYbc4+O6G0DhRQu96aOM=', 'Sebastian Suarez', 'sebastian.suarez@ucalgary.ca',
  'Software Engineering Student', 'Interviewing tomorrow.',
  'Calgary, AB, Canada', 10, 550, 5, TRUE),
 
-(1, 'Omar Ahmed', 'omar.ahmed3@ucalgary.ca',
+(1, 'pbkdf2_sha256$260000$0123456789abcdeffedcba9876543210$ggkZxAJv8eD0H18sU/LCCnCaYbc4+O6G0DhRQu96aOM=', 'Omar Ahmed', 'omar.ahmed3@ucalgary.ca',
  'Software Engineering Student', 'Grinding today.',
  'Calgary, AB, Canada', 5, 180, 3, TRUE),
 
 -- Mentors
-(2, 'Dr. Chan', 'dr.chan@mentor.com',
+(2, 'pbkdf2_sha256$260000$0123456789abcdeffedcba9876543210$ggkZxAJv8eD0H18sU/LCCnCaYbc4+O6G0DhRQu96aOM=', 'Dr. Chan', 'dr.chan@mentor.com',
  'Engineering Manager', 'Helping new grads stay accountable.',
  'Toronto, ON, Canada', 15, 0, 0, TRUE),
 
-(2, 'Lisa Wong', 'lisa.wong@mentor.com',
+(2, 'pbkdf2_sha256$260000$0123456789abcdeffedcba9876543210$ggkZxAJv8eD0H18sU/LCCnCaYbc4+O6G0DhRQu96aOM=', 'Lisa Wong', 'lisa.wong@mentor.com',
  'Senior SWE', 'Happy to support interview prep and resumes.',
  'Vancouver, BC, Canada', 12, 0, 0, TRUE),
 
-(2, 'James Park', 'james.park@mentor.com',
+(2, 'pbkdf2_sha256$260000$0123456789abcdeffedcba9876543210$ggkZxAJv8eD0H18sU/LCCnCaYbc4+O6G0DhRQu96aOM=', 'James Park', 'james.park@mentor.com',
  'Recruiter', 'Sharing job search strategies and networking tips.',
  'Ottawa, ON, Canada', 11, 0, 0, TRUE),
 
 -- Admin
-(3, 'Mohammed Ali', 'mohammed.admin@jobwhen.com',
+(3, 'pbkdf2_sha256$260000$00112233445566778899aabbccddeeff$3EZ4Htk1OWDK/emVSUOL4DX79ngrDHAkrsSMZ9OMilc=', 'Mohammed Ali', 'mohammed.admin@jobwhen.com',
  'Platform Admin', 'Keeping the community safe and supportive.',
  'Calgary, AB, Canada', 1, 0, 0, TRUE);
 

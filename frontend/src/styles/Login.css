@@ -70,10 +70,33 @@
 /* ── Google Button ── */
 
 .login__google {
-  height: 62px;
-  font-size: var(--text-xl);
-  border-radius: var(--radius-xl);
   margin-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.login__google-button {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+}
+
+.login__status,
+.login__error {
+  width: 100%;
+  margin: 0;
+  font-size: var(--text-base);
+}
+
+.login__status {
+  color: var(--text-secondary);
+}
+
+.login__error {
+  color: #b42318;
 }
 
 /* ── Divider ── */
@@ -127,4 +150,54 @@
   margin-top: var(--space-4);
   font-size: var(--text-lg);
   color: var(--text-secondary);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+  .login {
+    padding: var(--space-6) var(--space-5);
+    align-items: flex-start;
+  }
+
+  .login__card {
+    padding: 32px 32px 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login {
+    padding: var(--space-4) var(--space-4);
+  }
+
+  .login__title {
+    font-size: var(--text-3xl);
+  }
+
+  .login__subtitle {
+    font-size: var(--text-base);
+    text-align: center;
+  }
+
+  .login__card {
+    padding: 24px 20px 20px;
+    border-radius: 20px;
+  }
+
+  .login__tabs {
+    height: 52px;
+  }
+
+  .login__tab {
+    font-size: var(--text-base);
+  }
+
+  .login__form input {
+    height: 52px;
+  }
+
+  .login__signup {
+    font-size: var(--text-base);
+    text-align: center;
+  }
 }

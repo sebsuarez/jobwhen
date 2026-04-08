@@ -1,13 +1,62 @@
-from flask import Flask
+import os
+
+from dotenv import load_dotenv
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+
+# this is what makes the __init__.py file in the directory important
+# it allows us to import the schema directly from the graphql package
+from gql.schema import schema
+
+load_dotenv()
 
 app = Flask(__name__)
 
-# @app.route("/")
-# def home():
-#     return {"status": "backend running"}
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+CORS(app, origins=[FRONTEND_ORIGIN], supports_credentials=True)
 
 
 # http://localhost:5001/health
 @app.route("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.route("/graphql", methods=["GET", "POST"])
+def graphql_server():
+    if request.method == "GET":
+        return jsonify(
+            {
+                "message": "GraphQL endpoint ready. Send a POST request with `query`.",
+                "example": {
+                    "query": "query { me { userId email fullName role { roleName } } }"
+                },
+            }
+        )
+
+    data = request.get_json(silent=True) or {}
+    query = data.get("query")
+
+    if not query:
+        return jsonify({"errors": [{"message": "Missing GraphQL query."}]}), 400
+
+    response = jsonify({})
+    result = schema.execute(
+        query,
+        variable_values=data.get("variables"),
+        context_value={"request": request, "response": response},
+    )
+
+    body = {}
+    status_code = 200
+
+    if result.errors:
+        status_code = 400
+        body["errors"] = [{"message": error.message} for error in result.errors]
+    if result.data is not None:
+        body["data"] = result.data
+
+    response.set_data(app.json.dumps(body))
+    response.mimetype = "application/json"
+    response.status_code = status_code
+    return response
