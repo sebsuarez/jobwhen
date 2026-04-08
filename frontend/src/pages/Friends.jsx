@@ -124,6 +124,26 @@ export default function Friends() {
       
           </div>
 
+          {pendingRequests.length > 0 && (
+            <div className="pending-requests">
+              <h2 className="pending-requests__title">Friend Requests ({pendingRequests.length})</h2>
+              <div className="pending-requests__list">
+                {pendingRequests.map((request) => (
+                  <div key={request.friendshipId} className="pending-request-card">
+                    <div className="pending-request-card__info">
+                      <span className="pending-request-card__name">{request.fullName}</span>
+                      <span className="pending-request-card__headline">{request.headline}</span>
+                    </div>
+                    <div className="pending-request-card__actions">
+                      <Button variant="ghost" onClick={() => handleRespondToRequest(request, false)}>Decline</Button>
+                      <Button variant="primary" onClick={() => handleRespondToRequest(request, true)}>Accept</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="friends-list">
             {loadingFriends ? (
               <p className="friends-panel__empty">Loading friends...</p>
