@@ -100,12 +100,12 @@ export default function Challenges() {
 
           <div className="challenges-list">
             {activeChallenges.map((challenge) => (
-              <Card key={challenge.id} className="challenge-card">
+              <Card key={challenge.challengeParticipantId} className="challenge-card">
                 <div className="challenge-card__top">
                   <div>
                     <h2 className="challenge-card__title">{challenge.title}</h2>
                     <p className="challenge-card__meta">
-                      Created by {challenge.creator} - due {challenge.due}
+                      Created by {challenge.mentorName} - due {challenge.dueDate}
                     </p>
                   </div>
 
@@ -123,18 +123,18 @@ export default function Challenges() {
                     <button
                       type="button"
                       className="challenge-card__control-btn"
-                      onClick={() => decreaseProgress(challenge.id)}
-                      disabled={challenge.current === 0}>-</button>
-                   
+                      onClick={() => decreaseProgress(challenge.challengeParticipantId)}
+                      disabled={challenge.progressCount === 0}>-</button>
+
                     <button
                       type="button"
                       className="challenge-card__control-btn"
-                      onClick={() => increaseProgress(challenge.id)}
-                      disabled={challenge.current === challenge.total}>+</button>
+                      onClick={() => increaseProgress(challenge.challengeParticipantId)}
+                      disabled={challenge.progressCount === challenge.targetCount}>+</button>
                   </div>
 
                   <span className="challenge-card__progress-text">
-                    {challenge.current}/{challenge.total}
+                    {challenge.progressCount}/{challenge.targetCount}
                   </span>
                 </div>
 
@@ -142,7 +142,7 @@ export default function Challenges() {
                   <div
                     className="challenge-card__progress-fill"
                     style={{
-                      width: `${(challenge.current / challenge.total) * 100}%`,
+                      width: `${(challenge.progressCount / challenge.targetCount) * 100}%`,
                     }}
                   />
                 </div>
@@ -155,20 +155,17 @@ export default function Challenges() {
 
             <div className="new-challenges__grid">
               {newChallenges.map((challenge) => (
-                <Card key={challenge.id} className="new-challenge-card">
+                <Card key={challenge.challengeId} className="new-challenge-card">
                   <div className="new-challenge-card__top">
                     <div className="new-challenge-card__person">
                       <div>
                         <h3 className="new-challenge-card__name">
-                          {challenge.name}
+                          {challenge.mentorName}
                         </h3>
-                        <p className="new-challenge-card__role">
-                          {challenge.role}
-                        </p>
                       </div>
                     </div>
                     <span className="new-challenge-card__days">
-                      {challenge.days}
+                      {Math.max(0, Math.ceil((new Date(challenge.dueDate) - new Date()) / (1000 * 60 * 60 * 24)))} days
                     </span>
                   </div>
                   <h4 className="new-challenge-card__title">
