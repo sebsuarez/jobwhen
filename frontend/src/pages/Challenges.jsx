@@ -51,9 +51,17 @@ export default function Challenges() {
     }
   }
 
-  const handleRemoveChallenge = (challenge) => {
-    setActiveChallenges((prev) => prev.filter((item) => item.id !== challenge.id))
-    setNewChallenges((prev) => [...prev, challenge])
+  const handleRemoveChallenge = async (challenge) => {
+    try {
+      const result = await leaveChallenge(challenge.challengeId)
+      if (result.ok) {
+        await loadChallenges()
+      } else {
+        alert(result.message)
+      }
+    } catch {
+      alert('Failed to leave challenge.')
+    }
   }
 
   const increaseProgress = (id) => {
