@@ -85,6 +85,7 @@ export default function Profile() {
               <h1 className="profile-card__name">{user?.fullName ?? 'User'}</h1>
 
               <div className="profile-card__details">
+                {user?.headline && <p>{user.headline}</p>}
                 <p>{user?.email ?? 'No email available'}</p>
                 <p>{user?.role?.roleName ?? 'job_seeker'}</p>
               </div>
