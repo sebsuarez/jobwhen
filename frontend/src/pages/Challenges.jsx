@@ -1,80 +1,11 @@
 // pages/Challenges.jsx
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import '../styles/Challenges.css'
-
-// TODO: REPLACE THIS WITH REAL DATA FROM BACKEND ONCE SETUP!
-const initialActiveChallenges = [
-  {
-    id: 1,
-    title: 'Apply-a-thon',
-    creator: 'Dr Chen',
-    due: 'Mar 2nd',
-    description: 'Submit 5 applications this week',
-    current: 3,
-    total: 5,
-  },
-  {
-    id: 2,
-    title: 'Interview Prep Sprint',
-    creator: 'Lisa Wong',
-    due: 'Mar 5th',
-    description: 'Complete 3 mock interview questions',
-    current: 1,
-    total: 3,
-  },
-  {
-    id: 3,
-    title: 'Network Boost',
-    creator: 'James Park',
-    due: 'Mar 7th',
-    description: 'Reach out to 2 new connections',
-    current: 0,
-    total: 2,
-  },
-]
-
-const initialNewChallenges = [
-  {
-    id: 4,
-    name: 'Lisa Wong',
-    role: 'Senior SWE @ Meta',
-    days: '3 days',
-    title: 'Needs Some Love',
-    description: 'Encourage/Motivate 5 of your friends',
-    creator: 'Lisa Wong',
-    due: 'Mar 10th',
-    current: 0,
-    total: 5,
-  },
-  {
-    id: 5,
-    name: 'James Park',
-    role: 'Recruiter @ Shopify',
-    days: '5 days',
-    title: 'How are you?',
-    description: 'Log your mood 3 times',
-    creator: 'James Park',
-    due: 'Mar 12th',
-    current: 0,
-    total: 3,
-  },
-  {
-    id: 6,
-    name: 'James Park',
-    role: 'Recruiter @ Shopify',
-    days: '5 days',
-    title: 'How are you?',
-    description: 'Log your mood 3 times',
-    creator: 'James Park',
-    due: 'Mar 12th',
-    current: 0,
-    total: 3,
-  },
-]
+import { fetchActiveChallenges, fetchAvailableChallenges, joinChallenge, leaveChallenge } from '../api/challengeQueries'
 
 export default function Challenges() {
   const [activeChallenges, setActiveChallenges] = useState(initialActiveChallenges)
