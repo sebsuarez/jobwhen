@@ -49,12 +49,12 @@ export default function AdminUsers() {
             <Modal
                 isOpen={!!selected}
                 onClose={() => setSelected(null)}
-                title={selected?.name}
+                title={selected?.fullName}
             >
                 <p className="admin-users__modal-email">{selected?.email}</p>
                 <div className="admin-users__modal-field">
                     <span className="admin-users__modal-label">Current Role</span>
-                    <span className="admin-users__role">{selected?.role}</span>
+                    <span className="admin-users__role">{selected?.roleName}</span>
                 </div>
                 <div className="admin-users__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
