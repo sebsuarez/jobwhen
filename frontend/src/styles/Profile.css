@@ -295,3 +295,66 @@
   gap: var(--space-3);
   padding-top: var(--space-2);
 }
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .profile-page__main {
+    margin-left: 0;
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card {
+    min-height: auto;
+  }
+
+  .profile-level__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-page__main {
+    padding: var(--space-4);
+    padding-top: 88px;
+    padding-bottom: 88px;
+  }
+
+  .profile-card,
+  .profile-bio,
+  .profile-level,
+  .profile-stats {
+    padding: var(--space-4);
+  }
+
+  .profile-card__name {
+    font-size: var(--text-3xl);
+  }
+
+  .profile-level__title {
+    font-size: var(--text-3xl);
+  }
+
+  .profile-level__xp {
+    font-size: var(--text-lg);
+  }
+
+  .profile-section__title {
+    font-size: var(--text-2xl);
+  }
+
+  .profile-stats__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-stat__value {
+    font-size: 2rem;
+  }
+}
