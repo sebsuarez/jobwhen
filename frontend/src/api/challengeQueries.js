@@ -78,6 +78,15 @@ const CREATE_CHALLENGE_MUTATION = `
   }
 `
 
+const DELETE_CHALLENGE_MUTATION = `
+  mutation DeleteChallenge($challengeId: Int!) {
+    deleteChallenge(challengeId: $challengeId) {
+      ok
+      message
+    }
+  }
+`
+
 // Challenge Mutations (modify or writing data)
 const JOIN_CHALLENGE_MUTATION = `
   mutation JoinChallenge($challengeId: Int!) {
@@ -126,4 +135,9 @@ export async function fetchMyCreatedChallenges() {
 export async function createChallenge(input) {
   const data = await graphqlRequest(CREATE_CHALLENGE_MUTATION, input)
   return data.createChallenge
+}
+
+export async function deleteChallenge(challengeId) {
+  const data = await graphqlRequest(DELETE_CHALLENGE_MUTATION, { challengeId })
+  return data.deleteChallenge
 }
