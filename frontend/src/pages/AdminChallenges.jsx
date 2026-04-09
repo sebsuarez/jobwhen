@@ -1,19 +1,24 @@
 // pages/AdminChallenges.jsx
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
+import { fetchPendingChallenges } from '../api/adminQueries'
 import '../styles/AdminChallenges.css'
 
-const PENDING_CHALLENGES = [
-    { id: 1, title: 'Cold Email Challenge', submittedBy: 'Dr Chen', submittedAt: '2h ago' },
-    { id: 2, title: 'Mock Interview: Behavioural', submittedBy: 'Prof. Liu', submittedAt: '5h ago' },
-    { id: 3, title: 'LinkedIn Profile Audit', submittedBy: 'Jane S.', submittedAt: '1d ago' },
-]
-
 export default function AdminChallenges() {
+    const [challenges, setChallenges] = useState([])
+    const [loading, setLoading] = useState(true)
     const [selected, setSelected] = useState(null)
+
+    useEffect(() => {
+        fetchPendingChallenges()
+            .then(setChallenges)
+            .finally(() => setLoading(false))
+    }, [])
+
+    if (loading) return null
 
     return (
         <div className="app-layout">
@@ -25,7 +30,7 @@ export default function AdminChallenges() {
                 </div>
 
                 <div className="admin-challenges__list">
-                    {PENDING_CHALLENGES.map((challenge) => (
+                    {challenges.map((challenge) => (
                         <div key={challenge.id} className="admin-challenges__card">
                             <div className="admin-challenges__card-info">
                                 <span className="admin-challenges__card-title">{challenge.title}</span>
