@@ -49,7 +49,7 @@ export default function AdminChallenges() {
                 onClose={() => setSelected(null)}
                 title={selected?.title}
             >
-                <p className="admin-challenges__modal-meta">By {selected?.submittedBy} · {selected?.submittedAt}</p>
+                <p className="admin-challenges__modal-meta">By {selected?.mentorName} · {selected?.createdAt}</p>
                 <div className="admin-challenges__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Reject</Button>
                     <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
