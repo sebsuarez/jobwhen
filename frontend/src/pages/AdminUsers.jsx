@@ -31,13 +31,13 @@ export default function AdminUsers() {
 
                 <div className="admin-users__list">
                     {users.map((user) => (
-                        <div key={user.id} className="admin-users__card">
-                            <div className="admin-users__avatar">{user.initials}</div>
+                        <div key={user.userId} className="admin-users__card">
+                            <div className="admin-users__avatar">{user.fullName.split(' ').map((n) => n[0]).join('')}</div>
                             <div className="admin-users__info">
-                                <span className="admin-users__name">{user.name}</span>
+                                <span className="admin-users__name">{user.fullName}</span>
                                 <span className="admin-users__email">{user.email}</span>
                             </div>
-                            <span className="admin-users__role">{user.role}</span>
+                            <span className="admin-users__role">{user.roleName}</span>
                             <Button variant="primary" onClick={() => setSelected(user)}>
                                 Manage
                             </Button>
