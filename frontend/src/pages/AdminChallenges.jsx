@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
-import { fetchPendingChallenges } from '../api/adminQueries'
+import { fetchPendingChallenges, approveChallenge } from '../api/adminQueries'
 import '../styles/AdminChallenges.css'
 
 export default function AdminChallenges() {
@@ -17,6 +17,12 @@ export default function AdminChallenges() {
             .then(setChallenges)
             .finally(() => setLoading(false))
     }, [])
+
+    const handleApprove = async () => {
+        await approveChallenge(selected.challengeId)
+        setChallenges((prev) => prev.filter((c) => c.challengeId !== selected.challengeId))
+        setSelected(null)
+    }
 
     if (loading) return null
 
@@ -52,7 +58,7 @@ export default function AdminChallenges() {
                 <p className="admin-challenges__modal-meta">By {selected?.mentorName} · {selected?.createdAt}</p>
                 <div className="admin-challenges__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Reject</Button>
-                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
+                    <Button variant="primary" onClick={handleApprove}>Approve</Button>
                 </div>
             </Modal>
         </div>
