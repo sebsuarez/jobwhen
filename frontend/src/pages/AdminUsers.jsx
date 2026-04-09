@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
-import { fetchAllUsers } from '../api/adminQueries'
+import { fetchAllUsers, suspendUser } from '../api/adminQueries'
 import '../styles/AdminUsers.css'
 
 export default function AdminUsers() {
@@ -17,6 +17,13 @@ export default function AdminUsers() {
             .then(setUsers)
             .finally(() => setLoading(false))
     }, [])
+
+    const handleSuspend = async () => {
+        // TODO: replace '' with a note from a text input field in the modal
+        await suspendUser(selected.userId, '')
+        setUsers((prev) => prev.map((u) => u.userId === selected.userId ? { ...u, isActive: false } : u))
+        setSelected(null)
+    }
 
     if (loading) return null
 
@@ -58,7 +65,7 @@ export default function AdminUsers() {
                 </div>
                 <div className="admin-users__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
-                    <Button variant="danger" onClick={() => setSelected(null)}>Suspend User</Button>
+                    <Button variant="danger" onClick={handleSuspend}>Suspend User</Button>
                     <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
                 </div>
             </Modal>
