@@ -85,6 +85,9 @@ export default function Challenges() {
     )
   }
 
+  if (loading) return <div className="challenges-page"><Sidebar /><main className="challenges-page__main"><p>Loading challenges...</p></main></div>
+  if (error) return <div className="challenges-page"><Sidebar /><main className="challenges-page__main"><p>{error}</p></main></div>
+
   return (
     <div className="challenges-page">
       <Sidebar />
