@@ -8,10 +8,18 @@ const PROFILE_INSIGHTS_QUERY = `
       earnedAt
       badge {
         badgeId
+        badgeName
       }
     }
     myXpHistory {
       xpEventId
+    }
+    allBadges {
+      badgeId
+      badgeName
+      description
+      levelRequired
+      iconName
     }
   }
 `
@@ -49,5 +57,6 @@ export async function fetchProfileInsights() {
   return {
     myBadges: data.myBadges ?? [],
     myXpHistory: data.myXpHistory ?? [],
+    allBadges: data.allBadges ?? [],
   }
 }
