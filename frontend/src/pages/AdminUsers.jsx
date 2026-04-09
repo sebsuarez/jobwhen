@@ -1,21 +1,24 @@
 // pages/AdminUsers.jsx
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
+import { fetchAllUsers } from '../api/adminQueries'
 import '../styles/AdminUsers.css'
 
-const PENDING_USERS = [
-    { id: 1, name: 'Armin S.', email: 'armin@ucalgary.ca', role: 'Seeker', initials: 'AS' },
-    { id: 2, name: 'Ryan O.', email: 'ryan@ucalgary.ca', role: 'Seeker', initials: 'RO' },
-    { id: 3, name: 'Jason N.', email: 'jason@ucalgary.ca', role: 'Seeker', initials: 'JN' },
-    { id: 4, name: 'Sebastian S.', email: 'seb@ucalgary.ca', role: 'Seeker', initials: 'SS' },
-    { id: 5, name: 'Omar A.', email: 'omar@ucalgary.ca', role: 'Mentor', initials: 'OA' },
-]
-
 export default function AdminUsers() {
+    const [users, setUsers] = useState([])
+    const [loading, setLoading] = useState(true)
     const [selected, setSelected] = useState(null)
+
+    useEffect(() => {
+        fetchAllUsers()
+            .then(setUsers)
+            .finally(() => setLoading(false))
+    }, [])
+
+    if (loading) return null
 
     return (
         <div className="app-layout">
@@ -27,7 +30,7 @@ export default function AdminUsers() {
                 </div>
 
                 <div className="admin-users__list">
-                    {PENDING_USERS.map((user) => (
+                    {users.map((user) => (
                         <div key={user.id} className="admin-users__card">
                             <div className="admin-users__avatar">{user.initials}</div>
                             <div className="admin-users__info">
