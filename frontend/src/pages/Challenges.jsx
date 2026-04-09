@@ -1,104 +1,75 @@
 // pages/Challenges.jsx
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import '../styles/Challenges.css'
-
-// TODO: REPLACE THIS WITH REAL DATA FROM BACKEND ONCE SETUP!
-const initialActiveChallenges = [
-  {
-    id: 1,
-    title: 'Apply-a-thon',
-    creator: 'Dr Chen',
-    due: 'Mar 2nd',
-    description: 'Submit 5 applications this week',
-    current: 3,
-    total: 5,
-  },
-  {
-    id: 2,
-    title: 'Interview Prep Sprint',
-    creator: 'Lisa Wong',
-    due: 'Mar 5th',
-    description: 'Complete 3 mock interview questions',
-    current: 1,
-    total: 3,
-  },
-  {
-    id: 3,
-    title: 'Network Boost',
-    creator: 'James Park',
-    due: 'Mar 7th',
-    description: 'Reach out to 2 new connections',
-    current: 0,
-    total: 2,
-  },
-]
-
-const initialNewChallenges = [
-  {
-    id: 4,
-    name: 'Lisa Wong',
-    role: 'Senior SWE @ Meta',
-    days: '3 days',
-    title: 'Needs Some Love',
-    description: 'Encourage/Motivate 5 of your friends',
-    creator: 'Lisa Wong',
-    due: 'Mar 10th',
-    current: 0,
-    total: 5,
-  },
-  {
-    id: 5,
-    name: 'James Park',
-    role: 'Recruiter @ Shopify',
-    days: '5 days',
-    title: 'How are you?',
-    description: 'Log your mood 3 times',
-    creator: 'James Park',
-    due: 'Mar 12th',
-    current: 0,
-    total: 3,
-  },
-  {
-    id: 6,
-    name: 'James Park',
-    role: 'Recruiter @ Shopify',
-    days: '5 days',
-    title: 'How are you?',
-    description: 'Log your mood 3 times',
-    creator: 'James Park',
-    due: 'Mar 12th',
-    current: 0,
-    total: 3,
-  },
-]
+import { fetchActiveChallenges, fetchAvailableChallenges, joinChallenge, leaveChallenge } from '../api/challengeQueries'
 
 export default function Challenges() {
-  const [activeChallenges, setActiveChallenges] = useState(initialActiveChallenges)
-  const [newChallenges, setNewChallenges] = useState(initialNewChallenges)
+  const [activeChallenges, setActiveChallenges] = useState([])
+  const [newChallenges, setNewChallenges] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const handleAddChallenge = (challenge) => {
+  useEffect(() => {
+    loadChallenges()
+  }, [])
+
+  async function loadChallenges() {
+    setLoading(true)
+    setError(null)
+    try {
+      const [active, available] = await Promise.all([
+        fetchActiveChallenges(),
+        fetchAvailableChallenges(),
+      ])
+      setActiveChallenges(active)
+      setNewChallenges(available)
+    } catch {
+      setError('Failed to load challenges.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAddChallenge = async (challenge) => {
     if (activeChallenges.length >= 5) {
       alert('You can only have 5 active challenges at a time.')
       return
     }
-    setActiveChallenges((prev) => [...prev, challenge])
-    setNewChallenges((prev) => prev.filter((item) => item.id !== challenge.id))
+    try {
+      const result = await joinChallenge(challenge.challengeId)
+      if (result.ok) {
+        await loadChallenges()
+      } else {
+        alert(result.message)
+      }
+    } catch {
+      alert('Failed to join challenge.')
+    }
   }
 
-  const handleRemoveChallenge = (challenge) => {
-    setActiveChallenges((prev) => prev.filter((item) => item.id !== challenge.id))
-    setNewChallenges((prev) => [...prev, challenge])
+  const handleRemoveChallenge = async (challenge) => {
+    try {
+      const result = await leaveChallenge(challenge.challengeId)
+      if (result.ok) {
+        await loadChallenges()
+      } else {
+        alert(result.message)
+      }
+    } catch {
+      alert('Failed to leave challenge.')
+    }
   }
 
+  // NEEDS BACKEND SUPPORT!!!
   const increaseProgress = (id) => {
     setActiveChallenges((prev) =>
       prev.map((c) =>
-        c.id === id && c.current < c.total
-          ? { ...c, current: c.current + 1 }
+        c.challengeParticipantId === id && c.progressCount < c.targetCount
+          ? { ...c, progressCount: c.progressCount + 1 }
           : c
       )
     )
@@ -107,12 +78,15 @@ export default function Challenges() {
   const decreaseProgress = (id) => {
     setActiveChallenges((prev) =>
       prev.map((c) =>
-        c.id === id && c.current > 0
-          ? { ...c, current: c.current - 1 }
+        c.challengeParticipantId === id && c.progressCount > 0
+          ? { ...c, progressCount: c.progressCount - 1 }
           : c
       )
     )
   }
+
+  if (loading) return <div className="challenges-page"><Sidebar /><main className="challenges-page__main"><p>Loading challenges...</p></main></div>
+  if (error) return <div className="challenges-page"><Sidebar /><main className="challenges-page__main"><p>{error}</p></main></div>
 
   return (
     <div className="challenges-page">
@@ -129,12 +103,12 @@ export default function Challenges() {
 
           <div className="challenges-list">
             {activeChallenges.map((challenge) => (
-              <Card key={challenge.id} className="challenge-card">
+              <Card key={challenge.challengeParticipantId} className="challenge-card">
                 <div className="challenge-card__top">
                   <div>
                     <h2 className="challenge-card__title">{challenge.title}</h2>
                     <p className="challenge-card__meta">
-                      Created by {challenge.creator} - due {challenge.due}
+                      Created by {challenge.mentorName} - due {challenge.dueDate}
                     </p>
                   </div>
 
@@ -152,18 +126,18 @@ export default function Challenges() {
                     <button
                       type="button"
                       className="challenge-card__control-btn"
-                      onClick={() => decreaseProgress(challenge.id)}
-                      disabled={challenge.current === 0}>-</button>
-                   
+                      onClick={() => decreaseProgress(challenge.challengeParticipantId)}
+                      disabled={challenge.progressCount === 0}>-</button>
+
                     <button
                       type="button"
                       className="challenge-card__control-btn"
-                      onClick={() => increaseProgress(challenge.id)}
-                      disabled={challenge.current === challenge.total}>+</button>
+                      onClick={() => increaseProgress(challenge.challengeParticipantId)}
+                      disabled={challenge.progressCount === challenge.targetCount}>+</button>
                   </div>
 
                   <span className="challenge-card__progress-text">
-                    {challenge.current}/{challenge.total}
+                    {challenge.progressCount}/{challenge.targetCount}
                   </span>
                 </div>
 
@@ -171,7 +145,7 @@ export default function Challenges() {
                   <div
                     className="challenge-card__progress-fill"
                     style={{
-                      width: `${(challenge.current / challenge.total) * 100}%`,
+                      width: `${(challenge.progressCount / challenge.targetCount) * 100}%`,
                     }}
                   />
                 </div>
@@ -184,20 +158,17 @@ export default function Challenges() {
 
             <div className="new-challenges__grid">
               {newChallenges.map((challenge) => (
-                <Card key={challenge.id} className="new-challenge-card">
+                <Card key={challenge.challengeId} className="new-challenge-card">
                   <div className="new-challenge-card__top">
                     <div className="new-challenge-card__person">
                       <div>
                         <h3 className="new-challenge-card__name">
-                          {challenge.name}
+                          {challenge.mentorName}
                         </h3>
-                        <p className="new-challenge-card__role">
-                          {challenge.role}
-                        </p>
                       </div>
                     </div>
                     <span className="new-challenge-card__days">
-                      {challenge.days}
+                      {Math.max(0, Math.ceil((new Date(challenge.dueDate) - new Date()) / (1000 * 60 * 60 * 24)))} days
                     </span>
                   </div>
                   <h4 className="new-challenge-card__title">
