@@ -11,12 +11,21 @@ export default function AdminUsers() {
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [selected, setSelected] = useState(null)
+    const [search, setSearch] = useState('')
 
     useEffect(() => {
         fetchAllUsers()
             .then(setUsers)
             .finally(() => setLoading(false))
     }, [])
+
+    const handleSearch = (e) => {
+        e.preventDefault()
+        setLoading(true)
+        fetchAllUsers(search || null)
+            .then(setUsers)
+            .finally(() => setLoading(false))
+    }
 
     const handleSuspend = async () => {
         // TODO: replace '' with a note from a text input field in the modal
@@ -41,6 +50,15 @@ export default function AdminUsers() {
                     <h1 className="admin-users__title">User Management</h1>
                     <p className="admin-users__subtitle">Review and manage platform users</p>
                 </div>
+
+                <form className="admin-users__search" onSubmit={handleSearch}>
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search users..."
+                    />
+                    <Button variant="primary" type="submit">Search</Button>
+                </form>
 
                 <div className="admin-users__list">
                     {users.map((user) => (
