@@ -1,5 +1,5 @@
 // pages/Board.jsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Sidebar from '../components/Sidebar'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
@@ -55,6 +55,7 @@ export default function Board() {
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState(null)
   const [editSubmitting, setEditSubmitting] = useState(false)
+  const boardColumnsRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
@@ -251,10 +252,31 @@ export default function Board() {
     ? COLUMNS
     : COLUMNS.filter((col) => col.id === activeFilter.toLowerCase())
 
+    
+ const handleBoardDragOver = (e) => {
+  const container = boardColumnsRef.current
+  if (!container) return
+
+  const rect = container.getBoundingClientRect()
+  const edge = 80
+  const scrollStep = 20
+
+  if (e.clientX < rect.left + edge) {
+    container.scrollLeft -= scrollStep
+  } else if (e.clientX > rect.right - edge) {
+    container.scrollLeft += scrollStep
+  }
+
+  if (e.clientY < 80) {
+    window.scrollBy(0, -scrollStep)
+  } else if (e.clientY > window.innerHeight - 80) {
+    window.scrollBy(0, scrollStep)
+  }
+}
   return (
     <div className="app-layout">
       <Sidebar />
-      <main className="app-content">
+      <main className="app-content board__page-scroll">
         <div className="board__header">
           <div>
             <h1 className="page-title">Job Board</h1>
@@ -297,7 +319,9 @@ export default function Board() {
         ) : error ? (
           <p className="board__empty">Failed to load: {error}</p>
         ) : (
-          <div className="board__columns">
+          <div className="board__columns"
+               ref={boardColumnsRef}
+               onDragOver={handleBoardDragOver}>
             {visibleColumns.map((col) => {
               const jobs = getColumnJobs(col.id)
               return (
