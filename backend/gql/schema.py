@@ -13,9 +13,10 @@ from gql.queries.challenges import ChallengeQuery
 from gql.queries.friends import FriendQuery
 from gql.queries.goals import GoalQuery
 from gql.queries.jobs import JobQuery
+from gql.queries.xp import XpQuery
 
 
-class Query(AuthQuery, JobQuery, FriendQuery, ChallengeQuery, AdminQuery, GoalQuery, graphene.ObjectType):
+class Query(AuthQuery, JobQuery, FriendQuery, ChallengeQuery, AdminQuery, GoalQuery, XpQuery, graphene.ObjectType):
     pass
 
 

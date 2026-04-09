@@ -194,6 +194,32 @@ class MoodResponse(graphene.ObjectType):
     message = graphene.String()
 
 
+# XP & BADGE TYPES
+
+class XpEventType(graphene.ObjectType):
+    xp_event_id = graphene.Int()
+    user_id = graphene.Int()
+    event_type = graphene.String()
+    xp_amount = graphene.Int()
+    description = graphene.String()
+    created_at = graphene.String()
+
+
+class BadgeType(graphene.ObjectType):
+    badge_id = graphene.Int()
+    badge_name = graphene.String()
+    description = graphene.String()
+    level_required = graphene.Int()
+    icon_name = graphene.String()
+
+
+class UserBadgeType(graphene.ObjectType):
+    user_badge_id = graphene.Int()
+    user_id = graphene.Int()
+    earned_at = graphene.String()
+    badge = graphene.Field(BadgeType)
+
+
 # ADMIN TYPES
 
 class AdminUserType(graphene.ObjectType):
