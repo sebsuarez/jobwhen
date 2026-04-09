@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
+import Button from "../components/Button"
 import Modal from "../components/Modal"
 import '../styles/AdminUsers.css'
 
@@ -34,9 +35,9 @@ export default function AdminUsers() {
                                 <span className="admin-users__email">{user.email}</span>
                             </div>
                             <span className="admin-users__role">{user.role}</span>
-                            <button className="btn btn--primary" onClick={() => setSelected(user)}>
+                            <Button variant="primary" onClick={() => setSelected(user)}>
                                 Manage
-                            </button>
+                            </Button>
                         </div>
                     ))}
                 </div>
@@ -53,9 +54,9 @@ export default function AdminUsers() {
                     <span className="admin-users__role">{selected?.role}</span>
                 </div>
                 <div className="admin-users__modal-actions">
-                    <button className="btn btn--ghost" onClick={() => setSelected(null)}>Cancel</button>
-                    <button className="btn btn--danger" onClick={() => setSelected(null)}>Suspend User</button>
-                    <button className="btn btn--primary" onClick={() => setSelected(null)}>Approve</button>
+                    <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
+                    <Button variant="danger" onClick={() => setSelected(null)}>Suspend User</Button>
+                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
                 </div>
             </Modal>
         </div>
