@@ -35,6 +35,7 @@ export default function Profile() {
 
   const [editOpen, setEditOpen] = useState(false)
   const [draftName, setDraftName] = useState('')
+  const [draftHeadline, setDraftHeadline] = useState('')
   const [draftEmoji, setDraftEmoji] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -45,6 +46,7 @@ export default function Profile() {
 
   const openEdit = () => {
     setDraftName(user?.fullName ?? '')
+    setDraftHeadline(user?.headline ?? '')
     setDraftEmoji(user?.avatar ?? '')
     setEditOpen(true)
   }
@@ -54,6 +56,7 @@ export default function Profile() {
     try {
       await updateProfile({
         fullName: draftName.trim() || undefined,
+        headline: draftHeadline.trim() || undefined,
         avatar: draftEmoji || undefined,
       })
       await refreshUser()
@@ -149,6 +152,16 @@ export default function Profile() {
             onChange={(e) => setDraftName(e.target.value)}
             placeholder="Enter display name"
             maxLength={40}
+          />
+
+          <label className="profile-edit__label">Headline</label>
+          <input
+            className="profile-edit__name-input"
+            type="text"
+            value={draftHeadline}
+            onChange={(e) => setDraftHeadline(e.target.value)}
+            placeholder="e.g. Software Engineer at Amazon"
+            maxLength={100}
           />
 
           <label className="profile-edit__label">Choose an Emoji Avatar</label>
