@@ -1,22 +1,14 @@
 // pages/Profile.jsx
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
-import { updateProfile } from '../api/profileQueries'
+import { fetchProfileInsights, updateProfile } from '../api/profileQueries'
+import { fetchJobApplications } from '../api/boardQueries'
 import '../styles/Profile.css'
-
-const stats = [
-  { label: 'Total XP', value: '2100', className: 'profile-stat__value--xp' },
-  { label: 'Applications', value: '10', className: 'profile-stat__value--applications' },
-  { label: 'Badges Achieved', value: '6', className: 'profile-stat__value--badges' },
-  { label: 'Challenges Completed', value: '7', className: 'profile-stat__value--challenges' },
-  { label: 'Friends', value: '3', className: 'profile-stat__value--friends' },
-  { label: 'Friends Encouraged', value: '13', className: 'profile-stat__value--encouraged' },
-]
 
 const EMOJIS = [
   // Faces
@@ -37,6 +29,35 @@ export default function Profile() {
   const [draftName, setDraftName] = useState('')
   const [draftEmoji, setDraftEmoji] = useState('')
   const [saving, setSaving] = useState(false)
+  const [profileStats, setProfileStats] = useState({
+    applications: 0,
+    badges: 0,
+    xpEvents: 0,
+  })
+
+  useEffect(() => {
+    if (!user) return
+
+    let cancelled = false
+
+    Promise.all([
+      fetchProfileInsights(),
+      fetchJobApplications(user.userId),
+    ])
+      .then(([insights, applications]) => {
+        if (cancelled) return
+        setProfileStats({
+          applications: applications.length,
+          badges: insights.myBadges.length,
+          xpEvents: insights.myXpHistory.length,
+        })
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [user])
 
   const handleLogout = async () => {
     await logout()
@@ -62,6 +83,19 @@ export default function Profile() {
       setSaving(false)
     }
   }
+
+  const currentLevel = user?.currentLevel ?? 1
+  const currentXp = user?.currentXp ?? 0
+  const xpPerLevel = 60
+  const xpIntoLevel = currentXp % xpPerLevel
+  const progressPercent = Math.min((xpIntoLevel / xpPerLevel) * 100, 100)
+
+  const stats = [
+    { label: 'Total XP', value: String(currentXp), className: 'profile-stat__value--xp' },
+    { label: 'Applications', value: String(profileStats.applications), className: 'profile-stat__value--applications' },
+    { label: 'Badges Achieved', value: String(profileStats.badges), className: 'profile-stat__value--badges' },
+    { label: 'XP Events', value: String(profileStats.xpEvents), className: 'profile-stat__value--challenges' },
+  ]
 
   return (
     <div className="profile-page">
@@ -99,6 +133,8 @@ export default function Profile() {
                   type="text"
                   placeholder="e.g. Grinding Today!"
                   className="profile-bio__input"
+                  value={user?.bio ?? ''}
+                  readOnly
                 />
               </div>
             </Card>
@@ -107,12 +143,12 @@ export default function Profile() {
           <div className="profile-layout__right">
             <Card className="profile-level">
               <div className="profile-level__top">
-                <h2 className="profile-level__title">Level 7</h2>
-                <span className="profile-level__xp">XP 300/500</span>
+                <h2 className="profile-level__title">Level {currentLevel}</h2>
+                <span className="profile-level__xp">XP {xpIntoLevel}/{xpPerLevel}</span>
               </div>
 
               <div className="profile-level__bar">
-                <div className="profile-level__fill" />
+                <div className="profile-level__fill" style={{ width: `${progressPercent}%` }} />
               </div>
             </Card>
 
