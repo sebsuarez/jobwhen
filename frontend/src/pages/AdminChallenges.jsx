@@ -1,19 +1,36 @@
 // pages/AdminChallenges.jsx
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
+import { fetchPendingChallenges, approveChallenge, rejectChallenge } from '../api/adminQueries'
 import '../styles/AdminChallenges.css'
 
-const PENDING_CHALLENGES = [
-    { id: 1, title: 'Cold Email Challenge', submittedBy: 'Dr Chen', submittedAt: '2h ago' },
-    { id: 2, title: 'Mock Interview: Behavioural', submittedBy: 'Prof. Liu', submittedAt: '5h ago' },
-    { id: 3, title: 'LinkedIn Profile Audit', submittedBy: 'Jane S.', submittedAt: '1d ago' },
-]
-
 export default function AdminChallenges() {
+    const [challenges, setChallenges] = useState([])
+    const [loading, setLoading] = useState(true)
     const [selected, setSelected] = useState(null)
+
+    useEffect(() => {
+        fetchPendingChallenges()
+            .then(setChallenges)
+            .finally(() => setLoading(false))
+    }, [])
+
+    const handleApprove = async () => {
+        await approveChallenge(selected.challengeId)
+        setChallenges((prev) => prev.filter((c) => c.challengeId !== selected.challengeId))
+        setSelected(null)
+    }
+
+    const handleReject = async () => {
+        await rejectChallenge(selected.challengeId)
+        setChallenges((prev) => prev.filter((c) => c.challengeId !== selected.challengeId))
+        setSelected(null)
+    }
+
+    if (loading) return null
 
     return (
         <div className="app-layout">
@@ -25,11 +42,11 @@ export default function AdminChallenges() {
                 </div>
 
                 <div className="admin-challenges__list">
-                    {PENDING_CHALLENGES.map((challenge) => (
-                        <div key={challenge.id} className="admin-challenges__card">
+                    {challenges.map((challenge) => (
+                        <div key={challenge.challengeId} className="admin-challenges__card">
                             <div className="admin-challenges__card-info">
                                 <span className="admin-challenges__card-title">{challenge.title}</span>
-                                <span className="admin-challenges__card-meta">By {challenge.submittedBy} · {challenge.submittedAt}</span>
+                                <span className="admin-challenges__card-meta">By {challenge.mentorName} · {challenge.createdAt}</span>
                             </div>
                             <Button variant="primary" onClick={() => setSelected(challenge)}>
                                 Review
@@ -44,10 +61,10 @@ export default function AdminChallenges() {
                 onClose={() => setSelected(null)}
                 title={selected?.title}
             >
-                <p className="admin-challenges__modal-meta">By {selected?.submittedBy} · {selected?.submittedAt}</p>
+                <p className="admin-challenges__modal-meta">By {selected?.mentorName} · {selected?.createdAt}</p>
                 <div className="admin-challenges__modal-actions">
-                    <Button variant="ghost" onClick={() => setSelected(null)}>Reject</Button>
-                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
+                    <Button variant="ghost" onClick={handleReject}>Reject</Button>
+                    <Button variant="primary" onClick={handleApprove}>Approve</Button>
                 </div>
             </Modal>
         </div>

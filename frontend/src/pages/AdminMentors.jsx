@@ -1,19 +1,36 @@
 // pages/AdminMentors.jsx
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
+import { fetchPendingMentors, approveMentor, rejectMentor } from '../api/adminQueries'
 import '../styles/AdminMentors.css'
 
-const PENDING_MENTORS = [
-    { id: 1, name: 'Celine Y.', jobTitle: 'SWE', company: 'Replit', notes: 'I want to help students break into the tech industry by sharing my experience landing roles at fast-growing startups.' },
-    { id: 2, name: 'Marcus T.', jobTitle: 'Product Manager', company: 'Shopify', notes: 'Passionate about helping new grads navigate the PM interview process and build strong portfolios.' },
-    { id: 3, name: 'Priya K.', jobTitle: 'Data Scientist', company: 'Google', notes: 'I went through a tough job search myself and want to give back by coaching others on resumes and interviews.' },
-]
-
 export default function AdminMentors() {
+    const [mentors, setMentors] = useState([])
+    const [loading, setLoading] = useState(true)
     const [selected, setSelected] = useState(null)
+
+    useEffect(() => {
+        fetchPendingMentors()
+            .then(setMentors)
+            .finally(() => setLoading(false))
+    }, [])
+
+    const handleApprove = async () => {
+        await approveMentor(selected.userId)
+        setMentors((prev) => prev.filter((m) => m.mentorProfileId !== selected.mentorProfileId))
+        setSelected(null)
+    }
+
+    const handleReject = async () => {
+        await rejectMentor(selected.userId)
+        setMentors((prev) => prev.filter((m) => m.mentorProfileId !== selected.mentorProfileId))
+        setSelected(null)
+    }
+    
+    if (loading) return null
 
     return (
         <div className="app-layout">
@@ -25,10 +42,10 @@ export default function AdminMentors() {
                 </div>
 
                 <div className="admin-mentors__list">
-                    {PENDING_MENTORS.map((mentor) => (
-                        <div key={mentor.id} className="admin-mentors__card">
+                    {mentors.map((mentor) => (
+                        <div key={mentor.mentorProfileId} className="admin-mentors__card">
                             <div className="admin-mentors__card-info">
-                                <span className="admin-mentors__name">{mentor.name}</span>
+                                <span className="admin-mentors__name">{mentor.fullName}</span>
                                 <span className="admin-mentors__meta">{mentor.jobTitle} @ {mentor.company}</span>
                             </div>
                             <Button variant="primary" onClick={() => setSelected(mentor)}>
@@ -42,7 +59,7 @@ export default function AdminMentors() {
             <Modal
                 isOpen={!!selected}
                 onClose={() => setSelected(null)}
-                title={selected?.name}
+                title={selected?.fullName}
             >
                 <div className="admin-mentors__modal-field">
                     <span className="admin-mentors__modal-label">Job Title</span>
@@ -52,13 +69,15 @@ export default function AdminMentors() {
                     <span className="admin-mentors__modal-label">Company</span>
                     <p className="admin-mentors__modal-value">{selected?.company}</p>
                 </div>
+                {/* TODO: uncomment after API exposes mentor application notes
                 <div className="admin-mentors__modal-field">
                     <span className="admin-mentors__modal-label">Why they want to mentor</span>
                     <p className="admin-mentors__modal-value">{selected?.notes}</p>
                 </div>
+                */}
                 <div className="admin-mentors__modal-actions">
-                    <Button variant="ghost" onClick={() => setSelected(null)}>Reject</Button>
-                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
+                    <Button variant="ghost" onClick={handleReject}>Reject</Button>
+                    <Button variant="primary" onClick={handleApprove}>Approve</Button>
                 </div>
             </Modal>
         </div>

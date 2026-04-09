@@ -1,21 +1,46 @@
 // pages/AdminUsers.jsx
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
+import { fetchAllUsers, suspendUser, unsuspendUser } from '../api/adminQueries'
 import '../styles/AdminUsers.css'
 
-const PENDING_USERS = [
-    { id: 1, name: 'Armin S.', email: 'armin@ucalgary.ca', role: 'Seeker', initials: 'AS' },
-    { id: 2, name: 'Ryan O.', email: 'ryan@ucalgary.ca', role: 'Seeker', initials: 'RO' },
-    { id: 3, name: 'Jason N.', email: 'jason@ucalgary.ca', role: 'Seeker', initials: 'JN' },
-    { id: 4, name: 'Sebastian S.', email: 'seb@ucalgary.ca', role: 'Seeker', initials: 'SS' },
-    { id: 5, name: 'Omar A.', email: 'omar@ucalgary.ca', role: 'Mentor', initials: 'OA' },
-]
-
 export default function AdminUsers() {
+    const [users, setUsers] = useState([])
+    const [loading, setLoading] = useState(true)
     const [selected, setSelected] = useState(null)
+    const [search, setSearch] = useState('')
+
+    useEffect(() => {
+        fetchAllUsers()
+            .then(setUsers)
+            .finally(() => setLoading(false))
+    }, [])
+
+    const handleSearch = (e) => {
+        e.preventDefault()
+        setLoading(true)
+        fetchAllUsers(search || null)
+            .then(setUsers)
+            .finally(() => setLoading(false))
+    }
+
+    const handleSuspend = async () => {
+        // TODO: replace '' with a note from a text input field in the modal
+        await suspendUser(selected.userId, '')
+        setUsers((prev) => prev.map((u) => u.userId === selected.userId ? { ...u, isActive: false } : u))
+        setSelected(null)
+    }
+
+    const handleUnsuspend = async () => {
+        await unsuspendUser(selected.userId)
+        setUsers((prev) => prev.map((u) => u.userId === selected.userId ? { ...u, isActive: true } : u))
+        setSelected(null)
+    }
+
+    if (loading) return null
 
     return (
         <div className="app-layout">
@@ -26,15 +51,24 @@ export default function AdminUsers() {
                     <p className="admin-users__subtitle">Review and manage platform users</p>
                 </div>
 
+                <form className="admin-users__search" onSubmit={handleSearch}>
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search users..."
+                    />
+                    <Button variant="primary" type="submit">Search</Button>
+                </form>
+
                 <div className="admin-users__list">
-                    {PENDING_USERS.map((user) => (
-                        <div key={user.id} className="admin-users__card">
-                            <div className="admin-users__avatar">{user.initials}</div>
+                    {users.map((user) => (
+                        <div key={user.userId} className="admin-users__card">
+                            <div className="admin-users__avatar">{user.fullName.split(' ').map((n) => n[0]).join('')}</div>
                             <div className="admin-users__info">
-                                <span className="admin-users__name">{user.name}</span>
+                                <span className="admin-users__name">{user.fullName}</span>
                                 <span className="admin-users__email">{user.email}</span>
                             </div>
-                            <span className="admin-users__role">{user.role}</span>
+                            <span className="admin-users__role">{user.roleName}</span>
                             <Button variant="primary" onClick={() => setSelected(user)}>
                                 Manage
                             </Button>
@@ -46,17 +80,19 @@ export default function AdminUsers() {
             <Modal
                 isOpen={!!selected}
                 onClose={() => setSelected(null)}
-                title={selected?.name}
+                title={selected?.fullName}
             >
                 <p className="admin-users__modal-email">{selected?.email}</p>
                 <div className="admin-users__modal-field">
                     <span className="admin-users__modal-label">Current Role</span>
-                    <span className="admin-users__role">{selected?.role}</span>
+                    <span className="admin-users__role">{selected?.roleName}</span>
                 </div>
                 <div className="admin-users__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
-                    <Button variant="danger" onClick={() => setSelected(null)}>Suspend User</Button>
-                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
+                    {selected?.isActive
+                        ? <Button variant="danger" onClick={handleSuspend}>Suspend User</Button>
+                        : <Button variant="primary" onClick={handleUnsuspend}>Unsuspend User</Button>
+                    }
                 </div>
             </Modal>
         </div>

@@ -28,6 +28,11 @@
   color: var(--text-secondary);
 }
 
+.collection-panel__error {
+  color: #fca5a5;
+  font-size: var(--text-sm);
+}
+
 /* Honeycomb grid — alternating rows are offset by half a badge width */
 .badge-grid {
   display: flex;

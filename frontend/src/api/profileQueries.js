@@ -1,6 +1,29 @@
 import { graphqlRequest } from '../lib/graphqlRequest'
 
 
+const PROFILE_INSIGHTS_QUERY = `
+  query ProfileInsights {
+    myBadges {
+      userBadgeId
+      earnedAt
+      badge {
+        badgeId
+        badgeName
+      }
+    }
+    myXpHistory {
+      xpEventId
+    }
+    allBadges {
+      badgeId
+      badgeName
+      description
+      levelRequired
+      iconName
+    }
+  }
+`
+
 // Profile Mutations (modify or writing data)
 const UPDATE_PROFILE_MUTATION = `
   mutation UpdateProfile($headline: String, $bio: String, $location: String, $fullName: String, $avatar: String) {
@@ -27,4 +50,13 @@ const UPDATE_PROFILE_MUTATION = `
 export async function updateProfile({ headline, bio, location, fullName, avatar }) {
   const data = await graphqlRequest(UPDATE_PROFILE_MUTATION, { headline, bio, location, fullName, avatar })
   return data.updateProfile
+}
+
+export async function fetchProfileInsights() {
+  const data = await graphqlRequest(PROFILE_INSIGHTS_QUERY)
+  return {
+    myBadges: data.myBadges ?? [],
+    myXpHistory: data.myXpHistory ?? [],
+    allBadges: data.allBadges ?? [],
+  }
 }

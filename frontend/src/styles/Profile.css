@@ -200,6 +200,11 @@
   color: #fb7185;
 }
 
+.profile-bio__input[readonly] {
+  opacity: 0.9;
+  cursor: default;
+}
+
 /* ── Edit profile modal ── */
 
 .profile-edit {

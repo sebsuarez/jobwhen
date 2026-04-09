@@ -1,23 +1,40 @@
 // pages/Collection.jsx
+import { useEffect, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import BadgeHex from '../components/BadgeHex'
-import { useAuth } from '../hooks/useAuth'
+import { fetchProfileInsights } from '../api/profileQueries'
 import '../styles/Collection.css'
 
-const TOTAL_BADGES = 11
-
 export default function Collection() {
-  const { user } = useAuth()
-  const currentLevel = user?.currentLevel ?? 0
+  const [badges, setBadges] = useState([])
+  const [error, setError] = useState('')
 
-  const badges = Array.from({ length: TOTAL_BADGES }, (_, i) => {
-    const level = i + 1
-    return {
-      level,
-      unlocked: level < currentLevel,
-      current: level === currentLevel,
+  useEffect(() => {
+    let cancelled = false
+
+    fetchProfileInsights()
+      .then(({ myBadges, allBadges }) => {
+        if (cancelled) return
+        const earnedBadgeIds = new Set(myBadges.map((entry) => entry.badge.badgeId))
+        setBadges(
+          allBadges.map((badge, index) => ({
+            level: badge.levelRequired ?? index + 1,
+            label: badge.badgeName,
+            unlocked: earnedBadgeIds.has(badge.badgeId),
+            current: false,
+          }))
+        )
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message)
+        }
+      })
+
+    return () => {
+      cancelled = true
     }
-  })
+  }, [])
 
   // chunk badges into alternating rows of 4 and 3
   const rows = []
@@ -40,11 +57,13 @@ export default function Collection() {
             <p className="collection-panel__subtitle">Collect more badges with more XP!</p>
           </div>
 
+          {error && <p className="collection-panel__error">{error}</p>}
+
           <div className="badge-grid">
             {rows.map((row, rowIndex) => (
               <div key={rowIndex} className={`badge-row${rowIndex % 2 === 1 ? ' badge-row--offset' : ''}`}>
-                {row.map(({ level, unlocked, current }) => (
-                  <BadgeHex key={level} level={level} unlocked={unlocked} current={current} />
+                {row.map(({ level, label, unlocked, current }) => (
+                  <BadgeHex key={`${level}-${label}`} level={level} label={label} unlocked={unlocked} current={current} />
                 ))}
               </div>
             ))}

@@ -232,6 +232,30 @@ def join_challenge(user_id, challenge_id):
             )
 
 
+def delete_challenge(mentor_user_id, challenge_id):
+    # allows a mentor to delete a challenge they created
+    # to avoid foreign key conflicts we remove all the participants first
+    with engine.begin() as conn:
+        challenge = conn.execute(
+            text("SELECT mentor_user_id FROM challenges WHERE challenge_id = :cid"),
+            {"cid": challenge_id},
+        ).mappings().first()
+
+        if not challenge:
+            raise RuntimeError("Challenge not found.")
+        if challenge["mentor_user_id"] != mentor_user_id:
+            raise RuntimeError("You can only delete your own challenges.")
+
+        conn.execute(
+            text("DELETE FROM challenge_participants WHERE challenge_id = :cid"),
+            {"cid": challenge_id},
+        )
+        conn.execute(
+            text("DELETE FROM challenges WHERE challenge_id = :cid"),
+            {"cid": challenge_id},
+        )
+
+
 def leave_challenge(user_id, challenge_id):
     # sets status to withdrawn rather than deleting so history is preserved
     # this means if the user rejoins later we can UPDATE the existing row instead of inserting a duplicate,
