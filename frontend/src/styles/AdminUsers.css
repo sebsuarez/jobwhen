@@ -15,11 +15,27 @@
     margin-top: var(--space-1);
 }
 
+.admin-users__search {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+}
+
+.admin-users__search input {
+    flex: 1;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-default);
+    background: var(--bg-card-solid);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+}
+
 .admin-users__list {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    margin-top: var(--space-6);
+    margin-top: var(--space-4);
 }
 
 .admin-users__card {
