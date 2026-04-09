@@ -339,6 +339,7 @@ CREATE TABLE IF NOT EXISTS challenge_participants (
     user_id INT NOT NULL,
     progress_count INT NOT NULL DEFAULT 0,
     target_count INT NOT NULL DEFAULT 1,
+    completion_count INT NOT NULL DEFAULT 0,
     joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP,
     participation_status VARCHAR(20) NOT NULL DEFAULT 'active',
@@ -347,6 +348,9 @@ CREATE TABLE IF NOT EXISTS challenge_participants (
 
     CONSTRAINT chk_progress_values
         CHECK (progress_count >= 0 AND target_count > 0),
+
+    CONSTRAINT chk_completion_count
+        CHECK (completion_count >= 0),
 
     CONSTRAINT chk_participation_status
         CHECK (participation_status IN ('active', 'completed', 'withdrawn')),

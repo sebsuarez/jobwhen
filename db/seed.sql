@@ -246,14 +246,16 @@ SELECT * FROM (VALUES
 WHERE NOT EXISTS (SELECT 1 FROM challenges LIMIT 1);
 
 -- CHALLENGE PARTICIPANTS
-INSERT INTO challenge_participants (challenge_id, user_id, progress_count, target_count, participation_status)
+INSERT INTO challenge_participants (
+    challenge_id, user_id, progress_count, target_count, completion_count, participation_status
+)
 VALUES
-(1, 1, 3, 5, 'active'),
-(2, 1, 1, 3, 'active'),
-(3, 1, 0, 2, 'active'),
-(1, 2, 5, 5, 'completed'),
-(2, 2, 2, 3, 'active'),
-(1, 3, 5, 5, 'completed')
+(1, 1, 3, 5, 0, 'active'),
+(2, 1, 1, 3, 0, 'active'),
+(3, 1, 0, 2, 0, 'active'),
+(1, 2, 5, 5, 1, 'completed'),
+(2, 2, 2, 3, 0, 'active'),
+(1, 3, 5, 5, 1, 'completed')
 ON CONFLICT (challenge_id, user_id) DO NOTHING;
 
 -- REPORTS
