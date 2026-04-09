@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
+import Button from "../components/Button"
 import Modal from "../components/Modal"
 import '../styles/AdminChallenges.css'
 
@@ -30,9 +31,9 @@ export default function AdminChallenges() {
                                 <span className="admin-challenges__card-title">{challenge.title}</span>
                                 <span className="admin-challenges__card-meta">By {challenge.submittedBy} · {challenge.submittedAt}</span>
                             </div>
-                            <button className="btn btn--primary" onClick={() => setSelected(challenge)}>
+                            <Button variant="primary" onClick={() => setSelected(challenge)}>
                                 Review
-                            </button>
+                            </Button>
                         </div>
                     ))}
                 </div>
@@ -45,8 +46,8 @@ export default function AdminChallenges() {
             >
                 <p className="admin-challenges__modal-meta">By {selected?.submittedBy} · {selected?.submittedAt}</p>
                 <div className="admin-challenges__modal-actions">
-                    <button className="btn btn--ghost" onClick={() => setSelected(null)}>Reject</button>
-                    <button className="btn btn--primary" onClick={() => setSelected(null)}>Approve</button>
+                    <Button variant="ghost" onClick={() => setSelected(null)}>Reject</Button>
+                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
                 </div>
             </Modal>
         </div>
