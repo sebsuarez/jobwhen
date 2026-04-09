@@ -2,7 +2,7 @@ import graphene
 
 from gql.types import ChallengeResponse
 from services.auth_service import SESSION_COOKIE_NAME, fetch_session_user
-from services.challenge_service import create_challenge, join_challenge, leave_challenge
+from services.challenge_service import create_challenge, delete_challenge, join_challenge, leave_challenge
 
 
 def _require_auth(info):
@@ -68,7 +68,23 @@ class CreateChallenge(graphene.Mutation):
         return ChallengeResponse(ok=True, message="Challenge submitted for review.")
 
 
+class DeleteChallenge(graphene.Mutation):
+    class Arguments:
+        challenge_id = graphene.Int(required=True)
+
+    Output = ChallengeResponse
+
+    @staticmethod
+    def mutate(root, info, challenge_id):
+        user = _require_auth(info)
+        if user["role"]["role_name"] != "mentor":
+            raise RuntimeError("Only mentors can delete challenges.")
+        delete_challenge(mentor_user_id=user["user_id"], challenge_id=challenge_id)
+        return ChallengeResponse(ok=True, message="Challenge deleted.")
+
+
 class ChallengeMutation(graphene.ObjectType):
     join_challenge = JoinChallenge.Field()
     leave_challenge = LeaveChallenge.Field()
     create_challenge = CreateChallenge.Field()
+    delete_challenge = DeleteChallenge.Field()
