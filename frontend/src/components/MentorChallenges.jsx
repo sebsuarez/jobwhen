@@ -2,6 +2,14 @@
 
 import '../styles/MentorChallenges.css'
 
+const STATUS_ORDER = ['approved', 'in_review', 'rejected']
+
+const STATUS_CONFIG = {
+  approved:  { label: 'Approved',  className: 'mentor-challenges__status--approved' },
+  in_review: { label: 'In Review', className: 'mentor-challenges__status--review' },
+  rejected:  { label: 'Rejected',  className: 'mentor-challenges__status--rejected' },
+}
+
 // TODO: replace with real API data once backend is ready
 const MOCK_CHALLENGES = [
   {
