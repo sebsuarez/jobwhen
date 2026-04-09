@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
+import MentorChallenges from '../components/MentorChallenges'
 import '../styles/Challenges.css'
 import { fetchActiveChallenges, fetchAvailableChallenges, joinChallenge, leaveChallenge } from '../api/challengeQueries'
 
@@ -93,6 +94,7 @@ export default function Challenges() {
       <Sidebar />
 
       <main className="challenges-page__main">
+        <div className="challenges-page__layout">
         <section className="challenges-panel">
           <div className="challenges-panel__header">
             <h1 className="challenges-panel__title">Active Challenges</h1>
@@ -187,6 +189,8 @@ export default function Challenges() {
             </div>
           </Card>
         </section>
+          <MentorChallenges />
+        </div>
       </main>
     </div>
   )

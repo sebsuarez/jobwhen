@@ -1,0 +1,142 @@
+/* MentorChallenges.css */
+
+.mentor-challenges {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 380px;
+  flex-shrink: 0;
+}
+
+.mentor-challenges__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.mentor-challenges__title {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mentor-challenges__subtitle {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.mentor-challenges__new-btn {
+  white-space: nowrap;
+  border-radius: var(--radius-full);
+}
+
+.mentor-challenges__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mentor-challenges__status-label {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-align: center;
+  padding: var(--space-1) 0;
+}
+
+.mentor-challenges__status--approved { color: #4ADE80; }
+.mentor-challenges__status--review   { color: #FBBF24; }
+.mentor-challenges__status--rejected { color: #F87171; }
+
+.mentor-challenges__card {
+  padding: var(--space-4) var(--space-5);
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mentor-challenges__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.mentor-challenges__card-title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mentor-challenges__card-duration {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #A855F7;
+}
+
+.mentor-challenges__card-desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.mentor-challenges__participants {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.mentor-challenges__edit-btn {
+  font-size: var(--text-base);
+}
+
+.mentor-challenges__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mentor-challenges__field--row {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+}
+
+.mentor-challenges__label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mentor-challenges__loopable-btn {
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+.mentor-challenges__loopable-btn--on {
+  background: rgba(147, 51, 234, 0.2);
+  border-color: var(--btn-primary-bg);
+  color: var(--text-accent);
+}
+
+.mentor-challenges__max-loops {
+  width: 120px;
+}
+
+.mentor-challenges__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
