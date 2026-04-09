@@ -1,5 +1,6 @@
 // components/MentorChallenges.jsx
 
+import { useState } from 'react'
 import '../styles/MentorChallenges.css'
 
 const STATUS_ORDER = ['approved', 'in_review', 'rejected']
@@ -63,12 +64,16 @@ const MOCK_CHALLENGES = [
 ]
 
 export default function MentorChallenges() {
-  const [challenges] = useState(MOCK_CHALLENGES)
+  const [challenges, setChallenges] = useState(MOCK_CHALLENGES)
 
   const grouped = STATUS_ORDER.reduce((acc, status) => {
     acc[status] = challenges.filter((c) => c.status === status)
     return acc
   }, {})
+
+  const handleRemove = (id) => {
+    setChallenges((prev) => prev.filter((c) => c.id !== id))
+  }
 
   return (
     <aside className="mentor-challenges">
@@ -88,6 +93,22 @@ export default function MentorChallenges() {
                     <h3 className="mentor-challenges__card-title">{challenge.title}</h3>
                     <p className="mentor-challenges__card-duration">{challenge.duration}</p>
                   </div>
+
+                  {status === 'approved' && (
+                    <span className="mentor-challenges__participants">
+                      Participants: {challenge.participants}
+                    </span>
+                  )}
+                  {status === 'in_review' && (
+                    <button className="mentor-challenges__edit-btn" title="Edit">&#9998;</button>
+                  )}
+                  {status === 'rejected' && (
+                    <button
+                      className="mentor-challenges__remove-btn"
+                      onClick={() => handleRemove(challenge.id)}>
+                      remove
+                    </button>
+                  )}
                 </div>
                 <p className="mentor-challenges__card-desc">{challenge.description}</p>
               </div>
