@@ -63,8 +63,38 @@ const MOCK_CHALLENGES = [
 ]
 
 export default function MentorChallenges() {
+  const [challenges] = useState(MOCK_CHALLENGES)
+
+  const grouped = STATUS_ORDER.reduce((acc, status) => {
+    acc[status] = challenges.filter((c) => c.status === status)
+    return acc
+  }, {})
+
   return (
     <aside className="mentor-challenges">
+      {STATUS_ORDER.map((status) => {
+        const group = grouped[status]
+        if (group.length === 0) return null
+        const { label, className } = STATUS_CONFIG[status]
+
+        return (
+          <div key={status} className="mentor-challenges__group">
+            <p className={`mentor-challenges__status-label ${className}`}>{label}</p>
+
+            {group.map((challenge) => (
+              <div key={challenge.id} className="mentor-challenges__card">
+                <div className="mentor-challenges__card-header">
+                  <div>
+                    <h3 className="mentor-challenges__card-title">{challenge.title}</h3>
+                    <p className="mentor-challenges__card-duration">{challenge.duration}</p>
+                  </div>
+                </div>
+                <p className="mentor-challenges__card-desc">{challenge.description}</p>
+              </div>
+            ))}
+          </div>
+        )
+      })}
     </aside>
   )
 }
