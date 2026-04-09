@@ -77,6 +77,14 @@ export default function MentorChallenges() {
 
   return (
     <aside className="mentor-challenges">
+      <div className="mentor-challenges__header">
+        <div>
+          <h2 className="mentor-challenges__title">My Active Challenges</h2>
+          <p className="mentor-challenges__subtitle">Browse your created challenges</p>
+        </div>
+        <button className="mentor-challenges__new-btn">+ New Challenge</button>
+      </div>
+
       {STATUS_ORDER.map((status) => {
         const group = grouped[status]
         if (group.length === 0) return null
