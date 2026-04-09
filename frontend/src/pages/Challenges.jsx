@@ -34,13 +34,21 @@ export default function Challenges() {
     }
   }
 
-  const handleAddChallenge = (challenge) => {
+  const handleAddChallenge = async (challenge) => {
     if (activeChallenges.length >= 5) {
       alert('You can only have 5 active challenges at a time.')
       return
     }
-    setActiveChallenges((prev) => [...prev, challenge])
-    setNewChallenges((prev) => prev.filter((item) => item.id !== challenge.id))
+    try {
+      const result = await joinChallenge(challenge.challengeId)
+      if (result.ok) {
+        await loadChallenges()
+      } else {
+        alert(result.message)
+      }
+    } catch {
+      alert('Failed to join challenge.')
+    }
   }
 
   const handleRemoveChallenge = (challenge) => {
