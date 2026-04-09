@@ -87,20 +87,3 @@ def complete_goal(user_id, goal_id):
         )
 
         return serialize_goal(updated_goal)
-
-
-def submit_mood_checkin(user_id, mood_score, reflection=None):
-    # inserts a mood check-in for the user
-    # mood_score must be between 1 and 5
-    if not (1 <= mood_score <= 5):
-        raise RuntimeError("Mood score must be between 1 and 5.")
-    with engine.begin() as conn:
-        conn.execute(
-            text(
-                """
-                INSERT INTO mood_checkins (user_id, mood_score, reflection)
-                VALUES (:uid, :score, :reflection)
-                """
-            ),
-            {"uid": user_id, "score": mood_score, "reflection": reflection},
-        )

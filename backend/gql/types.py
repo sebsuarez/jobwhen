@@ -194,6 +194,23 @@ class MoodResponse(graphene.ObjectType):
     message = graphene.String()
 
 
+class MoodCheckinType(graphene.ObjectType):
+    mood_id = graphene.Int()
+    user_id = graphene.Int()
+    mood_score = graphene.Int()
+    reflection = graphene.String()
+    checked_in_at = graphene.String()
+
+
+class BurnoutAlertType(graphene.ObjectType):
+    alert_id = graphene.Int()
+    user_id = graphene.Int()
+    trigger_reason = graphene.String()
+    supportive_message = graphene.String()
+    created_at = graphene.String()
+    resolved = graphene.Boolean()
+
+
 # XP & BADGE TYPES
 
 class XpEventType(graphene.ObjectType):
