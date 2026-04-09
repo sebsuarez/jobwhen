@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
+import Button from "../components/Button"
 import Modal from "../components/Modal"
 import '../styles/AdminMentors.css'
 
@@ -30,9 +31,9 @@ export default function AdminMentors() {
                                 <span className="admin-mentors__name">{mentor.name}</span>
                                 <span className="admin-mentors__meta">{mentor.jobTitle} @ {mentor.company}</span>
                             </div>
-                            <button className="admin-mentors__review-btn" onClick={() => setSelected(mentor)}>
+                            <Button variant="primary" onClick={() => setSelected(mentor)}>
                                 Review
-                            </button>
+                            </Button>
                         </div>
                     ))}
                 </div>
@@ -56,8 +57,8 @@ export default function AdminMentors() {
                     <p className="admin-mentors__modal-value">{selected?.notes}</p>
                 </div>
                 <div className="admin-mentors__modal-actions">
-                    <button className="admin-mentors__btn admin-mentors__btn--reject" onClick={() => setSelected(null)}>Reject</button>
-                    <button className="admin-mentors__btn admin-mentors__btn--approve" onClick={() => setSelected(null)}>Approve</button>
+                    <Button variant="ghost" onClick={() => setSelected(null)}>Reject</Button>
+                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
                 </div>
             </Modal>
         </div>
