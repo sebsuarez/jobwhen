@@ -5,10 +5,13 @@ import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import MentorChallenges from '../components/MentorChallenges'
+import { useAuth } from '../hooks/useAuth'
 import '../styles/Challenges.css'
 import { fetchActiveChallenges, fetchAvailableChallenges, joinChallenge, leaveChallenge } from '../api/challengeQueries'
 
 export default function Challenges() {
+  const { user } = useAuth()
+  const isMentor = user?.role?.roleName === 'mentor'
   const [activeChallenges, setActiveChallenges] = useState([])
   const [newChallenges, setNewChallenges] = useState([])
   const [loading, setLoading] = useState(true)
@@ -189,7 +192,7 @@ export default function Challenges() {
             </div>
           </Card>
         </section>
-          <MentorChallenges />
+          {isMentor && <MentorChallenges />}
         </div>
       </main>
     </div>
