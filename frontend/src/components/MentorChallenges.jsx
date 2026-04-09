@@ -63,8 +63,20 @@ const MOCK_CHALLENGES = [
   },
 ]
 
+const EMPTY_FORM = {
+  title: '',
+  deadline: '',
+  description: '',
+  reward: '',
+  isLoopable: false,
+  maxLoops: '',
+  reviewNote: '',
+}
+
 export default function MentorChallenges() {
   const [challenges, setChallenges] = useState(MOCK_CHALLENGES)
+  const [showCreate, setShowCreate] = useState(false)
+  const [form, setForm] = useState(EMPTY_FORM)
 
   const grouped = STATUS_ORDER.reduce((acc, status) => {
     acc[status] = challenges.filter((c) => c.status === status)
@@ -75,6 +87,31 @@ export default function MentorChallenges() {
     setChallenges((prev) => prev.filter((c) => c.id !== id))
   }
 
+  const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    // TODO: wire to backend — challenge submitted for admin review
+    const newChallenge = {
+      id: Date.now(),
+      title: form.title,
+      duration: form.deadline ? `Due ${form.deadline}` : 'No deadline',
+      description: form.description,
+      reviewNote: form.reviewNote,
+      status: 'in_review',
+      participants: 0,
+      isLoopable: form.isLoopable,
+      loopCount: 0,
+      maxLoops: form.isLoopable ? Number(form.maxLoops) || null : null,
+    }
+    setChallenges((prev) => [...prev, newChallenge])
+    setForm(EMPTY_FORM)
+    setShowCreate(false)
+  }
+
   return (
     <aside className="mentor-challenges">
       <div className="mentor-challenges__header">
@@ -82,7 +119,7 @@ export default function MentorChallenges() {
           <h2 className="mentor-challenges__title">My Active Challenges</h2>
           <p className="mentor-challenges__subtitle">Browse your created challenges</p>
         </div>
-        <button className="mentor-challenges__new-btn">+ New Challenge</button>
+        <button className="mentor-challenges__new-btn" onClick={() => setShowCreate(true)}>+ New Challenge</button>
       </div>
 
       {STATUS_ORDER.map((status) => {
