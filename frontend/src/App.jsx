@@ -10,7 +10,6 @@ import Collection from './pages/Collection'
 import Challenges from './pages/Challenges'
 import Friends from './pages/Friends'
 import Profile from './pages/Profile'
-import Settings from './pages/Settings'
 import { useAuth } from './hooks/useAuth'
 import AdminChallenges from './pages/AdminChallenges'
 import AdminUsers from './pages/AdminUsers'
@@ -82,7 +81,6 @@ function App() {
       <Route path="/challenges" element={<ProtectedRoute><Challenges /></ProtectedRoute>} />
       <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/admin/challenges" element={<AdminRoute><AdminChallenges /></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
       <Route path="/admin/mentors" element={<AdminRoute><AdminMentors /></AdminRoute>} />
