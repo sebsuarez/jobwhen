@@ -177,6 +177,23 @@ class ChallengeResponse(graphene.ObjectType):
     message = graphene.String()
 
 
+# GOAL & MOOD TYPES
+
+class GoalType(graphene.ObjectType):
+    goal_id = graphene.Int()
+    goal_type = graphene.String()
+    target_count = graphene.Int()
+    current_count = graphene.Int()
+    start_date = graphene.String()
+    end_date = graphene.String()
+    is_completed = graphene.Boolean()
+
+
+class MoodResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
+
+
 # ADMIN TYPES
 
 class AdminUserType(graphene.ObjectType):
