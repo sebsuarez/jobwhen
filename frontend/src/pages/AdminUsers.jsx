@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
-import { fetchAllUsers, suspendUser } from '../api/adminQueries'
+import { fetchAllUsers, suspendUser, unsuspendUser } from '../api/adminQueries'
 import '../styles/AdminUsers.css'
 
 export default function AdminUsers() {
@@ -22,6 +22,12 @@ export default function AdminUsers() {
         // TODO: replace '' with a note from a text input field in the modal
         await suspendUser(selected.userId, '')
         setUsers((prev) => prev.map((u) => u.userId === selected.userId ? { ...u, isActive: false } : u))
+        setSelected(null)
+    }
+
+    const handleUnsuspend = async () => {
+        await unsuspendUser(selected.userId)
+        setUsers((prev) => prev.map((u) => u.userId === selected.userId ? { ...u, isActive: true } : u))
         setSelected(null)
     }
 
@@ -65,8 +71,10 @@ export default function AdminUsers() {
                 </div>
                 <div className="admin-users__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
-                    <Button variant="danger" onClick={handleSuspend}>Suspend User</Button>
-                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
+                    {selected?.isActive
+                        ? <Button variant="danger" onClick={handleSuspend}>Suspend User</Button>
+                        : <Button variant="primary" onClick={handleUnsuspend}>Unsuspend User</Button>
+                    }
                 </div>
             </Modal>
         </div>
