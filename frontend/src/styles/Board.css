@@ -225,7 +225,9 @@
   color: var(--btn-primary-text);
   border-color: var(--btn-primary-bg);
 }
-
+.board__page-scroll {
+  overflow-x: auto;
+}
 /* ── Responsive ── */
 
 @media (max-width: 900px) {

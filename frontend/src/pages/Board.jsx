@@ -254,7 +254,7 @@ export default function Board() {
   return (
     <div className="app-layout">
       <Sidebar />
-      <main className="app-content">
+      <main className="app-content board__page-scroll">
         <div className="board__header">
           <div>
             <h1 className="page-title">Job Board</h1>
