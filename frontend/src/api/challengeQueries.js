@@ -39,6 +39,45 @@ const AVAILABLE_CHALLENGES_QUERY = `
   }
 `
 
+const MY_CREATED_CHALLENGES_QUERY = `
+  query MyCreatedChallenges {
+    myCreatedChallenges {
+      challengeId
+      title
+      description
+      xpReward
+      challengeStatus
+      participantLimit
+      startDate
+      dueDate
+      createdAt
+    }
+  }
+`
+
+const CREATE_CHALLENGE_MUTATION = `
+  mutation CreateChallenge(
+    $title: String!
+    $description: String!
+    $xpReward: Int
+    $participantLimit: Int
+    $startDate: String
+    $dueDate: String
+  ) {
+    createChallenge(
+      title: $title
+      description: $description
+      xpReward: $xpReward
+      participantLimit: $participantLimit
+      startDate: $startDate
+      dueDate: $dueDate
+    ) {
+      ok
+      message
+    }
+  }
+`
+
 // Challenge Mutations (modify or writing data)
 const JOIN_CHALLENGE_MUTATION = `
   mutation JoinChallenge($challengeId: Int!) {
@@ -77,4 +116,14 @@ export async function joinChallenge(challengeId) {
 export async function leaveChallenge(challengeId) {
   const data = await graphqlRequest(LEAVE_CHALLENGE_MUTATION, { challengeId })
   return data.leaveChallenge
+}
+
+export async function fetchMyCreatedChallenges() {
+  const data = await graphqlRequest(MY_CREATED_CHALLENGES_QUERY)
+  return data.myCreatedChallenges
+}
+
+export async function createChallenge(input) {
+  const data = await graphqlRequest(CREATE_CHALLENGE_MUTATION, input)
+  return data.createChallenge
 }
