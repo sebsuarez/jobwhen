@@ -4,6 +4,7 @@ from gql.mutations.admin import AdminMutation
 from gql.mutations.auth import AuthMutation
 from gql.mutations.challenges import ChallengeMutation
 from gql.mutations.friends import FriendMutation
+from gql.mutations.goals import GoalMutation
 from gql.mutations.jobs import JobMutation
 from gql.mutations.mood import MoodMutation
 from gql.mutations.profile import ProfileMutation
@@ -13,13 +14,14 @@ from gql.queries.challenges import ChallengeQuery
 from gql.queries.friends import FriendQuery
 from gql.queries.goals import GoalQuery
 from gql.queries.jobs import JobQuery
+from gql.queries.xp import XpQuery
 
 
-class Query(AuthQuery, JobQuery, FriendQuery, ChallengeQuery, AdminQuery, GoalQuery, graphene.ObjectType):
+class Query(AuthQuery, JobQuery, FriendQuery, ChallengeQuery, AdminQuery, GoalQuery, XpQuery, graphene.ObjectType):
     pass
 
 
-class Mutation(AuthMutation, JobMutation, ProfileMutation, FriendMutation, ChallengeMutation, AdminMutation, MoodMutation, graphene.ObjectType):
+class Mutation(AuthMutation, JobMutation, ProfileMutation, FriendMutation, ChallengeMutation, AdminMutation, GoalMutation, MoodMutation, graphene.ObjectType):
     pass
 
 

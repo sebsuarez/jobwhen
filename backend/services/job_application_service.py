@@ -1,8 +1,10 @@
 from sqlalchemy import text
 
 from db import engine
+from services.xp_service import award_xp
 
 VALID_STATUSES = {"wishlist", "applied", "interview", "offer", "rejected", "ghosted"}
+APPLICATION_XP_AMOUNT = 20
 
 
 def serialize_application(row):
@@ -114,6 +116,14 @@ def create_application(user_id, company_name, role_title, location=None, job_lin
             {"application_id": application_id, "new_status": status},
         )
 
+        if status == "applied":
+            award_xp(
+                user_id=user_id,
+                event_type="job_application",
+                amount=APPLICATION_XP_AMOUNT,
+                description=f"Applied to {company_name} {role_title}",
+            )
+
         return _fetch_application_by_id(conn, application_id)
 
 
@@ -125,7 +135,11 @@ def update_application_status(application_id, user_id, new_status, note=None):
         # verify the application exists and belongs to the requesting user
         existing = conn.execute(
             text(
-                "SELECT application_id, user_id, status FROM job_applications WHERE application_id = :application_id"
+                """
+                SELECT application_id, user_id, company_name, role_title, status
+                FROM job_applications
+                WHERE application_id = :application_id
+                """
             ),
             {"application_id": application_id},
         ).mappings().first()
@@ -164,6 +178,14 @@ def update_application_status(application_id, user_id, new_status, note=None):
                 "note": note,
             },
         )
+
+        if old_status != "applied" and new_status == "applied":
+            award_xp(
+                user_id=user_id,
+                event_type="job_application",
+                amount=APPLICATION_XP_AMOUNT,
+                description=f"Applied to {existing['company_name']} {existing['role_title']}",
+            )
 
         return _fetch_application_by_id(conn, application_id)
 
