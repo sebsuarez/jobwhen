@@ -12,7 +12,6 @@ const navItems = [
 
 const bottomItems = [
   { path: '/profile', label: 'Profile', icon: '👤' },
-  { path: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
 export default function Sidebar() {
@@ -43,10 +42,7 @@ export default function Sidebar() {
         </NavLink>
 
         <div className="mobile-sidebar__logo">Job When?</div>
-
-        <NavLink to="/settings" className="mobile-top__icon-link">
-          <span className="mobile-top__icon">⚙️</span>
-        </NavLink>
+        
       </div>
 
       <nav className="mobile-sidebar-bottom">
