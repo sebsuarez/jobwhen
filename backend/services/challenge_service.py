@@ -134,7 +134,8 @@ def get_mentor_challenges(mentor_user_id):
 
 
 def create_challenge(mentor_user_id, title, description, xp_reward, participant_limit, start_date, due_date):
-    # inserts a new challenge with status 'in_review' — admin must approve before it goes live
+    # inserts a new challenge with status 'in_review'
+    # admin must approve before it goes live
     with engine.begin() as conn:
         row = conn.execute(
             text(
