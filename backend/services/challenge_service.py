@@ -104,6 +104,65 @@ def get_available_challenges(user_id):
         return [serialize_challenge(r) for r in rows]
 
 
+def get_mentor_challenges(mentor_user_id):
+    # returns all challenges created by this mentor, regardless of status
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                """
+                SELECT
+                    c.challenge_id,
+                    c.mentor_user_id,
+                    c.title,
+                    c.description,
+                    c.xp_reward,
+                    c.challenge_status,
+                    c.participant_limit,
+                    c.start_date,
+                    c.due_date,
+                    c.created_at,
+                    u.full_name AS mentor_name
+                FROM challenges c
+                JOIN users u ON u.user_id = c.mentor_user_id
+                WHERE c.mentor_user_id = :uid
+                ORDER BY c.created_at DESC
+                """
+            ),
+            {"uid": mentor_user_id},
+        ).mappings().all()
+        return [serialize_challenge(r) for r in rows]
+
+
+def create_challenge(mentor_user_id, title, description, xp_reward, participant_limit, start_date, due_date):
+    # inserts a new challenge with status 'in_review' — admin must approve before it goes live
+    with engine.begin() as conn:
+        row = conn.execute(
+            text(
+                """
+                INSERT INTO challenges (
+                    mentor_user_id, title, description, xp_reward,
+                    participant_limit, start_date, due_date
+                )
+                VALUES (
+                    :mentor_user_id, :title, :description, :xp_reward,
+                    :participant_limit, :start_date, :due_date
+                )
+                RETURNING challenge_id
+                """
+            ),
+            {
+                "mentor_user_id": mentor_user_id,
+                "title": title,
+                "description": description,
+                "xp_reward": xp_reward or 0,
+                "participant_limit": participant_limit,
+                "start_date": start_date,
+                "due_date": due_date,
+            },
+        ).fetchone()
+        return row[0]
+
+
 def join_challenge(user_id, challenge_id):
     with engine.begin() as conn:
         # check the challenge exists and is approved
