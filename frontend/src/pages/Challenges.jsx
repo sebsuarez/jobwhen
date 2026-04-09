@@ -64,11 +64,12 @@ export default function Challenges() {
     }
   }
 
+  // NEEDS BACKEND SUPPORT!!!
   const increaseProgress = (id) => {
     setActiveChallenges((prev) =>
       prev.map((c) =>
-        c.id === id && c.current < c.total
-          ? { ...c, current: c.current + 1 }
+        c.challengeParticipantId === id && c.progressCount < c.targetCount
+          ? { ...c, progressCount: c.progressCount + 1 }
           : c
       )
     )
@@ -77,8 +78,8 @@ export default function Challenges() {
   const decreaseProgress = (id) => {
     setActiveChallenges((prev) =>
       prev.map((c) =>
-        c.id === id && c.current > 0
-          ? { ...c, current: c.current - 1 }
+        c.challengeParticipantId === id && c.progressCount > 0
+          ? { ...c, progressCount: c.progressCount - 1 }
           : c
       )
     )
