@@ -1,9 +1,10 @@
 // components/MentorChallenges.jsx
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Modal from './Modal'
 import Button from './Button'
 import Card from './Card'
+import { fetchMyCreatedChallenges } from '../api/challengeQueries'
 import '../styles/MentorChallenges.css'
 
 const STATUS_ORDER = ['approved', 'in_review', 'rejected']
@@ -23,9 +24,16 @@ const EMPTY_FORM = {
 }
 
 export default function MentorChallenges() {
-  const [challenges, setChallenges] = useState(MOCK_CHALLENGES)
+  const [challenges, setChallenges] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+
+  useEffect(() => {
+    fetchMyCreatedChallenges()
+      .then(setChallenges)
+      .finally(() => setLoading(false))
+  }, [])
 
   const grouped = STATUS_ORDER.reduce((acc, status) => {
     acc[status] = challenges.filter((c) => c.status === status)
@@ -60,6 +68,8 @@ export default function MentorChallenges() {
     setForm(EMPTY_FORM)
     setShowCreate(false)
   }
+
+  if (loading) return null
 
   return (
     <aside className="mentor-challenges">
