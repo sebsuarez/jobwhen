@@ -8,8 +8,31 @@ import '../styles/Challenges.css'
 import { fetchActiveChallenges, fetchAvailableChallenges, joinChallenge, leaveChallenge } from '../api/challengeQueries'
 
 export default function Challenges() {
-  const [activeChallenges, setActiveChallenges] = useState(initialActiveChallenges)
-  const [newChallenges, setNewChallenges] = useState(initialNewChallenges)
+  const [activeChallenges, setActiveChallenges] = useState([])
+  const [newChallenges, setNewChallenges] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    loadChallenges()
+  }, [])
+
+  async function loadChallenges() {
+    setLoading(true)
+    setError(null)
+    try {
+      const [active, available] = await Promise.all([
+        fetchActiveChallenges(),
+        fetchAvailableChallenges(),
+      ])
+      setActiveChallenges(active)
+      setNewChallenges(available)
+    } catch {
+      setError('Failed to load challenges.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleAddChallenge = (challenge) => {
     if (activeChallenges.length >= 5) {
