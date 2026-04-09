@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import AdminSidebar from "../components/AdminSidebar"
 import Button from "../components/Button"
 import Modal from "../components/Modal"
-import { fetchPendingMentors } from '../api/adminQueries'
+import { fetchPendingMentors, approveMentor } from '../api/adminQueries'
 import '../styles/AdminMentors.css'
 
 export default function AdminMentors() {
@@ -17,6 +17,12 @@ export default function AdminMentors() {
             .then(setMentors)
             .finally(() => setLoading(false))
     }, [])
+
+    const handleApprove = async () => {
+        await approveMentor(selected.userId)
+        setMentors((prev) => prev.filter((m) => m.mentorProfileId !== selected.mentorProfileId))
+        setSelected(null)
+    }
 
     if (loading) return null
 
@@ -65,7 +71,7 @@ export default function AdminMentors() {
                 */}
                 <div className="admin-mentors__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Reject</Button>
-                    <Button variant="primary" onClick={() => setSelected(null)}>Approve</Button>
+                    <Button variant="primary" onClick={handleApprove}>Approve</Button>
                 </div>
             </Modal>
         </div>
