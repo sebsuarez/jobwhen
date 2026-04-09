@@ -1,5 +1,5 @@
 // components/AdminSidebar.jsx
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/AdminSidebar.css'
 
@@ -10,11 +10,17 @@ const navItems = [
 ]
 
 export default function AdminSidebar() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   const initials = user?.fullName
     ? user.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
     : 'A'
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/', { replace: true })
+  }
 
   return (
     <aside className="sidebar">
@@ -38,6 +44,9 @@ export default function AdminSidebar() {
           {user?.fullName?.split(' ')[0] ?? 'Admin'}
         </span>
         <div className="sidebar__avatar">{initials}</div>
+        <button className="sidebar__logout" onClick={handleLogout}>
+          Log out
+        </button>
       </div>
     </aside>
   )
