@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Modal from './Modal'
 import Button from './Button'
 import Card from './Card'
-import { fetchMyCreatedChallenges } from '../api/challengeQueries'
+import { fetchMyCreatedChallenges, createChallenge } from '../api/challengeQueries'
 import '../styles/MentorChallenges.css'
 
 const STATUS_ORDER = ['approved', 'in_review', 'rejected']
@@ -28,6 +28,8 @@ export default function MentorChallenges() {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetchMyCreatedChallenges()
@@ -40,7 +42,7 @@ export default function MentorChallenges() {
     return acc
   }, {})
 
-    // TODO: wire to deleteChallenge mutation
+  // TODO: wire to deleteChallenge mutation
   // const handleRemove = (id) => {
   // setChallenges((prev) => prev.filter((c) => c.id !== id))
   // }
@@ -50,24 +52,28 @@ export default function MentorChallenges() {
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: wire to backend — challenge submitted for admin review
-    const newChallenge = {
-      id: Date.now(),
-      title: form.title,
-      duration: form.deadline ? `Due ${form.deadline}` : 'No deadline',
-      description: form.description,
-      reviewNote: form.reviewNote,
-      status: 'in_review',
-      participants: 0,
-      isLoopable: form.isLoopable,
-      loopCount: 0,
-      maxLoops: form.isLoopable ? Number(form.maxLoops) || null : null,
+    setSubmitting(true)
+    setError('')
+    try {
+      const result = await createChallenge({
+        title: form.title.trim(),
+        description: form.description.trim(),
+        xpReward: form.reward ? parseInt(form.reward) : null,
+        dueDate: form.deadline || null,
+      })
+      if (result.ok) {
+        const updated = await fetchMyCreatedChallenges()
+        setChallenges(updated)
+        setForm(EMPTY_FORM)
+        setShowCreate(false)
+      }
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
     }
-    setChallenges((prev) => [...prev, newChallenge])
-    setForm(EMPTY_FORM)
-    setShowCreate(false)
   }
 
   if (loading) return null
@@ -121,7 +127,7 @@ export default function MentorChallenges() {
           </div>
         )
       })}
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Create New Challenge">
+      <Modal isOpen={showCreate} onClose={() => { setShowCreate(false); setError('') }} title="Create New Challenge">
         <form onSubmit={handleSubmit}>
               <div className="mentor-challenges__field">
                 <label className="mentor-challenges__label">Challenge Title</label>
@@ -155,6 +161,7 @@ export default function MentorChallenges() {
                 />
               </div>
 
+              {/* TODO: wire reviewNote to backend when supported
               <div className="mentor-challenges__field">
                 <label className="mentor-challenges__label">Review Note (visible to admin only)</label>
                 <textarea
@@ -165,6 +172,7 @@ export default function MentorChallenges() {
                   placeholder="Why should this challenge be approved?"
                 />
               </div>
+              */}
 
               <div className="mentor-challenges__field">
                 <label className="mentor-challenges__label">Reward (XP)</label>
@@ -178,6 +186,7 @@ export default function MentorChallenges() {
                 />
               </div>
 
+              {/* TODO: wire isLoopable/maxLoops to backend when supported
               <div className="mentor-challenges__field mentor-challenges__field--row">
                 <span className="mentor-challenges__label">Loopable</span>
                 <button
@@ -186,7 +195,7 @@ export default function MentorChallenges() {
                   onClick={() => setForm((prev) => ({ ...prev, isLoopable: !prev.isLoopable, maxLoops: '' }))}>
                   {form.isLoopable ? 'On' : 'Off'}
                 </button>
-
+                
                 {form.isLoopable && (
                   <input
                     name="maxLoops"
@@ -199,10 +208,15 @@ export default function MentorChallenges() {
                   />
                 )}
               </div>
+              */}
+
+              {error && <p style={{ color: 'var(--error, #f87171)', fontSize: 'var(--text-sm)' }}>{error}</p>}
 
               <div className="mentor-challenges__modal-actions">
-                <Button variant="ghost" type="button" onClick={() => setShowCreate(false)}>Cancel</Button>
-                <Button variant="primary" type="submit">Submit for Review</Button>
+                <Button variant="ghost" type="button" onClick={() => { setShowCreate(false); setError('') }}>Cancel</Button>
+                <Button variant="primary" type="submit" disabled={submitting}>
+                  {submitting ? 'Submitting...' : 'Submit for Review'}
+                </Button>
               </div>
             </form>
       </Modal>
