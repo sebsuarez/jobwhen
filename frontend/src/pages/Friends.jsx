@@ -91,7 +91,7 @@ export default function Friends() {
       })
       setNotification(`You encouraged ${friend.fullName}`)
     } catch (err) {
-      setNotification(`Failed to encourage ${friend.fullName}`)
+      setNotification(err.message || `Failed to encourage ${friend.fullName}`)
     }
   }
 
