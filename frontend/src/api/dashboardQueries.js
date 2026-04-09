@@ -16,10 +16,28 @@ const ACTIVE_GOALS_QUERY = `
   }
 `
 
+const MOOD_INSIGHTS_QUERY = `
+  query MoodInsights {
+    myMoodHistory {
+      moodId
+      moodScore
+      reflection
+      checkedInAt
+    }
+    myBurnoutAlerts {
+      alertId
+      triggerReason
+      supportiveMessage
+      createdAt
+      resolved
+    }
+  }
+`
+
 // Dashboard Mutations (modify or writing data)
-const SUBMIT_MOOD_CHECKIN_MUTATION = `
-  mutation SubmitMoodCheckin($moodScore: Int!, $reflection: String) {
-    submitMoodCheckin(moodScore: $moodScore, reflection: $reflection) {
+const LOG_MOOD_CHECKIN_MUTATION = `
+  mutation LogMoodCheckin($moodScore: Int!, $reflection: String) {
+    logMoodCheckin(moodScore: $moodScore, reflection: $reflection) {
       ok
       message
     }
@@ -32,7 +50,15 @@ export async function fetchActiveGoals() {
   return data.activeGoals
 }
 
-export async function submitMoodCheckin(moodScore, reflection = null) {
-  const data = await graphqlRequest(SUBMIT_MOOD_CHECKIN_MUTATION, { moodScore, reflection })
-  return data.submitMoodCheckin
+export async function fetchMoodInsights() {
+  const data = await graphqlRequest(MOOD_INSIGHTS_QUERY)
+  return {
+    myMoodHistory: data.myMoodHistory ?? [],
+    myBurnoutAlerts: data.myBurnoutAlerts ?? [],
+  }
+}
+
+export async function logMoodCheckin(moodScore, reflection = null) {
+  const data = await graphqlRequest(LOG_MOOD_CHECKIN_MUTATION, { moodScore, reflection })
+  return data.logMoodCheckin
 }
