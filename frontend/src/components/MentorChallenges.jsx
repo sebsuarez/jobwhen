@@ -36,13 +36,14 @@ export default function MentorChallenges() {
   }, [])
 
   const grouped = STATUS_ORDER.reduce((acc, status) => {
-    acc[status] = challenges.filter((c) => c.status === status)
+    acc[status] = challenges.filter((c) => c.challengeStatus === status)
     return acc
   }, {})
 
-  const handleRemove = (id) => {
-    setChallenges((prev) => prev.filter((c) => c.id !== id))
-  }
+    // TODO: wire to deleteChallenge mutation
+  // const handleRemove = (id) => {
+  // setChallenges((prev) => prev.filter((c) => c.id !== id))
+  // }
 
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -91,23 +92,27 @@ export default function MentorChallenges() {
             <p className={`mentor-challenges__status-label ${className}`}>{label}</p>
 
             {group.map((challenge) => (
-              <Card key={challenge.id} className="mentor-challenges__card">
+              <Card key={challenge.challengeId} className="mentor-challenges__card">
                 <div className="mentor-challenges__card-header">
                   <div>
                     <h3 className="mentor-challenges__card-title">{challenge.title}</h3>
-                    <p className="mentor-challenges__card-duration">{challenge.duration}</p>
+                    {challenge.dueDate && (
+                      <p className="mentor-challenges__card-duration">Due {challenge.dueDate}</p>
+                    )}
                   </div>
 
-                  {status === 'approved' && (
+                  {status === 'approved' && challenge.participantLimit && (
                     <span className="mentor-challenges__participants">
-                      Participants: {challenge.participants}
+                      Limit: {challenge.participantLimit}
                     </span>
                   )}
+                  {/* TODO: wire to updateChallenge mutation */}
                   {status === 'in_review' && (
                     <Button variant="ghost" className="mentor-challenges__edit-btn" title="Edit">&#9998;</Button>
                   )}
+                  {/* TODO: wire to deleteChallenge mutation */}
                   {status === 'rejected' && (
-                    <Button variant="danger" onClick={() => handleRemove(challenge.id)}>remove</Button>
+                    <Button variant="danger">remove</Button>
                   )}
                 </div>
                 <p className="mentor-challenges__card-desc">{challenge.description}</p>
