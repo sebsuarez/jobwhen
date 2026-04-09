@@ -4,13 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../hooks/useAuth'
 import { fetchJobApplications } from '../api/boardQueries'
+import { fetchActiveGoals, fetchMoodInsights, logMoodCheckin } from '../api/dashboardQueries'
 import '../styles/Dashboard.css'
-
-const defaultGoals = [
-  { id: 1, label: 'Daily Application', current: 1, target: 3 },
-  { id: 2, label: 'Send Encouragement', current: 3, target: 3 },
-  { id: 3, label: 'Participate in a Challenge', current: 1, target: 1 },
-]
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -23,28 +18,68 @@ export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [stats, setStats] = useState({ total: 0, interviews: 0, offers: 0, rate: 0 })
-  const [goals] = useState(defaultGoals)
+  const [goals, setGoals] = useState([])
   const [mood, setMood] = useState(null)
+  const [burnoutAlerts, setBurnoutAlerts] = useState([])
+  const [moodHistory, setMoodHistory] = useState([])
+  const [moodMessage, setMoodMessage] = useState('')
 
   useEffect(() => {
     if (!user) return
-    fetchJobApplications(user.userId)
-      .then((apps) => {
+
+    let cancelled = false
+
+    Promise.all([
+      fetchJobApplications(user.userId),
+      fetchActiveGoals(),
+      fetchMoodInsights(),
+    ])
+      .then(([apps, activeGoals, moodInsights]) => {
+        if (cancelled) return
         const applied = apps.filter((a) => a.status !== 'wishlist')
         const interviews = apps.filter((a) => a.status === 'interview').length
         const offers = apps.filter((a) => a.status === 'offer').length
         const total = applied.length
         const rate = total > 0 ? Math.round((interviews / total) * 100) : 0
         setStats({ total, interviews, offers, rate })
+        setGoals(activeGoals.map((goal) => ({
+          id: goal.goalId,
+          label: `${goal.goalType[0].toUpperCase()}${goal.goalType.slice(1)} Goal`,
+          current: goal.currentCount,
+          target: goal.targetCount,
+        })))
+        setMoodHistory(moodInsights.myMoodHistory)
+        setBurnoutAlerts(moodInsights.myBurnoutAlerts.filter((alert) => !alert.resolved))
       })
       .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
   }, [user])
 
   const completedGoals = goals.filter((g) => g.current >= g.target).length
   const overallProgress =
-    goals.reduce((sum, g) => sum + Math.min(g.current / g.target, 1), 0) / goals.length
+    goals.length > 0
+      ? goals.reduce((sum, g) => sum + Math.min(g.current / g.target, 1), 0) / goals.length
+      : 0
 
   const firstName = user?.fullName?.split(' ')[0] ?? ''
+  const latestMood = moodHistory[0]
+  const latestBurnoutAlert = burnoutAlerts[0]
+
+  const handleMoodCheckin = async (score, nextMood) => {
+    try {
+      setMood(nextMood)
+      const response = await logMoodCheckin(score)
+      setMoodMessage(response?.message ?? 'Mood check-in saved.')
+      const refreshed = await fetchMoodInsights()
+      setMoodHistory(refreshed.myMoodHistory)
+      setBurnoutAlerts(refreshed.myBurnoutAlerts.filter((alert) => !alert.resolved))
+    } catch (error) {
+      setMoodMessage(error.message)
+    }
+  }
 
   return (
     <div className="app-layout">
@@ -108,6 +143,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
+                {goals.length === 0 && <p className="dashboard__empty">No active goals right now.</p>}
               </div>
             </div>
           </div>
@@ -119,7 +155,7 @@ export default function Dashboard() {
               <button
                 type="button"
                 className={`dashboard__mood-btn${mood === 'good' ? ' dashboard__mood-btn--active' : ''}`}
-                onClick={() => setMood(mood === 'good' ? null : 'good')}
+                onClick={() => handleMoodCheckin(4, mood === 'good' ? null : 'good')}
                 aria-label="Feeling good"
               >
                 👍
@@ -127,12 +163,24 @@ export default function Dashboard() {
               <button
                 type="button"
                 className={`dashboard__mood-btn${mood === 'bad' ? ' dashboard__mood-btn--active' : ''}`}
-                onClick={() => setMood(mood === 'bad' ? null : 'bad')}
+                onClick={() => handleMoodCheckin(2, mood === 'bad' ? null : 'bad')}
                 aria-label="Feeling bad"
               >
                 👎
               </button>
             </div>
+            {moodMessage && <p className="dashboard__mood-message">{moodMessage}</p>}
+            {latestMood && (
+              <p className="dashboard__mood-history">
+                Latest check-in: score {latestMood.moodScore}
+              </p>
+            )}
+            {latestBurnoutAlert && (
+              <div className="dashboard__burnout-alert">
+                <p className="dashboard__burnout-title">Burnout Alert</p>
+                <p className="dashboard__burnout-message">{latestBurnoutAlert.supportiveMessage}</p>
+              </div>
+            )}
           </div>
         </div>
 
