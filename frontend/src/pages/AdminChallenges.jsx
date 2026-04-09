@@ -31,10 +31,10 @@ export default function AdminChallenges() {
 
                 <div className="admin-challenges__list">
                     {challenges.map((challenge) => (
-                        <div key={challenge.id} className="admin-challenges__card">
+                        <div key={challenge.challengeId} className="admin-challenges__card">
                             <div className="admin-challenges__card-info">
                                 <span className="admin-challenges__card-title">{challenge.title}</span>
-                                <span className="admin-challenges__card-meta">By {challenge.submittedBy} · {challenge.submittedAt}</span>
+                                <span className="admin-challenges__card-meta">By {challenge.mentorName} · {challenge.createdAt}</span>
                             </div>
                             <Button variant="primary" onClick={() => setSelected(challenge)}>
                                 Review
