@@ -209,6 +209,29 @@
     padding-bottom: 96px;
   }
 
+  .challenges-page__layout {
+    flex-direction: column;
+  }
+
+  .challenges-panel {
+    width: 100%;
+  }
+
+  .challenges-page__layout > * {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .challenge-card {
+    position: relative;
+  }
+
+  .challenge-card__remove {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+  }
+  
   .challenge-card__top {
     flex-direction: column;
   }
