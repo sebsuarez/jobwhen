@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Modal from './Modal'
 import Button from './Button'
 import Card from './Card'
-import { fetchMyCreatedChallenges, createChallenge } from '../api/challengeQueries'
+import { fetchMyCreatedChallenges, createChallenge, deleteChallenge } from '../api/challengeQueries'
 import '../styles/MentorChallenges.css'
 
 const STATUS_ORDER = ['approved', 'in_review', 'rejected']
@@ -29,6 +29,7 @@ export default function MentorChallenges() {
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
+  const [deleting, setDeleting] = useState(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -42,10 +43,17 @@ export default function MentorChallenges() {
     return acc
   }, {})
 
-  // TODO: wire to deleteChallenge mutation
-  // const handleRemove = (id) => {
-  // setChallenges((prev) => prev.filter((c) => c.id !== id))
-  // }
+  const handleRemove = async (challengeId) => {
+    setDeleting(challengeId)
+    try {
+      const result = await deleteChallenge(challengeId)
+      if (result.ok) {
+        setChallenges((prev) => prev.filter((c) => c.challengeId !== challengeId))
+      }
+    } finally {
+      setDeleting(null)
+    }
+  }
 
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -116,9 +124,10 @@ export default function MentorChallenges() {
                   {status === 'in_review' && (
                     <Button variant="ghost" className="mentor-challenges__edit-btn" title="Edit">&#9998;</Button>
                   )}
-                  {/* TODO: wire to deleteChallenge mutation */}
                   {status === 'rejected' && (
-                    <Button variant="danger">remove</Button>
+                    <Button variant="danger" onClick={() => handleRemove(challenge.challengeId)} disabled={deleting === challenge.challengeId}>
+                      {deleting === challenge.challengeId ? 'Removing...' : 'Remove'}
+                    </Button>
                   )}
                 </div>
                 <p className="mentor-challenges__card-desc">{challenge.description}</p>
