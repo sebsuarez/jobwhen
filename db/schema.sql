@@ -306,6 +306,7 @@ CREATE TABLE IF NOT EXISTS challenges (
     description TEXT NOT NULL,
     xp_reward INT NOT NULL DEFAULT 0,
     badge_reward_id INT,
+    default_target_count INT NOT NULL DEFAULT 1,
     challenge_status VARCHAR(20) NOT NULL DEFAULT 'in_review',
     participant_limit INT,
     start_date DATE,
@@ -317,6 +318,9 @@ CREATE TABLE IF NOT EXISTS challenges (
 
     CONSTRAINT chk_participant_limit
         CHECK (participant_limit IS NULL OR participant_limit > 0),
+
+    CONSTRAINT chk_default_target_count
+        CHECK (default_target_count > 0),
 
     CONSTRAINT fk_challenge_mentor
         FOREIGN KEY (mentor_user_id) REFERENCES users(user_id)
