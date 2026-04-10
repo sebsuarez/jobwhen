@@ -125,8 +125,6 @@ export default function Profile() {
               <div className="profile-card__details">
                 {user?.headline && <p>{user.headline}</p>}
                 {user?.location && <p>{user.location}</p>}
-                <p>{user?.email ?? 'No email available'}</p>
-                <p>{user?.role?.roleName ?? 'job_seeker'}</p>
               </div>
 
               <Button className="profile-card__logout" type="button" onClick={handleLogout}>
