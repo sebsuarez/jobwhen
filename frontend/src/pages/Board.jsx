@@ -261,9 +261,9 @@ export default function Board() {
   const visibleColumns = activeFilters.includes('All')
     ? COLUMNS
     : COLUMNS.filter((col) => activeFilters.includes(col.label))
-
-    
-const handleBoardDragOver = (e) => {
+  
+  const canDragBetweenColumns = visibleColumns.length > 1
+  const handleBoardDragOver = (e) => {
   const container = boardColumnsRef.current
   if (!container) return
 
@@ -356,9 +356,9 @@ const handleBoardDragOver = (e) => {
                 <div
                   key={col.id}
                   className={`board__column ${dragOverColumn === col.id ? 'board__column--drag-over' : ''}`}
-                  onDragOver={(e) => handleDragOver(e, col.id)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, col.id)}
+                  onDragOver={canDragBetweenColumns ? (e) => handleDragOver(e, col.id) : undefined}
+                  onDragLeave={canDragBetweenColumns ? handleDragLeave : undefined}
+                  onDrop={canDragBetweenColumns ? (e) => handleDrop(e, col.id) : undefined}
                 >
                   <div className="board__column-header">
                     <span className={`board__column-label board__column-label--${col.id}`}>
@@ -374,7 +374,7 @@ const handleBoardDragOver = (e) => {
                         <Card
                           key={app.applicationId}
                           className={`board__job board__job--${app.status} ${draggedId === app.applicationId ? 'board__job--dragging' : ''}`}
-                          draggable
+                          draggable={canDragBetweenColumns}
                           onDragStart={(e) => handleDragStart(e, app.applicationId)}
                           onDragEnd={handleDragEnd}
                           onClick={() => setSelectedApp(app)}
