@@ -132,19 +132,6 @@ export default function Profile() {
               </Button>
             </Card>
 
-            <Card className="profile-bio">
-              <h2 className="profile-section__title">Bio</h2>
-
-              <div className="profile-bio__input-wrap">
-                <input
-                  type="text"
-                  placeholder="e.g. Grinding Today!"
-                  className="profile-bio__input"
-                  value={user?.bio ?? ''}
-                  readOnly
-                />
-              </div>
-            </Card>
           </div>
 
           <div className="profile-layout__right">
