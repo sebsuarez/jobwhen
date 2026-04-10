@@ -8,6 +8,7 @@ import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
 import { fetchProfileInsights, updateProfile } from '../api/profileQueries'
 import { fetchJobApplications } from '../api/boardQueries'
+import { fetchCompletedChallengesCount } from '../api/challengeQueries'
 import '../styles/Profile.css'
 
 const EMOJIS = [
@@ -34,7 +35,7 @@ export default function Profile() {
   const [profileStats, setProfileStats] = useState({
     applications: 0,
     badges: 0,
-    // TODO: add completedChallenges once backend exposes this data!
+    challengesCompleted: 0,
   })
 
   useEffect(() => {
@@ -45,13 +46,14 @@ export default function Profile() {
     Promise.all([
       fetchProfileInsights(),
       fetchJobApplications(user.userId),
+      fetchCompletedChallengesCount(),
     ])
-      .then(([insights, applications]) => {
+      .then(([insights, applications, challengesCompleted]) => {
         if (cancelled) return
         setProfileStats({
           applications: applications.length,
           badges: insights.myBadges.length,
-          // TODO: fetch completedChallenges count from backend and add here
+          challengesCompleted,
         })
       })
       .catch(() => {})
@@ -100,8 +102,7 @@ export default function Profile() {
     { label: 'Total XP', value: String(currentXp), className: 'profile-stat__value--xp' },
     { label: 'Applications', value: String(profileStats.applications), className: 'profile-stat__value--applications' },
     { label: 'Badges Achieved', value: String(profileStats.badges), className: 'profile-stat__value--badges' },
-    // TODO: replace placeholder '' with real count once backend exposes completedChallenges
-    { label: 'Challenges Completed', value: '', className: 'profile-stat__value--challenges' },
+    { label: 'Challenges Completed', value: String(profileStats.challengesCompleted), className: 'profile-stat__value--challenges' },
   ]
 
   return (

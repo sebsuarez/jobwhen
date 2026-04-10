@@ -4,7 +4,7 @@ import hashlib
 import hmac
 import re
 from base64 import b64encode
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
@@ -352,6 +352,40 @@ def create_user_from_pending_signup(
     return fetch_user_by_id(connection, user_id)
 
 
+def update_login_streak(connection, user_id):
+    # increment streak if the user logged in yesterday
+    # reset to 1 if they missed a day
+    # and do nothing if they already logged in today
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+
+    row = connection.execute(
+        text("SELECT last_login_date FROM users WHERE user_id = :uid"),
+        {"uid": user_id},
+    ).mappings().first()
+
+    last_login = row["last_login_date"] if row else None
+
+    if last_login == today:
+        return  # already counted today
+
+    if last_login == yesterday:
+        connection.execute(
+            text(
+                "UPDATE users SET streak_days = streak_days + 1, last_login_date = :today WHERE user_id = :uid"
+            ),
+            {"today": today, "uid": user_id},
+        )
+    else:
+        # missed a day (or first login ever) — reset to 1
+        connection.execute(
+            text(
+                "UPDATE users SET streak_days = 1, last_login_date = :today WHERE user_id = :uid"
+            ),
+            {"today": today, "uid": user_id},
+        )
+
+
 def create_session(connection, user_id):
     session_id = secrets.token_urlsafe(32)
     expires_at = datetime.now(timezone.utc) + timedelta(days=SESSION_TTL_DAYS)
@@ -462,7 +496,9 @@ def build_google_auth_result(credential):
             if not user.get("is_active"):
                 raise RuntimeError("This account has been suspended.")
             user = update_existing_google_user(connection, user["user_id"], payload)
+            update_login_streak(connection, user["user_id"])
             session_id, expires_at = create_session(connection, user["user_id"])
+            user = fetch_user_by_id(connection, user["user_id"])
             return {
                 "requires_signup": False,
                 "user": user,
@@ -520,6 +556,8 @@ def complete_signup_from_cookie(
             mentor_company=mentor_company,
             mentor_reason=mentor_reason,
         )
+        update_login_streak(connection, user["user_id"])
+        user = fetch_user_by_id(connection, user["user_id"])
         session_id, expires_at = create_session(connection, user["user_id"])
 
         return {
@@ -544,7 +582,9 @@ def build_local_login_result(email, password):
         if not user.get("is_active"):
             raise RuntimeError("This account has been suspended.")
 
+        update_login_streak(connection, user["user_id"])
         session_id, expires_at = create_session(connection, user["user_id"])
+        user = fetch_user_by_id(connection, user["user_id"])
 
     return {
         "user": user,
@@ -660,6 +700,7 @@ def build_local_signup_result(
                 },
             )
 
+        update_login_streak(connection, user_id)
         user = fetch_user_by_id(connection, user_id)
         session_id, expires_at = create_session(connection, user["user_id"])
 

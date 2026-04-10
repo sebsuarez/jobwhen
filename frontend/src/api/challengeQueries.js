@@ -156,7 +156,18 @@ const COLLECT_CHALLENGE_REWARD_MUTATION = `
   }
 `
 
+const COMPLETED_CHALLENGES_COUNT_QUERY = `
+  query CompletedChallengesCount {
+    completedChallengesCount
+  }
+`
+
 // Exported API functions
+export async function fetchCompletedChallengesCount() {
+  const data = await graphqlRequest(COMPLETED_CHALLENGES_COUNT_QUERY)
+  return data.completedChallengesCount
+}
+
 export async function fetchActiveChallenges() {
   const data = await graphqlRequest(ACTIVE_CHALLENGES_QUERY)
   return data.activeChallenges

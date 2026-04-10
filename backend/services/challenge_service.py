@@ -443,6 +443,22 @@ def collect_challenge_reward(user_id, challenge_participant_id):
         }
 
 
+def get_completed_challenges_count(user_id):
+    with engine.connect() as conn:
+        result = conn.execute(
+            text(
+                """
+                SELECT COALESCE(SUM(completion_count), 0)
+                     + COUNT(*) FILTER (WHERE participation_status = 'completed')
+                FROM challenge_participants
+                WHERE user_id = :uid
+                """
+            ),
+            {"uid": user_id},
+        ).scalar()
+        return int(result)
+
+
 def delete_challenge(mentor_user_id, challenge_id):
     # allows a mentor to delete a challenge they created
     # to avoid foreign key conflicts we remove all the participants first

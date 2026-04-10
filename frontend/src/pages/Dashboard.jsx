@@ -7,6 +7,7 @@ import Button from '../components/Button'
 import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
 import { fetchJobApplications } from '../api/boardQueries'
+import { fetchCompletedChallengesCount } from '../api/challengeQueries'
 import { fetchActiveGoals, fetchMoodInsights, logMoodCheckin, setGoal, updateGoalProgress } from '../api/dashboardQueries'
 import { getSessionQuote } from '../data/quotes'
 import '../styles/Dashboard.css'
@@ -33,7 +34,7 @@ export default function Dashboard() {
   const goalsRef = useRef(null)
 
   const [quote] = useState(getSessionQuote)
-  const [stats, setStats] = useState({ total: 0, interviews: 0, offers: 0, rate: 0 })
+  const [stats, setStats] = useState({ total: 0, offers: 0, challengesCompleted: 0 })
   const [goals, setGoals] = useState([])
 
   // Goal interaction state
@@ -54,15 +55,14 @@ export default function Dashboard() {
       fetchJobApplications(user.userId),
       fetchActiveGoals(),
       fetchMoodInsights(),
+      fetchCompletedChallengesCount(),
     ])
-      .then(([apps, activeGoals, moodInsights]) => {
+      .then(([apps, activeGoals, moodInsights, challengesCompleted]) => {
         if (cancelled) return
         const applied = apps.filter((a) => a.status !== 'wishlist')
-        const interviews = apps.filter((a) => a.status === 'interview').length
         const offers = apps.filter((a) => a.status === 'offer').length
         const total = applied.length
-        const rate = total > 0 ? Math.round((interviews / total) * 100) : 0
-        setStats({ total, interviews, offers, rate })
+        setStats({ total, offers, challengesCompleted })
         setGoals(activeGoals.map((g) => ({
           id: g.goalId,
           goalType: g.goalType,
@@ -182,18 +182,17 @@ export default function Dashboard() {
             <p className="dashboard__stat-label">Total Applied</p>
             <p className="dashboard__stat-value dashboard__stat-value--total">{stats.total}</p>
           </Card>
-          {/* TODO: replace placeholder value with completedChallenges count once backend exposes it */}
           <Card className="dashboard__stat-card">
             <p className="dashboard__stat-label">Challenges Completed</p>
-            <p className="dashboard__stat-value dashboard__stat-value--challenges">—</p>
+            <p className="dashboard__stat-value dashboard__stat-value--challenges">{stats.challengesCompleted}</p>
           </Card>
           <Card className="dashboard__stat-card">
             <p className="dashboard__stat-label">Offers</p>
             <p className="dashboard__stat-value dashboard__stat-value--offer">{stats.offers}</p>
           </Card>
           <Card className="dashboard__stat-card">
-            <p className="dashboard__stat-label">Interview Rate</p>
-            <p className="dashboard__stat-value dashboard__stat-value--rate">{stats.rate}%</p>
+            <p className="dashboard__stat-label">Day Streak</p>
+            <p className="dashboard__stat-value dashboard__stat-value--streak">{user?.streakDays ?? 0}</p>
           </Card>
         </div>
 
