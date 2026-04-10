@@ -165,12 +165,10 @@ export default function Friends() {
                   )}
 
                   <div className="friend-card__right">
-                    {friend.roleName === 'job_seeker' && (
-                      <div className="friend-card__stat">
-                        <span className="friend-card__value friend-card__value--accent">{friend.applicationCount ?? 0}</span>
-                        <span className="friend-card__label">Applied</span>
-                      </div>
-                    )}
+                    <div className="friend-card__stat">
+                      <span className="friend-card__value friend-card__value--accent">{friend.applicationCount ?? 0}</span>
+                      <span className="friend-card__label">Applied</span>
+                    </div>
                     <div className="friend-card__stat">
                       <span className="friend-card__value">Lv. {friend.currentLevel}</span>
                       <span className="friend-card__label">Level</span>
@@ -279,12 +277,10 @@ export default function Friends() {
             )}
 
             <div className="friend-profile-modal__stats">
-              {selectedFriend.roleName === 'job_seeker' && (
-                <div className="friend-card__stat">
-                  <span className="friend-card__value friend-card__value--accent">{selectedFriend.applicationCount ?? 0}</span>
-                  <span className="friend-card__label">Applied</span>
-                </div>
-              )}
+              <div className="friend-card__stat">
+                <span className="friend-card__value friend-card__value--accent">{selectedFriend.applicationCount ?? 0}</span>
+                <span className="friend-card__label">Applied</span>
+              </div>
               <div className="friend-card__stat">
                 <span className="friend-card__value">Lv. {selectedFriend.currentLevel}</span>
                 <span className="friend-card__label">Level</span>
