@@ -229,32 +229,29 @@ export default function Challenges() {
                   ) : null}
 
                   <div className="challenge-card__progress-row">
-                    <div className="challenge-card__controls">
-                      <button
-                        type="button"
-                        className="challenge-card__control-btn"
-                        onClick={() => decreaseProgress(challenge.challengeParticipantId)}
-                        disabled={challenge.progressCount === 0 || isExpired}>-</button>
+                    <button
+                      type="button"
+                      className="challenge-card__control-btn"
+                      onClick={() => decreaseProgress(challenge.challengeParticipantId)}
+                      disabled={challenge.progressCount === 0 || isExpired}>-</button>
 
+                    <div className="challenge-card__progress">
+                      <div
+                        className="challenge-card__progress-fill"
+                        style={{
+                          width: `${(challenge.progressCount / challenge.targetCount) * 100}%`,
+                        }}
+                      />
                       <span className="challenge-card__progress-text">
                         {challenge.progressCount}/{challenge.targetCount}
                       </span>
-
-                      <button
-                        type="button"
-                        className="challenge-card__control-btn"
-                        onClick={() => increaseProgress(challenge.challengeParticipantId)}
-                        disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed' || isExpired}>+</button>
                     </div>
-                  </div>
 
-                  <div className="challenge-card__progress">
-                    <div
-                      className="challenge-card__progress-fill"
-                      style={{
-                        width: `${(challenge.progressCount / challenge.targetCount) * 100}%`,
-                      }}
-                    />
+                    <button
+                      type="button"
+                      className="challenge-card__control-btn"
+                      onClick={() => increaseProgress(challenge.challengeParticipantId)}
+                      disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed' || isExpired}>+</button>
                   </div>
                 </Card>
                   )
