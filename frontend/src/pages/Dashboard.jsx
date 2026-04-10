@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
+import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
 import { fetchJobApplications } from '../api/boardQueries'
 // TODO: re-add fetchActiveGoals import once backend goal endpoints are live
@@ -320,6 +321,31 @@ export default function Dashboard() {
           </div>
         </Card>
       </main>
+
+      <Modal
+        isOpen={editModalGoal !== null}
+        onClose={() => setEditModalGoal(null)}
+        title={`Set Target — ${editModalGoal?.label}`}
+      >
+        <div className="dashboard__goal-modal">
+          <p className="dashboard__goal-modal-label">
+            How many this week?
+          </p>
+          <input
+            className="dashboard__goal-target-input"
+            type="number"
+            min="1"
+            value={editTargetValue}
+            onChange={(e) => setEditTargetValue(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSetTarget(editModalGoal?.type)}
+            autoFocus
+          />
+          <div className="dashboard__goal-modal-actions">
+            <Button variant="ghost" onClick={() => setEditModalGoal(null)}>Cancel</Button>
+            <Button variant="primary" onClick={() => handleSetTarget(editModalGoal?.type)}>Save</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
