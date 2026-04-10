@@ -15,8 +15,10 @@ const ACTIVE_CHALLENGES_QUERY = `
       xpReward
       progressCount
       targetCount
+      completionCount
       participationStatus
       joinedAt
+      completedAt
     }
   }
 `
@@ -110,6 +112,31 @@ const LEAVE_CHALLENGE_MUTATION = `
   }
 `
 
+const UPDATE_CHALLENGE_PROGRESS_MUTATION = `
+  mutation UpdateChallengeProgress($challengeParticipantId: Int!, $delta: Int!) {
+    updateChallengeProgress(challengeParticipantId: $challengeParticipantId, delta: $delta) {
+      ok
+      message
+      participant {
+        challengeParticipantId
+        challengeId
+        userId
+        title
+        description
+        mentorName
+        dueDate
+        xpReward
+        progressCount
+        targetCount
+        completionCount
+        participationStatus
+        joinedAt
+        completedAt
+      }
+    }
+  }
+`
+
 // Exported API functions
 export async function fetchActiveChallenges() {
   const data = await graphqlRequest(ACTIVE_CHALLENGES_QUERY)
@@ -129,6 +156,11 @@ export async function joinChallenge(challengeId) {
 export async function leaveChallenge(challengeId) {
   const data = await graphqlRequest(LEAVE_CHALLENGE_MUTATION, { challengeId })
   return data.leaveChallenge
+}
+
+export async function updateChallengeProgress(challengeParticipantId, delta) {
+  const data = await graphqlRequest(UPDATE_CHALLENGE_PROGRESS_MUTATION, { challengeParticipantId, delta })
+  return data.updateChallengeProgress
 }
 
 export async function fetchMyCreatedChallenges() {

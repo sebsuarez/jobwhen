@@ -7,7 +7,13 @@ import Button from '../components/Button'
 import MentorChallenges from '../components/MentorChallenges'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Challenges.css'
-import { fetchActiveChallenges, fetchAvailableChallenges, joinChallenge, leaveChallenge } from '../api/challengeQueries'
+import {
+  fetchActiveChallenges,
+  fetchAvailableChallenges,
+  joinChallenge,
+  leaveChallenge,
+  updateChallengeProgress,
+} from '../api/challengeQueries'
 
 export default function Challenges() {
   const { user } = useAuth()
@@ -68,25 +74,26 @@ export default function Challenges() {
     }
   }
 
-  // NEEDS BACKEND SUPPORT!!!
-  const increaseProgress = (id) => {
-    setActiveChallenges((prev) =>
-      prev.map((c) =>
-        c.challengeParticipantId === id && c.progressCount < c.targetCount
-          ? { ...c, progressCount: c.progressCount + 1 }
-          : c
-      )
-    )
+  const increaseProgress = async (id) => {
+    try {
+      const result = await updateChallengeProgress(id, 1)
+      if (result.ok) {
+        await loadChallenges()
+      }
+    } catch {
+      alert('Failed to update challenge progress.')
+    }
   }
 
-  const decreaseProgress = (id) => {
-    setActiveChallenges((prev) =>
-      prev.map((c) =>
-        c.challengeParticipantId === id && c.progressCount > 0
-          ? { ...c, progressCount: c.progressCount - 1 }
-          : c
-      )
-    )
+  const decreaseProgress = async (id) => {
+    try {
+      const result = await updateChallengeProgress(id, -1)
+      if (result.ok) {
+        await loadChallenges()
+      }
+    } catch {
+      alert('Failed to update challenge progress.')
+    }
   }
 
   if (loading) return <div className="challenges-page"><Sidebar /><main className="challenges-page__main"><p>Loading challenges...</p></main></div>

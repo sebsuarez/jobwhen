@@ -1,8 +1,14 @@
 import graphene
 
-from gql.types import ChallengeResponse
+from gql.types import ChallengeParticipantResponse, ChallengeResponse
 from services.auth_service import SESSION_COOKIE_NAME, fetch_session_user
-from services.challenge_service import create_challenge, delete_challenge, join_challenge, leave_challenge
+from services.challenge_service import (
+    create_challenge,
+    delete_challenge,
+    join_challenge,
+    leave_challenge,
+    update_challenge_progress,
+)
 
 
 def _require_auth(info):
@@ -85,8 +91,29 @@ class DeleteChallenge(graphene.Mutation):
         return ChallengeResponse(ok=True, message="Challenge deleted.")
 
 
+class UpdateChallengeProgress(graphene.Mutation):
+    class Arguments:
+        challenge_participant_id = graphene.Int(required=True)
+        delta = graphene.Int(required=True)
+
+    Output = ChallengeParticipantResponse
+
+    @staticmethod
+    def mutate(root, info, challenge_participant_id, delta):
+        user = _require_auth(info)
+        if delta not in (-1, 1):
+            raise RuntimeError("Delta must be -1 or 1.")
+        participant = update_challenge_progress(
+            user_id=user["user_id"],
+            challenge_participant_id=challenge_participant_id,
+            delta=delta,
+        )
+        return ChallengeParticipantResponse(ok=True, message="Challenge progress updated.", participant=participant)
+
+
 class ChallengeMutation(graphene.ObjectType):
     join_challenge = JoinChallenge.Field()
     leave_challenge = LeaveChallenge.Field()
     create_challenge = CreateChallenge.Field()
     delete_challenge = DeleteChallenge.Field()
+    update_challenge_progress = UpdateChallengeProgress.Field()

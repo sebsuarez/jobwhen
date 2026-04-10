@@ -34,8 +34,10 @@ def serialize_participant(row):
         "xp_reward": row["xp_reward"],
         "progress_count": row["progress_count"],
         "target_count": row["target_count"],
+        "completion_count": row["completion_count"],
         "participation_status": row["participation_status"],
         "joined_at": row["joined_at"].isoformat() if row["joined_at"] else None,
+        "completed_at": row["completed_at"].isoformat() if row["completed_at"] else None,
     }
 
 
@@ -51,8 +53,10 @@ def get_active_challenges(user_id):
                     cp.user_id,
                     cp.progress_count,
                     cp.target_count,
+                    cp.completion_count,
                     cp.participation_status,
                     cp.joined_at,
+                    cp.completed_at,
                     c.title,
                     c.description,
                     c.xp_reward,
@@ -96,7 +100,7 @@ def get_available_challenges(user_id):
                   AND c.challenge_id NOT IN (
                       SELECT challenge_id FROM challenge_participants
                       WHERE user_id = :user_id
-                        AND participation_status != 'withdrawn'
+                        AND participation_status = 'active'
                   )
                 ORDER BY c.due_date ASC
                 """
@@ -196,7 +200,7 @@ def join_challenge(user_id, challenge_id):
             {"cid": challenge_id, "uid": user_id},
         ).mappings().first()
 
-        if existing and existing["participation_status"] != "withdrawn":
+        if existing and existing["participation_status"] == "active":
             raise RuntimeError("Already joined this challenge.")
 
         # check participant limit if one is set
@@ -222,6 +226,7 @@ def join_challenge(user_id, challenge_id):
                     SET participation_status = 'active',
                         progress_count = 0,
                         target_count = :target_count,
+                        completed_at = NULL,
                         joined_at = NOW()
                     WHERE challenge_id = :cid AND user_id = :uid
                     """
@@ -238,6 +243,89 @@ def join_challenge(user_id, challenge_id):
                 ),
                 {"cid": challenge_id, "uid": user_id, "target_count": challenge["default_target_count"]},
             )
+
+
+def update_challenge_progress(user_id, challenge_participant_id, delta):
+    with engine.begin() as conn:
+        participant = conn.execute(
+            text(
+                """
+                SELECT
+                    cp.challenge_participant_id,
+                    cp.challenge_id,
+                    cp.user_id,
+                    cp.progress_count,
+                    cp.target_count,
+                    cp.completion_count,
+                    cp.participation_status,
+                    cp.joined_at,
+                    cp.completed_at,
+                    c.title,
+                    c.description,
+                    c.xp_reward,
+                    c.due_date,
+                    u.full_name AS mentor_name
+                FROM challenge_participants cp
+                JOIN challenges c ON c.challenge_id = cp.challenge_id
+                JOIN users u ON u.user_id = c.mentor_user_id
+                WHERE cp.challenge_participant_id = :challenge_participant_id
+                """
+            ),
+            {"challenge_participant_id": challenge_participant_id},
+        ).mappings().first()
+
+        if not participant:
+            raise RuntimeError("Challenge participant entry not found.")
+
+        if participant["user_id"] != user_id:
+            raise RuntimeError("Not authorized to update this challenge.")
+
+        if participant["participation_status"] != "active":
+            raise RuntimeError("Only active challenges can be updated.")
+
+        new_progress = participant["progress_count"] + delta
+        new_progress = max(0, min(new_progress, participant["target_count"]))
+
+        completed = new_progress >= participant["target_count"]
+        updated_row = conn.execute(
+            text(
+                """
+                UPDATE challenge_participants
+                SET progress_count = :progress_count,
+                    participation_status = CASE
+                        WHEN :completed THEN 'completed'
+                        ELSE 'active'
+                    END,
+                    completed_at = CASE
+                        WHEN :completed THEN COALESCE(completed_at, CURRENT_TIMESTAMP)
+                        ELSE completed_at
+                    END,
+                    completion_count = CASE
+                        WHEN :completed AND participation_status = 'active'
+                            THEN completion_count + 1
+                        ELSE completion_count
+                    END
+                WHERE challenge_participant_id = :challenge_participant_id
+                RETURNING challenge_participant_id, challenge_id, user_id, progress_count,
+                          target_count, completion_count, participation_status,
+                          joined_at, completed_at
+                """
+            ),
+            {
+                "challenge_participant_id": challenge_participant_id,
+                "progress_count": new_progress,
+                "completed": completed,
+            },
+        ).mappings().first()
+
+        merged_row = dict(updated_row)
+        merged_row["title"] = participant["title"]
+        merged_row["description"] = participant["description"]
+        merged_row["mentor_name"] = participant["mentor_name"]
+        merged_row["xp_reward"] = participant["xp_reward"]
+        merged_row["due_date"] = participant["due_date"]
+
+        return serialize_participant(merged_row)
 
 
 def delete_challenge(mentor_user_id, challenge_id):
