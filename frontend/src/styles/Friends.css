@@ -368,11 +368,6 @@
     width: 100%;
   }
 
-  .friends-modal__result {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .friends-modal__actions {
     flex-direction: column;
   }
