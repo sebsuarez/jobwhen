@@ -43,7 +43,12 @@ export default function Friends() {
       await respondToFriendRequest(request.friendshipId, accept)
       setPendingRequests((prev) => prev.filter((r) => r.friendshipId !== request.friendshipId))
       if (accept) {
-        setFriends((prev) => [...prev, { userId: request.userId, fullName: request.fullName, headline: request.headline, currentLevel: request.currentLevel }])
+        fetchMyFriends().then((data) => {
+          setFriends(data)
+          const alreadyEncouraged = {}
+          data.forEach((f) => { if (f.youEncouraged) alreadyEncouraged[f.userId] = true })
+          setEncouraged(alreadyEncouraged)
+        })
         setNotification(`You are now friends with ${request.fullName}`)
       } else {
         setNotification(`Declined request from ${request.fullName}`)
