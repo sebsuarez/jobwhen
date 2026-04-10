@@ -58,6 +58,7 @@ export default function Board() {
   const [editForm, setEditForm] = useState(null)
   const [editSubmitting, setEditSubmitting] = useState(false)
   const boardColumnsRef = useRef(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -215,9 +216,7 @@ export default function Board() {
         setApplications((prev) =>
           prev.map((a) => a.applicationId === result.application.applicationId ? result.application : a)
         )
-        setSelectedApp(result.application)
-        setIsEditing(false)
-        setEditForm(null)
+       closeDetailModal()
       }
     } catch (err) {
       console.error('Failed to update application:', err)
@@ -232,9 +231,13 @@ export default function Board() {
   }
 
   const handleDeleteApp = async () => {
-    if (!window.confirm(`Delete "${selectedApp.companyName} — ${selectedApp.roleTitle}"? This cannot be undone.`)) return
+   if (!confirmDelete) {
+      setConfirmDelete(true)
+      return
+    }
     const id = selectedApp.applicationId
     closeDetailModal()
+    setConfirmDelete(false)
     setApplications((prev) => prev.filter((a) => a.applicationId !== id))
     try {
       await deleteJobApplication(id)
@@ -249,6 +252,7 @@ export default function Board() {
     setSelectedApp(null)
     setIsEditing(false)
     setEditForm(null)
+    setConfirmDelete(false)
   }
 
   // When a filter is active, show only that column
@@ -507,7 +511,9 @@ const handleBoardDragOver = (e) => {
                 </>
               )}
               <div className="board__form-actions">
-                <Button variant="ghost" onClick={handleDeleteApp}>Delete</Button>
+                <Button variant="ghost" onClick={handleDeleteApp}>
+                  {confirmDelete ? 'Are you sure?' : 'Delete'}
+                </Button>
                 <Button variant="submit" onClick={handleEditStart}>Edit</Button>
               </div>
             </div>
