@@ -253,30 +253,32 @@ export default function Board() {
     : COLUMNS.filter((col) => col.id === activeFilter.toLowerCase())
 
     
- const handleBoardDragOver = (e) => {
+const handleBoardDragOver = (e) => {
   const container = boardColumnsRef.current
   if (!container) return
 
   const rect = container.getBoundingClientRect()
-  const edge = 80
+  const horizontalEdge = 80
+  const verticalTopEdge = 140
+  const verticalBottomEdge = 140
   const scrollStep = 20
 
-  if (e.clientX < rect.left + edge) {
+  if (e.clientX < rect.left + horizontalEdge) {
     container.scrollLeft -= scrollStep
-  } else if (e.clientX > rect.right - edge) {
+  } else if (e.clientX > rect.right - horizontalEdge) {
     container.scrollLeft += scrollStep
   }
 
-  if (e.clientY < 80) {
+  if (e.clientY < verticalTopEdge) {
     window.scrollBy(0, -scrollStep)
-  } else if (e.clientY > window.innerHeight - 80) {
+  } else if (e.clientY > window.innerHeight - verticalBottomEdge) {
     window.scrollBy(0, scrollStep)
   }
 }
   return (
     <div className="app-layout">
       <Sidebar />
-      <main className="app-content board__page-scroll">
+      <main className="app-content board__page-scroll" onDragOver={handleBoardDragOver}>
         <div className="board__header">
           <div>
             <h1 className="page-title">Job Board</h1>
@@ -320,8 +322,7 @@ export default function Board() {
           <p className="board__empty">Failed to load: {error}</p>
         ) : (
           <div className="board__columns"
-               ref={boardColumnsRef}
-               onDragOver={handleBoardDragOver}>
+               ref={boardColumnsRef}>
             {visibleColumns.map((col) => {
               const jobs = getColumnJobs(col.id)
               return (
