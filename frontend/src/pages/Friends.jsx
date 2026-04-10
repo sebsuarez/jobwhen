@@ -158,7 +158,8 @@ export default function Friends() {
                     <div className="friend-card__avatar" />
                     <div className="friend-card__info">
                       <h3 className="friend-card__name">{friend.fullName}</h3>
-                      <p className="friend-card__status">{friend.headline}</p>
+                      {friend.headline && <p className="friend-card__status">{friend.headline}</p>}
+                      {friend.location && <p className="friend-card__status">{friend.location}</p>}
 
                       {encouragement && (
                         <div className="friend-encouragement">
