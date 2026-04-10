@@ -25,10 +25,10 @@ const EMPTY_FORM = {
   reviewNote: '',
 }
 
-export default function MentorChallenges() {
+export default function MentorChallenges({ openCreate = false }) {
   const [challenges, setChallenges] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showCreate, setShowCreate] = useState(false)
+  const [showCreate, setShowCreate] = useState(openCreate)
   const [form, setForm] = useState(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [deleting, setDeleting] = useState(null)
