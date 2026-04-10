@@ -10,6 +10,7 @@ def serialize_friend(row):
         "full_name": row["full_name"],
         "headline": row["headline"],
         "location": row["location"],
+        "role_name": row["role_name"],
         "current_level": row["current_level"],
         "current_xp": row["current_xp"],
     }
@@ -50,6 +51,7 @@ def get_friends(user_id):
                     u.full_name,
                     u.headline,
                     u.location,
+                    r.role_name,
                     u.current_level,
                     u.current_xp
                 FROM friendships f
@@ -59,6 +61,7 @@ def get_friends(user_id):
                          ELSE f.requester_id
                     END
                 ) = u.user_id
+                JOIN roles r ON u.role_id = r.role_id
                 WHERE (f.requester_id = :uid OR f.addressee_id = :uid)
                   AND f.status = 'accepted'
                 ORDER BY u.full_name

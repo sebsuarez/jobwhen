@@ -10,6 +10,7 @@ const MY_FRIENDS_QUERY = `
       fullName
       headline
       location
+      roleName
       currentLevel
       currentXp
     }
