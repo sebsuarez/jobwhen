@@ -40,6 +40,7 @@ export default function Dashboard() {
   // Goal interaction state
   const [editModalGoal, setEditModalGoal] = useState(null)
   const [editTargetValue, setEditTargetValue] = useState('')
+  const [targetError, setTargetError] = useState('')
   const [xpEarnedGoal, setXpEarnedGoal] = useState(null)
   const [mood, setMood] = useState(null)
   const [burnoutAlerts, setBurnoutAlerts] = useState([])
@@ -129,8 +130,12 @@ export default function Dashboard() {
 
   const handleSetTarget = async (goalType) => {
     const target = parseInt(editTargetValue, 10)
+    if (!target || target < 1) {
+      setTargetError('Please enter a number greater than 0.')
+      return
+    }
+    setTargetError('')
     setEditModalGoal(null)
-    if (!target || target < 1) return
 
     try {
       const result = await setGoal(goalType, target)
@@ -253,17 +258,19 @@ export default function Dashboard() {
                           </>
                         )}
 
-                        <Button
-                          variant="ghost"
-                          className="dashboard__goal-icon-btn"
-                          onClick={() => {
-                            setEditModalGoal({ type: goal.type, label: goal.label })
-                            setEditTargetValue(goal.target !== null ? String(goal.target) : '')
-                          }}
-                          aria-label={`Edit ${goal.label} target`}
-                        >
-                          ✎
-                        </Button>
+                        {goal.target === null && (
+                          <Button
+                            variant="ghost"
+                            className="dashboard__goal-icon-btn"
+                            onClick={() => {
+                              setEditModalGoal({ type: goal.type, label: goal.label })
+                              setEditTargetValue('')
+                            }}
+                            aria-label={`Set ${goal.label} target`}
+                          >
+                            ✎
+                          </Button>
+                        )}
                       </div>
                     </div>
                     {goal.target !== null ? (
@@ -344,7 +351,7 @@ export default function Dashboard() {
 
       <Modal
         isOpen={editModalGoal !== null}
-        onClose={() => setEditModalGoal(null)}
+        onClose={() => { setEditModalGoal(null); setTargetError('') }}
         title={`Set Target — ${editModalGoal?.label}`}
       >
         <div className="dashboard__goal-modal">
@@ -356,10 +363,11 @@ export default function Dashboard() {
             type="number"
             min="1"
             value={editTargetValue}
-            onChange={(e) => setEditTargetValue(e.target.value)}
+            onChange={(e) => { setEditTargetValue(e.target.value); setTargetError('') }}
             onKeyDown={(e) => e.key === 'Enter' && handleSetTarget(editModalGoal?.type)}
             autoFocus
           />
+          {targetError && <p className="dashboard__goal-modal-error">{targetError}</p>}
           <div className="dashboard__goal-modal-actions">
             <Button variant="ghost" onClick={() => setEditModalGoal(null)}>Cancel</Button>
             <Button variant="primary" onClick={() => handleSetTarget(editModalGoal?.type)}>Save</Button>

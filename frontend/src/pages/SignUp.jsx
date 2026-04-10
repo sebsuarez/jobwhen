@@ -34,8 +34,14 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!firstName.trim() || !lastName.trim() || !username.trim() || !email.trim()) {
-      setFormError('Please fill in all required fields.')
+    const missingBase = [
+      !firstName.trim() && 'First Name',
+      !lastName.trim() && 'Last Name',
+      !username.trim() && 'Username',
+      !email.trim() && 'Email',
+    ].filter(Boolean)
+    if (missingBase.length) {
+      setFormError(`Please fill in the following fields: ${missingBase.join(', ')}.`)
       return
     }
 
@@ -52,6 +58,18 @@ export default function SignUp() {
     if (password !== confirmPassword) {
       setFormError('Passwords do not match.')
       return
+    }
+
+    if (role === 'mentor') {
+      const missing = [
+        !mentorJobTitle.trim() && 'Job Title',
+        !mentorCompany.trim() && 'Company',
+        !mentorReason.trim() && 'reason for becoming a mentor',
+      ].filter(Boolean)
+      if (missing.length) {
+        setFormError(`Please fill in the following mentor fields: ${missing.join(', ')}.`)
+        return
+      }
     }
 
     setFormLoading(true)
@@ -263,32 +281,32 @@ export default function SignUp() {
 
               <div className="form-grid">
                 <div>
-                  <label>First Name</label>
+                  <label>First Name *</label>
                   <input value={firstName} onChange={(event) => setFirstName(event.target.value)} placeholder="e.g. John" />
                 </div>
 
                 <div>
-                  <label>Last Name</label>
+                  <label>Last Name *</label>
                   <input value={lastName} onChange={(event) => setLastName(event.target.value)} placeholder="e.g. Doe" />
                 </div>
 
                 <div>
-                  <label>Username</label>
+                  <label>Username *</label>
                   <input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="e.g. johndoe" />
                 </div>
 
                 <div>
-                  <label>Email</label>
+                  <label>Email *</label>
                   <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="e.g. user@gmail.com" />
                 </div>
 
                 <div>
-                  <label>Password</label>
+                  <label>Password *</label>
                   <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="*************" />
                 </div>
 
                 <div>
-                  <label>Confirm Password</label>
+                  <label>Confirm Password *</label>
                   <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="*************" />
                 </div>
 
@@ -314,18 +332,18 @@ export default function SignUp() {
               <div className="mentor-card">
                 <div className="mentor-top-row">
                   <div>
-                    <label>Job Title</label>
+                    <label>Job Title *</label>
                     <input value={mentorJobTitle} onChange={(event) => setMentorJobTitle(event.target.value)} placeholder="e.g. UI/UX Designer" />
                   </div>
 
                   <div>
-                    <label>Company</label>
+                    <label>Company *</label>
                     <input value={mentorCompany} onChange={(event) => setMentorCompany(event.target.value)} placeholder="e.g. Apple" />
                   </div>
                 </div>
 
                 <div className="mentor-textarea-group">
-                  <label>Why do you want to be a mentor?</label>
+                  <label>Why do you want to be a mentor? *</label>
                   <textarea rows="6" value={mentorReason} onChange={(event) => setMentorReason(event.target.value)} />
                 </div>
               </div>

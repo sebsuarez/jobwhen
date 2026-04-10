@@ -57,6 +57,8 @@ export default function Board() {
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState(null)
   const [editSubmitting, setEditSubmitting] = useState(false)
+  const [formError, setFormError] = useState('')
+  const [editFormError, setEditFormError] = useState('')
   const boardColumnsRef = useRef(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -90,10 +92,19 @@ export default function Board() {
   const closeModal = () => {
     setShowAddModal(false)
     setForm(EMPTY_FORM)
+    setFormError('')
   }
 
   const handleAddSubmit = async () => {
-    if (!form.companyName.trim() || !form.roleTitle.trim()) return
+    const missing = [
+      !form.companyName.trim() && 'Company',
+      !form.roleTitle.trim() && 'Role',
+    ].filter(Boolean)
+    if (missing.length) {
+      setFormError(`Please fill in the following fields: ${missing.join(', ')}.`)
+      return
+    }
+    setFormError('')
     setSubmitting(true)
     try {
       const result = await createJobApplication({
@@ -184,6 +195,7 @@ export default function Board() {
   const handleEditCancel = () => {
     setIsEditing(false)
     setEditForm(null)
+    setEditFormError('')
     setConfirmDelete(false)
   }
 
@@ -193,7 +205,15 @@ export default function Board() {
   }
 
   const handleEditSubmit = async () => {
-    if (!editForm.companyName.trim() || !editForm.roleTitle.trim()) return
+    const missing = [
+      !editForm.companyName.trim() && 'Company',
+      !editForm.roleTitle.trim() && 'Role',
+    ].filter(Boolean)
+    if (missing.length) {
+      setEditFormError(`Please fill in the following fields: ${missing.join(', ')}.`)
+      return
+    }
+    setEditFormError('')
     setEditSubmitting(true)
     const original = selectedApp
     const updated = { ...selectedApp, ...editForm }
@@ -472,6 +492,7 @@ export default function Board() {
               value={form.notes}
               onChange={handleFormChange}
             />
+            {formError && <p className="board__form-error">{formError}</p>}
             <div className="board__form-actions">
               <Button variant="ghost" onClick={closeModal}>Cancel</Button>
               <Button variant="submit" onClick={handleAddSubmit} disabled={submitting}>
@@ -601,6 +622,7 @@ export default function Board() {
                 value={editForm.notes}
                 onChange={handleEditFormChange}
               />
+              {editFormError && <p className="board__form-error">{editFormError}</p>}
               <div className="board__form-actions">
                 <Button variant="ghost" onClick={handleEditCancel}>Cancel</Button>
                 <Button variant="submit" onClick={handleEditSubmit} disabled={editSubmitting}>

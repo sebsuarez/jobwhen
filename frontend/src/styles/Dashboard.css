@@ -450,6 +450,12 @@
   color: var(--text-secondary);
 }
 
+.dashboard__goal-modal-error {
+  color: #b42318;
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
 .dashboard__goal-modal-actions {
   display: flex;
   justify-content: flex-end;

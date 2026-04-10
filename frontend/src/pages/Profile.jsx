@@ -33,6 +33,7 @@ export default function Profile() {
   const [draftLocation, setDraftLocation] = useState('')
   const [draftEmoji, setDraftEmoji] = useState('')
   const [saving, setSaving] = useState(false)
+  const [profileError, setProfileError] = useState('')
   const [profileStats, setProfileStats] = useState({
     applications: 0,
     badges: 0,
@@ -81,6 +82,11 @@ export default function Profile() {
   const openEdit = () => setEditOpen(true)
 
   const handleSave = async () => {
+    if (!draftName.trim()) {
+      setProfileError('Display Name is required.')
+      return
+    }
+    setProfileError('')
     setSaving(true)
     try {
       await updateProfile({
@@ -167,7 +173,7 @@ export default function Profile() {
         </div>
       </main>
 
-      <Modal isOpen={editOpen} onClose={() => setEditOpen(false)} title="Edit Profile">
+      <Modal isOpen={editOpen} onClose={() => { setEditOpen(false); setProfileError('') }} title="Edit Profile">
         <div className="profile-edit">
           <div className="profile-edit__preview">
             <div className="profile-edit__avatar-preview">
@@ -176,15 +182,16 @@ export default function Profile() {
             <p className="profile-edit__preview-name">{draftName || 'Your Name'}</p>
           </div>
 
-          <label className="profile-edit__label">Display Name</label>
+          <label className="profile-edit__label">Display Name *</label>
           <input
             className="profile-edit__name-input"
             type="text"
             value={draftName}
-            onChange={(e) => setDraftName(e.target.value)}
+            onChange={(e) => { setDraftName(e.target.value); setProfileError('') }}
             placeholder="Enter display name"
             maxLength={40}
           />
+          {profileError && <p className="profile-edit__error">{profileError}</p>}
 
           <label className="profile-edit__label">Headline</label>
           <input
