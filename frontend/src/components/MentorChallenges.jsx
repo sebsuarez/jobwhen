@@ -21,6 +21,7 @@ const EMPTY_FORM = {
   description: '',
   reward: '',
   targetCount: '1',
+  maxCompletionsPerUser: '1',
   reviewNote: '',
 }
 
@@ -71,6 +72,7 @@ export default function MentorChallenges() {
         description: form.description.trim(),
         xpReward: form.reward ? parseInt(form.reward) : null,
         defaultTargetCount: form.targetCount ? parseInt(form.targetCount, 10) : 1,
+        maxCompletionsPerUser: form.maxCompletionsPerUser ? parseInt(form.maxCompletionsPerUser, 10) : 1,
         dueDate: form.deadline || null,
       })
       if (result.ok) {
@@ -134,6 +136,7 @@ export default function MentorChallenges() {
                 </div>
                 <p className="mentor-challenges__card-desc">{challenge.description}</p>
                 <p className="mentor-challenges__card-desc">Target: {challenge.defaultTargetCount}</p>
+                <p className="mentor-challenges__card-desc">Repeat limit: {challenge.maxCompletionsPerUser}</p>
               </Card>
             ))}
           </div>
@@ -204,6 +207,19 @@ export default function MentorChallenges() {
                   name="targetCount"
                   type="number"
                   value={form.targetCount}
+                  onChange={handleFormChange}
+                  min={1}
+                  placeholder="1"
+                  required
+                />
+              </div>
+
+              <div className="mentor-challenges__field">
+                <label className="mentor-challenges__label">Repeat Limit Per User</label>
+                <input
+                  name="maxCompletionsPerUser"
+                  type="number"
+                  value={form.maxCompletionsPerUser}
                   onChange={handleFormChange}
                   min={1}
                   placeholder="1"

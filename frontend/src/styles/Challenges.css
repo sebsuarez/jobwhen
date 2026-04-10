@@ -35,6 +35,18 @@
   gap: var(--space-5);
 }
 
+.challenges-empty-state {
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid var(--border-default);
+}
+
+.challenges-empty-state__text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
 .challenge-card {
   padding: var(--space-5);
   border-radius: var(--radius-xl);
@@ -62,6 +74,11 @@
 
 .challenge-card__description {
   margin: var(--space-3) 0;
+}
+
+.challenge-card__meta--recurring {
+  margin-bottom: var(--space-3);
+  font-weight: 600;
 }
 
 .challenge-card__remove {
@@ -129,6 +146,11 @@
   margin-bottom: var(--space-4);
 }
 
+.new-challenges__empty {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
 .new-challenges__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -178,6 +200,10 @@
 
 .new-challenge-card__desc {
   margin-top: var(--space-1);
+}
+
+.new-challenge-card__desc--recurring {
+  font-weight: 600;
 }
 
 .new-challenge-card__days {

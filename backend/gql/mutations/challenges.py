@@ -53,6 +53,7 @@ class CreateChallenge(graphene.Mutation):
         description = graphene.String(required=True)
         xp_reward = graphene.Int()
         default_target_count = graphene.Int()
+        max_completions_per_user = graphene.Int()
         participant_limit = graphene.Int()
         start_date = graphene.String()
         due_date = graphene.String()
@@ -60,7 +61,7 @@ class CreateChallenge(graphene.Mutation):
     Output = ChallengeResponse
 
     @staticmethod
-    def mutate(root, info, title, description, xp_reward=None, default_target_count=None, participant_limit=None, start_date=None, due_date=None):
+    def mutate(root, info, title, description, xp_reward=None, default_target_count=None, max_completions_per_user=None, participant_limit=None, start_date=None, due_date=None):
         user = _require_auth(info)
         if user["role"]["role_name"] != "mentor":
             raise RuntimeError("Only mentors can create challenges.")
@@ -70,6 +71,7 @@ class CreateChallenge(graphene.Mutation):
             description=description,
             xp_reward=xp_reward,
             default_target_count=default_target_count,
+            max_completions_per_user=max_completions_per_user,
             participant_limit=participant_limit,
             start_date=start_date,
             due_date=due_date,

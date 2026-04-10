@@ -115,6 +115,14 @@ export default function Challenges() {
     return `Collect ${challenge.xpReward} XP`
   }
 
+  const formatRecurrenceText = (maxCompletionsPerUser, remainingCompletions) => {
+    const completedCount = Math.max(
+      0,
+      maxCompletionsPerUser - remainingCompletions,
+    )
+    return `${completedCount}/${maxCompletionsPerUser} completed • ${remainingCompletions} left`
+  }
+
   const increaseProgress = async (id) => {
     try {
       const result = await updateChallengeProgress(id, 1)
@@ -148,107 +156,132 @@ export default function Challenges() {
         <div className="challenges-page__layout">
         <section className="challenges-panel">
           <div className="challenges-panel__header">
-            <h1 className="challenges-panel__title">Active Challenges</h1>
+            <h1 className="challenges-panel__title">Challenges</h1>
             <p className="challenges-panel__subtitle">
               Complete mentor-created challenges to earn XP and new badges!
             </p>
           </div>
 
           <div className="challenges-list">
-            {activeChallenges.map((challenge) => (
-              <Card key={challenge.challengeParticipantId} className="challenge-card">
-                <div className="challenge-card__top">
-                  <div>
-                    <h2 className="challenge-card__title">{challenge.title}</h2>
-                    <p className="challenge-card__meta">
-                      Created by {challenge.mentorName} - due {challenge.dueDate}
-                    </p>
-                  </div>
-
-                  {challenge.participationStatus === 'completed' ? (
-                    <Button
-                      variant="primary"
-                      className="challenge-card__collect"
-                      onClick={() => handleCollectReward(challenge.challengeParticipantId)}
-                      disabled={collectingChallengeId === challenge.challengeParticipantId}
-                    >
-                      {getCollectLabel(challenge)}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="danger"
-                      className="challenge-card__remove"
-                      onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
-                  )}
-                </div>
-                <p className="challenge-card__description">
-                  {challenge.description}
-                </p>
-
-                <div className="challenge-card__progress-row">
-                  <div className="challenge-card__controls">
-                    <button
-                      type="button"
-                      className="challenge-card__control-btn"
-                      onClick={() => decreaseProgress(challenge.challengeParticipantId)}
-                      disabled={challenge.progressCount === 0}>-</button>
-
-                    <button
-                      type="button"
-                      className="challenge-card__control-btn"
-                      onClick={() => increaseProgress(challenge.challengeParticipantId)}
-                      disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed'}>+</button>
-                  </div>
-
-                  <span className="challenge-card__progress-text">
-                    {challenge.progressCount}/{challenge.targetCount}
-                  </span>
-                </div>
-
-                <div className="challenge-card__progress">
-                  <div
-                    className="challenge-card__progress-fill"
-                    style={{
-                      width: `${(challenge.progressCount / challenge.targetCount) * 100}%`,
-                    }}
-                  />
-                </div>
+            {activeChallenges.length === 0 ? (
+              <Card className="challenges-empty-state">
+                <p className="challenges-empty-state__text">No active challenges yet.</p>
               </Card>
-            ))}
-          </div>
-
-          <Card className="new-challenges">
-            <h2 className="new-challenges__title">New Created Challenges</h2>
-
-            <div className="new-challenges__grid">
-              {newChallenges.map((challenge) => (
-                <Card key={challenge.challengeId} className="new-challenge-card">
-                  <div className="new-challenge-card__top">
-                    <div className="new-challenge-card__person">
-                      <div>
-                        <h3 className="new-challenge-card__name">
-                          {challenge.mentorName}
-                        </h3>
-                      </div>
+            ) : (
+              activeChallenges.map((challenge) => (
+                <Card key={challenge.challengeParticipantId} className="challenge-card">
+                  <div className="challenge-card__top">
+                    <div>
+                      <h2 className="challenge-card__title">{challenge.title}</h2>
+                      <p className="challenge-card__meta">
+                        Created by {challenge.mentorName} - due {challenge.dueDate}
+                      </p>
                     </div>
-                    <span className="new-challenge-card__days">
-                      {Math.max(0, Math.ceil((new Date(challenge.dueDate) - new Date()) / (1000 * 60 * 60 * 24)))} days
-                    </span>
+
+                    {challenge.participationStatus === 'completed' ? (
+                      <Button
+                        variant="primary"
+                        className="challenge-card__collect"
+                        onClick={() => handleCollectReward(challenge.challengeParticipantId)}
+                        disabled={collectingChallengeId === challenge.challengeParticipantId}
+                      >
+                        {getCollectLabel(challenge)}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="danger"
+                        className="challenge-card__remove"
+                        onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
+                    )}
                   </div>
-                  <h4 className="new-challenge-card__title">
-                    {challenge.title}
-                  </h4>
-                  <p className="new-challenge-card__desc">
+                  <p className="challenge-card__description">
                     {challenge.description}
                   </p>
 
-                  <Button
-                    variant="primary"
-                    className="new-challenge-card__btn"
-                    onClick={() => handleAddChallenge(challenge)}>ADD</Button>
+                  <p className="challenge-card__meta challenge-card__meta--recurring">
+                    {formatRecurrenceText(
+                      challenge.maxCompletionsPerUser,
+                      challenge.remainingCompletions,
+                    )}
+                  </p>
+
+                  <div className="challenge-card__progress-row">
+                    <div className="challenge-card__controls">
+                      <button
+                        type="button"
+                        className="challenge-card__control-btn"
+                        onClick={() => decreaseProgress(challenge.challengeParticipantId)}
+                        disabled={challenge.progressCount === 0}>-</button>
+
+                      <button
+                        type="button"
+                        className="challenge-card__control-btn"
+                        onClick={() => increaseProgress(challenge.challengeParticipantId)}
+                        disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed'}>+</button>
+                    </div>
+
+                    <span className="challenge-card__progress-text">
+                      {challenge.progressCount}/{challenge.targetCount}
+                    </span>
+                  </div>
+
+                  <div className="challenge-card__progress">
+                    <div
+                      className="challenge-card__progress-fill"
+                      style={{
+                        width: `${(challenge.progressCount / challenge.targetCount) * 100}%`,
+                      }}
+                    />
+                  </div>
                 </Card>
-              ))}
-            </div>
+              ))
+            )}
+          </div>
+
+          <Card className="new-challenges">
+            <h2 className="new-challenges__title">More Challenges to Claim</h2>
+
+            {newChallenges.length === 0 ? (
+              <p className="new-challenges__empty">
+                Ahead of the game! No one has created a challenge you haven&apos;t taken yet. Check back later for new challenges from your mentors.
+              </p>
+            ) : (
+              <div className="new-challenges__grid">
+                {newChallenges.map((challenge) => (
+                  <Card key={challenge.challengeId} className="new-challenge-card">
+                    <div className="new-challenge-card__top">
+                      <div className="new-challenge-card__person">
+                        <div>
+                          <h3 className="new-challenge-card__name">
+                            {challenge.mentorName}
+                          </h3>
+                        </div>
+                      </div>
+                      <span className="new-challenge-card__days">
+                        {Math.max(0, Math.ceil((new Date(challenge.dueDate) - new Date()) / (1000 * 60 * 60 * 24)))} days
+                      </span>
+                    </div>
+                    <h4 className="new-challenge-card__title">
+                      {challenge.title}
+                    </h4>
+                    <p className="new-challenge-card__desc">
+                      {challenge.description}
+                    </p>
+                    <p className="new-challenge-card__desc new-challenge-card__desc--recurring">
+                      {formatRecurrenceText(
+                        challenge.maxCompletionsPerUser,
+                        challenge.remainingCompletions,
+                      )}
+                    </p>
+
+                    <Button
+                      variant="primary"
+                      className="new-challenge-card__btn"
+                      onClick={() => handleAddChallenge(challenge)}>ADD</Button>
+                  </Card>
+                ))}
+              </div>
+            )}
           </Card>
         </section>
           {isApprovedMentor && <MentorChallenges />}
