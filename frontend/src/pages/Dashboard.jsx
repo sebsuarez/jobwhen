@@ -258,17 +258,19 @@ export default function Dashboard() {
                           </>
                         )}
 
-                        <Button
-                          variant="ghost"
-                          className="dashboard__goal-icon-btn"
-                          onClick={() => {
-                            setEditModalGoal({ type: goal.type, label: goal.label })
-                            setEditTargetValue(goal.target !== null ? String(goal.target) : '')
-                          }}
-                          aria-label={`Edit ${goal.label} target`}
-                        >
-                          ✎
-                        </Button>
+                        {goal.target === null && (
+                          <Button
+                            variant="ghost"
+                            className="dashboard__goal-icon-btn"
+                            onClick={() => {
+                              setEditModalGoal({ type: goal.type, label: goal.label })
+                              setEditTargetValue('')
+                            }}
+                            aria-label={`Set ${goal.label} target`}
+                          >
+                            ✎
+                          </Button>
+                        )}
                       </div>
                     </div>
                     {goal.target !== null ? (
