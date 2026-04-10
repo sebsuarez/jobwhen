@@ -122,6 +122,17 @@
   line-height: 1.2;
 }
 
+.mentor-challenges__error {
+  color: #b42318;
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.mentor-challenges__form input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 .mentor-challenges__loopable-btn {
   padding: var(--space-1) var(--space-4);
   border-radius: var(--radius-full);
