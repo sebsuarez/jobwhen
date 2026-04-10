@@ -119,6 +119,7 @@ class FriendType(graphene.ObjectType):
     application_count = graphene.Int()
     encouraged_you = graphene.Boolean()
     you_encouraged = graphene.Boolean()
+    needs_encouragement = graphene.Boolean()
     current_level = graphene.Int()
     current_xp = graphene.Int()
 
@@ -224,13 +225,11 @@ class MoodCheckinType(graphene.ObjectType):
     checked_in_at = graphene.String()
 
 
-class BurnoutAlertType(graphene.ObjectType):
-    alert_id = graphene.Int()
-    user_id = graphene.Int()
-    trigger_reason = graphene.String()
-    supportive_message = graphene.String()
-    created_at = graphene.String()
-    resolved = graphene.Boolean()
+class MoodTrendType(graphene.ObjectType):
+    days_considered = graphene.Int()
+    average_score = graphene.Float()
+    has_enough_days = graphene.Boolean()
+    is_low_mood_trend = graphene.Boolean()
 
 
 # XP & BADGE TYPES

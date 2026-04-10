@@ -15,6 +15,7 @@ const MY_FRIENDS_QUERY = `
       applicationCount
       encouragedYou
       youEncouraged
+      needsEncouragement
       currentLevel
       currentXp
     }

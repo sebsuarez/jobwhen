@@ -2,13 +2,8 @@ from sqlalchemy import text
 
 from db import engine
 
-LOW_MOOD_THRESHOLD = 2
-BURNOUT_STREAK_LENGTH = 3
-BURNOUT_TRIGGER_REASON = "Three low mood check-ins in a row"
-BURNOUT_SUPPORTIVE_MESSAGE = (
-    "You have been under pressure lately. Consider lowering today's goal "
-    "and focusing on one small win."
-)
+LOW_MOOD_AVERAGE_THRESHOLD = 3
+LOW_MOOD_WINDOW_DAYS = 3
 
 
 def _serialize_mood_checkin(row):
@@ -21,54 +16,35 @@ def _serialize_mood_checkin(row):
     }
 
 
-def _serialize_burnout_alert(row):
+def _serialize_mood_trend(days_considered, average_score):
     return {
-        "alert_id": row["alert_id"],
-        "user_id": row["user_id"],
-        "trigger_reason": row["trigger_reason"],
-        "supportive_message": row["supportive_message"],
-        "created_at": row["created_at"].isoformat() if row["created_at"] else None,
-        "resolved": row["resolved"],
+        "days_considered": days_considered,
+        "average_score": average_score,
+        "has_enough_days": days_considered >= LOW_MOOD_WINDOW_DAYS,
+        "is_low_mood_trend": (
+            days_considered >= LOW_MOOD_WINDOW_DAYS
+            and average_score is not None
+            and average_score <= LOW_MOOD_AVERAGE_THRESHOLD
+        ),
     }
 
 
-def _has_burnout_trend(connection, user_id):
-    recent_scores = connection.execute(
+def _get_recent_daily_average_scores(connection, user_id):
+    return connection.execute(
         text(
             """
-            SELECT mood_score
+            SELECT
+                DATE(checked_in_at) AS checkin_day,
+                AVG(mood_score)::FLOAT AS average_score
             FROM mood_checkins
             WHERE user_id = :user_id
-            ORDER BY checked_in_at DESC, mood_id DESC
+            GROUP BY DATE(checked_in_at)
+            ORDER BY checkin_day DESC
             LIMIT :limit
             """
         ),
-        {"user_id": user_id, "limit": BURNOUT_STREAK_LENGTH},
-    ).scalars().all()
-
-    if len(recent_scores) < BURNOUT_STREAK_LENGTH:
-        return False
-
-    return all(score <= LOW_MOOD_THRESHOLD for score in recent_scores)
-
-
-def _create_burnout_alert(connection, user_id):
-    row = connection.execute(
-        text(
-            """
-            INSERT INTO burnout_alerts (user_id, trigger_reason, supportive_message)
-            VALUES (:user_id, :trigger_reason, :supportive_message)
-            RETURNING alert_id, user_id, trigger_reason, supportive_message, created_at, resolved
-            """
-        ),
-        {
-            "user_id": user_id,
-            "trigger_reason": BURNOUT_TRIGGER_REASON,
-            "supportive_message": BURNOUT_SUPPORTIVE_MESSAGE,
-        },
-    ).mappings().first()
-
-    return _serialize_burnout_alert(row)
+        {"user_id": user_id, "limit": LOW_MOOD_WINDOW_DAYS},
+    ).mappings().all()
 
 
 def log_checkin(user_id, mood_score, reflection=None):
@@ -76,28 +52,55 @@ def log_checkin(user_id, mood_score, reflection=None):
         raise RuntimeError("Mood score must be between 1 and 5.")
 
     with engine.begin() as conn:
-        row = conn.execute(
+        existing_today = conn.execute(
             text(
                 """
-                INSERT INTO mood_checkins (user_id, mood_score, reflection)
-                VALUES (:user_id, :mood_score, :reflection)
-                RETURNING mood_id, user_id, mood_score, reflection, checked_in_at
+                SELECT mood_id
+                FROM mood_checkins
+                WHERE user_id = :user_id
+                  AND DATE(checked_in_at) = CURRENT_DATE
+                ORDER BY checked_in_at DESC, mood_id DESC
+                LIMIT 1
                 """
             ),
-            {
-                "user_id": user_id,
-                "mood_score": mood_score,
-                "reflection": reflection,
-            },
+            {"user_id": user_id},
         ).mappings().first()
 
-        burnout_alert = None
-        if _has_burnout_trend(conn, user_id):
-            burnout_alert = _create_burnout_alert(conn, user_id)
+        if existing_today:
+            row = conn.execute(
+                text(
+                    """
+                    UPDATE mood_checkins
+                    SET mood_score = :mood_score,
+                        reflection = COALESCE(:reflection, reflection)
+                    WHERE mood_id = :mood_id
+                    RETURNING mood_id, user_id, mood_score, reflection, checked_in_at
+                    """
+                ),
+                {
+                    "mood_id": existing_today["mood_id"],
+                    "mood_score": mood_score,
+                    "reflection": reflection,
+                },
+            ).mappings().first()
+        else:
+            row = conn.execute(
+                text(
+                    """
+                    INSERT INTO mood_checkins (user_id, mood_score, reflection)
+                    VALUES (:user_id, :mood_score, :reflection)
+                    RETURNING mood_id, user_id, mood_score, reflection, checked_in_at
+                    """
+                ),
+                {
+                    "user_id": user_id,
+                    "mood_score": mood_score,
+                    "reflection": reflection,
+                },
+            ).mappings().first()
 
     return {
         "checkin": _serialize_mood_checkin(row),
-        "burnout_alert": burnout_alert,
     }
 
 
@@ -118,18 +121,16 @@ def get_mood_history(user_id):
     return [_serialize_mood_checkin(row) for row in rows]
 
 
-def get_burnout_alerts(user_id):
+def get_mood_trend(user_id):
     with engine.connect() as conn:
-        rows = conn.execute(
-            text(
-                """
-                SELECT alert_id, user_id, trigger_reason, supportive_message, created_at, resolved
-                FROM burnout_alerts
-                WHERE user_id = :user_id
-                ORDER BY created_at DESC, alert_id DESC
-                """
-            ),
-            {"user_id": user_id},
-        ).mappings().all()
+        rows = _get_recent_daily_average_scores(conn, user_id)
 
-    return [_serialize_burnout_alert(row) for row in rows]
+    days_considered = len(rows)
+    average_score = None
+    if days_considered:
+        average_score = round(
+            sum(row["average_score"] for row in rows) / days_considered,
+            2,
+        )
+
+    return _serialize_mood_trend(days_considered, average_score)
