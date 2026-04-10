@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
-import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest,  fetchPendingRequests, respondToFriendRequest } from '../api/friendQueries'
+import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest, fetchPendingRequests, respondToFriendRequest, removeFriend } from '../api/friendQueries'
 import '../styles/Friends.css'
 
 export default function Friends() {
@@ -94,6 +94,17 @@ export default function Friends() {
       setNotification(`You encouraged ${friend.fullName}`)
     } catch (err) {
       setNotification(err.message || `Failed to encourage ${friend.fullName}`)
+    }
+  }
+
+  const handleRemoveFriend = async (friend) => {
+    try {
+      await removeFriend(friend.userId)
+      setFriends((prev) => prev.filter((f) => f.userId !== friend.userId))
+      setSelectedFriend(null)
+      setNotification(`${friend.fullName} has been removed from your friends.`)
+    } catch (err) {
+      setNotification(err.message || `Failed to remove ${friend.fullName}`)
     }
   }
 
@@ -282,7 +293,7 @@ export default function Friends() {
 
             <div className="friend-profile-modal__actions">
               <Button variant="ghost" onClick={() => setSelectedFriend(null)}>Close</Button>
-              <Button variant="danger">Remove Friend</Button>
+              <Button variant="danger" onClick={() => handleRemoveFriend(selectedFriend)}>Remove Friend</Button>
             </div>
           </div>
         )}
