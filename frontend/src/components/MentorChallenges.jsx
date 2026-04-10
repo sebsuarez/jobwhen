@@ -26,6 +26,7 @@ const EMPTY_FORM = {
 }
 
 export default function MentorChallenges({ openCreate = false }) {
+  const today = new Date().toISOString().split('T')[0]
   const [challenges, setChallenges] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(openCreate)
@@ -162,6 +163,7 @@ export default function MentorChallenges({ openCreate = false }) {
                   type="date"
                   value={form.deadline}
                   onChange={handleFormChange}
+                  min={today}
                   required
                 />
               </div>

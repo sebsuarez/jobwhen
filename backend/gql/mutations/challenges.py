@@ -1,3 +1,5 @@
+from datetime import date
+
 import graphene
 
 from gql.types import ChallengeParticipantResponse, ChallengeResponse
@@ -65,6 +67,9 @@ class CreateChallenge(graphene.Mutation):
         user = _require_auth(info)
         if user["role"]["role_name"] != "mentor":
             raise RuntimeError("Only mentors can create challenges.")
+        parsed_due_date = date.fromisoformat(due_date)
+        if parsed_due_date < date.today():
+            raise RuntimeError("Due date cannot be in the past.")
         create_challenge(
             mentor_user_id=user["user_id"],
             title=title,
@@ -74,7 +79,7 @@ class CreateChallenge(graphene.Mutation):
             max_completions_per_user=max_completions_per_user,
             participant_limit=participant_limit,
             start_date=start_date,
-            due_date=due_date,
+            due_date=parsed_due_date.isoformat(),
         )
         return ChallengeResponse(ok=True, message="Challenge submitted for review.")
 
