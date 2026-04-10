@@ -18,7 +18,7 @@ export default function Friends() {
   const [searchResults, setSearchResults] = useState([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [sentRequests, setSentRequests] = useState({})
-  const [encouragements, setEncouragements] = useState({})
+  const [encouraged, setEncouraged] = useState({})
   const [notification, setNotification] = useState('')
 
   useEffect(() => {
@@ -84,13 +84,7 @@ export default function Friends() {
   const handleEncourage = async (friend) => {
     try {
       await sendEncouragement(friend.userId)
-      setEncouragements((prev) => {
-        const existing = prev[friend.userId]
-        return {
-          ...prev,
-          [friend.userId]: { count: existing ? existing.count + 1 : 1 },
-        }
-      })
+      setEncouraged((prev) => ({ ...prev, [friend.userId]: true }))
       setNotification(`You encouraged ${friend.fullName}`)
     } catch (err) {
       setNotification(err.message || `Failed to encourage ${friend.fullName}`)
@@ -132,8 +126,6 @@ export default function Friends() {
             ) : friends.length === 0 ? (
               <p className="friends-panel__empty">No friends yet, go add some!</p>
             ) : friends.map((friend) => {
-              const encouragement = encouragements[friend.userId]
-
               return (
                 <Card key={friend.userId} className="friend-card">
                   <div className="friend-card__left">
@@ -148,14 +140,6 @@ export default function Friends() {
                       {friend.headline && <p className="friend-card__status">{friend.headline}</p>}
                       {friend.location && <p className="friend-card__status">{friend.location}</p>}
 
-                      {encouragement && (
-                        <div className="friend-encouragement">
-                          <span className="friend-encouragement__count">
-                            {encouragement.count} encouragement
-                            {encouragement.count > 1 ? 's' : ''} sent
-                          </span>
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -174,6 +158,7 @@ export default function Friends() {
                     <Button
                       variant="ghost"
                       className="friend-card__btn"
+                      disabled={!!encouraged[friend.userId]}
                       onClick={() => handleEncourage(friend)}>Encourage</Button>
                   </div>
                 </Card>
