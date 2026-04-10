@@ -324,8 +324,8 @@ export default function Dashboard() {
             <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/board', { state: { openAddModal: true } })}>
               Add Application
             </Button>
-            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/collection')}>
-              View Badges
+            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/profile', { state: { openEditModal: true } })}>
+              Edit Profile
             </Button>
             <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/challenges')}>
               Check Challenges
