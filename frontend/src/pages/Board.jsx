@@ -507,7 +507,7 @@ export default function Board() {
           title={
             isEditing
               ? 'Edit Application'
-              : selectedApp ? `${selectedApp.companyName} — ${selectedApp.roleTitle}` : ''
+              : selectedApp ? `${selectedApp.roleTitle} @ ${selectedApp.companyName}` : ''
           }
         >
           {selectedApp && !isEditing && (
