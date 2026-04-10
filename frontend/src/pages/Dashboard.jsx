@@ -42,7 +42,8 @@ export default function Dashboard() {
   const [editTargetValue, setEditTargetValue] = useState('')
   const [targetError, setTargetError] = useState('')
   const [xpEarnedGoal, setXpEarnedGoal] = useState(null)
-  const [selectedMoodScore, setSelectedMoodScore] = useState(null)
+  const [selectedMoodScore, setSelectedMoodScore] = useState(3)
+  const [savedMoodScore, setSavedMoodScore] = useState(null)
   const [moodHistory, setMoodHistory] = useState([])
   const [moodTrend, setMoodTrend] = useState(null)
   const [moodMessage, setMoodMessage] = useState('')
@@ -73,6 +74,13 @@ export default function Dashboard() {
         })))
         setMoodHistory(moodInsights.myMoodHistory)
         setMoodTrend(moodInsights.myMoodTrend)
+        const latest = moodInsights.myMoodHistory?.[0]
+        if (latest?.moodScore) {
+          setSelectedMoodScore(latest.moodScore)
+          setSavedMoodScore(latest.checkedInAt?.slice(0, 10) === today ? latest.moodScore : null)
+        } else {
+          setSavedMoodScore(null)
+        }
       })
       .catch(() => {})
 
@@ -100,7 +108,9 @@ export default function Dashboard() {
     allGoals.reduce((sum, g) => sum + (g.target ? Math.min(g.current / g.target, 1) : 0), 0) / 3
 
   const firstName = user?.fullName?.split(' ')[0] ?? ''
+  const today = new Date().toISOString().slice(0, 10)
   const latestMood = moodHistory[0]
+  const todaysMood = latestMood?.checkedInAt?.slice(0, 10) === today ? latestMood : null
 
   function applyGoalUpdate(goalType, patch) {
     setGoals((prev) =>
@@ -155,14 +165,20 @@ export default function Dashboard() {
     } catch { /* silent */ }
   }
 
-  const handleMoodCheckin = async (score) => {
+  const handleMoodCheckin = async () => {
     try {
-      setSelectedMoodScore(score)
-      const response = await logMoodCheckin(score)
+      const response = await logMoodCheckin(selectedMoodScore)
       setMoodMessage(response?.message ?? 'Mood check-in saved.')
       const refreshed = await fetchMoodInsights()
       setMoodHistory(refreshed.myMoodHistory)
       setMoodTrend(refreshed.myMoodTrend)
+      const latest = refreshed.myMoodHistory?.[0]
+      if (latest?.moodScore) {
+        setSelectedMoodScore(latest.moodScore)
+        setSavedMoodScore(latest.checkedInAt?.slice(0, 10) === today ? latest.moodScore : null)
+      } else {
+        setSavedMoodScore(null)
+      }
     } catch (error) {
       setMoodMessage(error.message)
     }
@@ -291,21 +307,40 @@ export default function Dashboard() {
           <Card className="dashboard__mood">
             <h2 className="dashboard__card-title">How are you feeling?</h2>
             <p className="dashboard__mood-subtitle">Rate today from 1 to 5. Your friends can spot when you may need encouragement.</p>
-            <div className="dashboard__mood-buttons">
-              {[1, 2, 3, 4, 5].map((score) => (
-                <Button
-                  key={score}
-                  variant="ghost"
-                  className={`dashboard__mood-btn${selectedMoodScore === score ? ' dashboard__mood-btn--active' : ''}`}
-                  onClick={() => handleMoodCheckin(score)}
-                  aria-label={`Mood score ${score}`}
-                >
-                  {score}
-                </Button>
-              ))}
+            <div className="dashboard__mood-scale">
+              <div className="dashboard__mood-scale-labels">
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+                <span>4</span>
+                <span>5</span>
+              </div>
+              <input
+                className="dashboard__mood-slider"
+                type="range"
+                min="1"
+                max="5"
+                step="1"
+                value={selectedMoodScore}
+                onChange={(e) => setSelectedMoodScore(parseInt(e.target.value, 10))}
+                aria-label="Mood score slider"
+              />
+              <p className="dashboard__mood-selected">Today&apos;s mood: {selectedMoodScore}/5</p>
+              {(savedMoodScore === null || selectedMoodScore !== savedMoodScore) && (
+                <div className="dashboard__mood-actions">
+                  <Button variant="primary" onClick={handleMoodCheckin}>
+                    Save Mood
+                  </Button>
+                </div>
+              )}
             </div>
             {moodMessage && <p className="dashboard__mood-message">{moodMessage}</p>}
-            {latestMood && (
+            {todaysMood && (
+              <p className="dashboard__mood-history">
+                Today&apos;s saved check-in: score {todaysMood.moodScore}
+              </p>
+            )}
+            {!todaysMood && latestMood && (
               <p className="dashboard__mood-history">
                 Latest check-in: score {latestMood.moodScore}
               </p>

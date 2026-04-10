@@ -63,20 +63,52 @@ def log_checkin(user_id, mood_score, reflection=None):
         raise RuntimeError("Mood score must be between 1 and 5.")
 
     with engine.begin() as conn:
-        row = conn.execute(
+        existing_today = conn.execute(
             text(
                 """
-                INSERT INTO mood_checkins (user_id, mood_score, reflection)
-                VALUES (:user_id, :mood_score, :reflection)
-                RETURNING mood_id, user_id, mood_score, reflection, checked_in_at
+                SELECT mood_id
+                FROM mood_checkins
+                WHERE user_id = :user_id
+                  AND DATE(checked_in_at) = CURRENT_DATE
+                ORDER BY checked_in_at DESC, mood_id DESC
+                LIMIT 1
                 """
             ),
-            {
-                "user_id": user_id,
-                "mood_score": mood_score,
-                "reflection": reflection,
-            },
+            {"user_id": user_id},
         ).mappings().first()
+
+        if existing_today:
+            row = conn.execute(
+                text(
+                    """
+                    UPDATE mood_checkins
+                    SET mood_score = :mood_score,
+                        reflection = COALESCE(:reflection, reflection)
+                    WHERE mood_id = :mood_id
+                    RETURNING mood_id, user_id, mood_score, reflection, checked_in_at
+                    """
+                ),
+                {
+                    "mood_id": existing_today["mood_id"],
+                    "mood_score": mood_score,
+                    "reflection": reflection,
+                },
+            ).mappings().first()
+        else:
+            row = conn.execute(
+                text(
+                    """
+                    INSERT INTO mood_checkins (user_id, mood_score, reflection)
+                    VALUES (:user_id, :mood_score, :reflection)
+                    RETURNING mood_id, user_id, mood_score, reflection, checked_in_at
+                    """
+                ),
+                {
+                    "user_id": user_id,
+                    "mood_score": mood_score,
+                    "reflection": reflection,
+                },
+            ).mappings().first()
 
     return {
         "checkin": _serialize_mood_checkin(row),

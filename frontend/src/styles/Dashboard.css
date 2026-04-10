@@ -183,39 +183,36 @@
   margin-bottom: var(--space-6);
 }
 
-.dashboard__mood-buttons {
+.dashboard__mood-scale {
   display: flex;
+  flex-direction: column;
   gap: var(--space-4);
-  justify-content: center;
-  flex-wrap: wrap;
-  flex: 1;
-  align-items: center;
 }
 
-.dashboard__mood-btn {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  background: none;
-  border: 2px solid var(--mood-icon-border);
-  border-radius: var(--radius-full);
-  width: 68px;
-  height: 68px;
+.dashboard__mood-scale-labels {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.dashboard__mood-slider {
+  width: 100%;
+  padding: 0;
+  accent-color: var(--text-accent);
+}
+
+.dashboard__mood-selected {
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dashboard__mood-actions {
+  display: flex;
   justify-content: center;
-  cursor: pointer;
-  transition: border-color var(--transition-fast), transform var(--transition-fast),
-    background var(--transition-fast);
-}
-
-.dashboard__mood-btn:hover {
-  border-color: var(--text-accent);
-  transform: scale(1.08);
-}
-
-.dashboard__mood-btn--active {
-  border-color: var(--text-accent);
-  background: rgba(168, 85, 247, 0.15);
 }
 
 .dashboard__mood-message,
@@ -293,16 +290,6 @@
 
   .dashboard__stat-value {
     font-size: var(--text-3xl);
-  }
-
-  .dashboard__mood-buttons {
-    gap: var(--space-4);
-  }
-
-  .dashboard__mood-btn {
-    width: 60px;
-    height: 60px;
-    font-size: 1.75rem;
   }
 
   .dashboard__actions-grid {
