@@ -20,6 +20,7 @@ const EMPTY_FORM = {
   deadline: '',
   description: '',
   reward: '',
+  targetCount: '1',
   reviewNote: '',
 }
 
@@ -69,6 +70,7 @@ export default function MentorChallenges() {
         title: form.title.trim(),
         description: form.description.trim(),
         xpReward: form.reward ? parseInt(form.reward) : null,
+        defaultTargetCount: form.targetCount ? parseInt(form.targetCount, 10) : 1,
         dueDate: form.deadline || null,
       })
       if (result.ok) {
@@ -131,6 +133,7 @@ export default function MentorChallenges() {
                   )}
                 </div>
                 <p className="mentor-challenges__card-desc">{challenge.description}</p>
+                <p className="mentor-challenges__card-desc">Target: {challenge.defaultTargetCount}</p>
               </Card>
             ))}
           </div>
@@ -192,6 +195,19 @@ export default function MentorChallenges() {
                   onChange={handleFormChange}
                   min={0}
                   placeholder="0"
+                />
+              </div>
+
+              <div className="mentor-challenges__field">
+                <label className="mentor-challenges__label">Target Count</label>
+                <input
+                  name="targetCount"
+                  type="number"
+                  value={form.targetCount}
+                  onChange={handleFormChange}
+                  min={1}
+                  placeholder="1"
+                  required
                 />
               </div>
 

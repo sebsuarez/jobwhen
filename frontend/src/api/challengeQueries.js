@@ -30,6 +30,7 @@ const AVAILABLE_CHALLENGES_QUERY = `
       title
       description
       xpReward
+      defaultTargetCount
       challengeStatus
       participantLimit
       startDate
@@ -46,6 +47,7 @@ const MY_CREATED_CHALLENGES_QUERY = `
       title
       description
       xpReward
+      defaultTargetCount
       challengeStatus
       participantLimit
       startDate
@@ -60,6 +62,7 @@ const CREATE_CHALLENGE_MUTATION = `
     $title: String!
     $description: String!
     $xpReward: Int
+    $defaultTargetCount: Int
     $participantLimit: Int
     $startDate: String
     $dueDate: String
@@ -68,6 +71,7 @@ const CREATE_CHALLENGE_MUTATION = `
       title: $title
       description: $description
       xpReward: $xpReward
+      defaultTargetCount: $defaultTargetCount
       participantLimit: $participantLimit
       startDate: $startDate
       dueDate: $dueDate

@@ -150,6 +150,7 @@ class ChallengeType(graphene.ObjectType):
     title = graphene.String()
     description = graphene.String()
     xp_reward = graphene.Int()
+    default_target_count = graphene.Int()
     challenge_status = graphene.String()
     participant_limit = graphene.Int()
     start_date = graphene.String()

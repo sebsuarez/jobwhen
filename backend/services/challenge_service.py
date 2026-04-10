@@ -12,6 +12,7 @@ def serialize_challenge(row):
         "title": row["title"],
         "description": row["description"],
         "xp_reward": row["xp_reward"],
+        "default_target_count": row["default_target_count"],
         "challenge_status": row["challenge_status"],
         "participant_limit": row["participant_limit"],
         "start_date": row["start_date"].isoformat() if row["start_date"] else None,
@@ -82,6 +83,7 @@ def get_available_challenges(user_id):
                     c.title,
                     c.description,
                     c.xp_reward,
+                    c.default_target_count,
                     c.challenge_status,
                     c.participant_limit,
                     c.start_date,
@@ -116,6 +118,7 @@ def get_mentor_challenges(mentor_user_id):
                     c.title,
                     c.description,
                     c.xp_reward,
+                    c.default_target_count,
                     c.challenge_status,
                     c.participant_limit,
                     c.start_date,
@@ -133,7 +136,7 @@ def get_mentor_challenges(mentor_user_id):
         return [serialize_challenge(r) for r in rows]
 
 
-def create_challenge(mentor_user_id, title, description, xp_reward, participant_limit, start_date, due_date):
+def create_challenge(mentor_user_id, title, description, xp_reward, default_target_count, participant_limit, start_date, due_date):
     # inserts a new challenge with status 'in_review'
     # admin must approve before it goes live
     with engine.begin() as conn:
@@ -141,11 +144,11 @@ def create_challenge(mentor_user_id, title, description, xp_reward, participant_
             text(
                 """
                 INSERT INTO challenges (
-                    mentor_user_id, title, description, xp_reward,
+                    mentor_user_id, title, description, xp_reward, default_target_count,
                     participant_limit, start_date, due_date
                 )
                 VALUES (
-                    :mentor_user_id, :title, :description, :xp_reward,
+                    :mentor_user_id, :title, :description, :xp_reward, :default_target_count,
                     :participant_limit, :start_date, :due_date
                 )
                 RETURNING challenge_id
@@ -156,6 +159,7 @@ def create_challenge(mentor_user_id, title, description, xp_reward, participant_
                 "title": title,
                 "description": description,
                 "xp_reward": xp_reward or 0,
+                "default_target_count": default_target_count or 1,
                 "participant_limit": participant_limit,
                 "start_date": start_date,
                 "due_date": due_date,
@@ -170,7 +174,8 @@ def join_challenge(user_id, challenge_id):
         challenge = conn.execute(
             text(
                 """
-                SELECT challenge_id, participant_limit FROM challenges
+                SELECT challenge_id, participant_limit, default_target_count
+                FROM challenges
                 WHERE challenge_id = :cid AND challenge_status = 'approved'
                 """
             ),
@@ -214,21 +219,24 @@ def join_challenge(user_id, challenge_id):
                 text(
                     """
                     UPDATE challenge_participants
-                    SET participation_status = 'active', progress_count = 0, joined_at = NOW()
+                    SET participation_status = 'active',
+                        progress_count = 0,
+                        target_count = :target_count,
+                        joined_at = NOW()
                     WHERE challenge_id = :cid AND user_id = :uid
                     """
                 ),
-                {"cid": challenge_id, "uid": user_id},
+                {"cid": challenge_id, "uid": user_id, "target_count": challenge["default_target_count"]},
             )
         else:
             conn.execute(
                 text(
                     """
-                    INSERT INTO challenge_participants (challenge_id, user_id)
-                    VALUES (:cid, :uid)
+                    INSERT INTO challenge_participants (challenge_id, user_id, target_count)
+                    VALUES (:cid, :uid, :target_count)
                     """
                 ),
-                {"cid": challenge_id, "uid": user_id},
+                {"cid": challenge_id, "uid": user_id, "target_count": challenge["default_target_count"]},
             )
 
 
