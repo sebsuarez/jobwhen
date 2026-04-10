@@ -13,6 +13,9 @@ def serialize_friend(row):
         "avatar": row["avatar"],
         "role_name": row["role_name"],
         "application_count": row["application_count"],
+        "encouraged_you": row["encouraged_you"],
+        "you_encouraged": row["you_encouraged"],
+        "needs_encouragement": row["needs_encouragement"],
         "current_level": row["current_level"],
         "current_xp": row["current_xp"],
     }
@@ -56,6 +59,20 @@ def get_friends(user_id):
                     u.avatar,
                     r.role_name,
                     (SELECT COUNT(*) FROM job_applications WHERE user_id = u.user_id) AS application_count,
+                    EXISTS(SELECT 1 FROM encouragements WHERE sender_id = u.user_id AND receiver_id = :uid AND sent_at >= CURRENT_DATE) AS encouraged_you,
+                    EXISTS(SELECT 1 FROM encouragements WHERE sender_id = :uid AND receiver_id = u.user_id AND sent_at >= CURRENT_DATE) AS you_encouraged,
+                    EXISTS(
+                        SELECT 1
+                        FROM (
+                            SELECT DATE(mc.checked_in_at) AS checkin_day, AVG(mc.mood_score) AS day_avg
+                            FROM mood_checkins mc
+                            WHERE mc.user_id = u.user_id
+                            GROUP BY DATE(mc.checked_in_at)
+                            ORDER BY checkin_day DESC
+                            LIMIT 3
+                        ) recent_days
+                        HAVING COUNT(*) = 3 AND AVG(recent_days.day_avg) <= 3
+                    ) AS needs_encouragement,
                     u.current_level,
                     u.current_xp
                 FROM friendships f
@@ -158,22 +175,53 @@ def send_friend_request(requester_id, addressee_id):
 
 def respond_to_friend_request(friendship_id, addressee_id, accept):
     # only the addressee can accept or reject (checked in the WHERE clause)
-    status = "accepted" if accept else "rejected"
+    with engine.begin() as conn:
+        if accept:
+            row = conn.execute(
+                text(
+                    """
+                    UPDATE friendships
+                    SET status = 'accepted'
+                    WHERE friendship_id = :fid AND addressee_id = :uid
+                    RETURNING friendship_id
+                    """
+                ),
+                {"fid": friendship_id, "uid": addressee_id},
+            ).fetchone()
+        else:
+            row = conn.execute(
+                text(
+                    """
+                    DELETE FROM friendships
+                    WHERE friendship_id = :fid AND addressee_id = :uid
+                    RETURNING friendship_id
+                    """
+                ),
+                {"fid": friendship_id, "uid": addressee_id},
+            ).fetchone()
+
+        if not row:
+            raise RuntimeError("Friend request not found or not authorized.")
+
+
+def remove_friend(user_id, friend_user_id):
+    # deletes the accepted friendship between two users in either direction
     with engine.begin() as conn:
         row = conn.execute(
             text(
                 """
-                UPDATE friendships
-                SET status = :status
-                WHERE friendship_id = :fid AND addressee_id = :uid
+                DELETE FROM friendships
+                WHERE ((requester_id = :uid AND addressee_id = :fid)
+                    OR (requester_id = :fid AND addressee_id = :uid))
+                  AND status = 'accepted'
                 RETURNING friendship_id
                 """
             ),
-            {"status": status, "fid": friendship_id, "uid": addressee_id},
+            {"uid": user_id, "fid": friend_user_id},
         ).fetchone()
 
         if not row:
-            raise RuntimeError("Friend request not found or not authorized.")
+            raise RuntimeError("Friendship not found.")
 
 
 def block_user(user_id, target_user_id):
@@ -218,6 +266,20 @@ def send_encouragement(sender_id, receiver_id, message=None):
 
         if not friendship:
             raise RuntimeError("You can only encourage friends.")
+
+        already_sent = conn.execute(
+            text(
+                """
+                SELECT 1 FROM encouragements
+                WHERE sender_id = :s AND receiver_id = :r
+                  AND sent_at >= CURRENT_DATE
+                """
+            ),
+            {"s": sender_id, "r": receiver_id},
+        ).first()
+
+        if already_sent:
+            raise RuntimeError("You can only encourage someone once per day.")
 
         default_msg = "Keep going, you've got this!"
         conn.execute(

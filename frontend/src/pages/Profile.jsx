@@ -6,9 +6,10 @@ import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
-import { fetchProfileInsights, updateProfile } from '../api/profileQueries'
+import { updateProfile } from '../api/profileQueries'
 import { fetchJobApplications } from '../api/boardQueries'
 import { fetchCompletedChallengesCount } from '../api/challengeQueries'
+import { fetchMyFriends } from '../api/friendQueries'
 import '../styles/Profile.css'
 
 const EMOJIS = [
@@ -36,7 +37,7 @@ export default function Profile() {
   const [profileError, setProfileError] = useState('')
   const [profileStats, setProfileStats] = useState({
     applications: 0,
-    badges: 0,
+    friends: 0,
     challengesCompleted: 0,
   })
 
@@ -46,15 +47,15 @@ export default function Profile() {
     let cancelled = false
 
     Promise.all([
-      fetchProfileInsights(),
       fetchJobApplications(user.userId),
       fetchCompletedChallengesCount(),
+      fetchMyFriends(),
     ])
-      .then(([insights, applications, challengesCompleted]) => {
+      .then(([applications, challengesCompleted, friends]) => {
         if (cancelled) return
         setProfileStats({
           applications: applications.length,
-          badges: insights.myBadges.length,
+          friends: friends.length,
           challengesCompleted,
         })
       })
@@ -111,7 +112,7 @@ export default function Profile() {
   const stats = [
     { label: 'Total XP', value: String(currentXp), className: 'profile-stat__value--xp' },
     { label: 'Applications', value: String(profileStats.applications), className: 'profile-stat__value--applications' },
-    { label: 'Badges Achieved', value: String(profileStats.badges), className: 'profile-stat__value--badges' },
+    { label: 'Friends', value: String(profileStats.friends), className: 'profile-stat__value--friends' },
     { label: 'Challenges Completed', value: String(profileStats.challengesCompleted), className: 'profile-stat__value--challenges' },
   ]
 

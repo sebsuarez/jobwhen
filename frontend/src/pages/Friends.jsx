@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
-import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest,  fetchPendingRequests, respondToFriendRequest } from '../api/friendQueries'
+import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest, fetchPendingRequests, respondToFriendRequest, removeFriend } from '../api/friendQueries'
 import '../styles/Friends.css'
 
 export default function Friends() {
@@ -18,12 +18,18 @@ export default function Friends() {
   const [searchResults, setSearchResults] = useState([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [sentRequests, setSentRequests] = useState({})
-  const [encouragements, setEncouragements] = useState({})
+  const [encouraged, setEncouraged] = useState({})
+  const [selectedFriend, setSelectedFriend] = useState(null)
   const [notification, setNotification] = useState('')
 
   useEffect(() => {
     fetchMyFriends()
-      .then(setFriends)
+      .then((data) => {
+        setFriends(data)
+        const alreadyEncouraged = {}
+        data.forEach((f) => { if (f.youEncouraged) alreadyEncouraged[f.userId] = true })
+        setEncouraged(alreadyEncouraged)
+      })
       .catch((err) => console.error('Failed to load friends:', err))
       .finally(() => setLoadingFriends(false))
 
@@ -37,7 +43,12 @@ export default function Friends() {
       await respondToFriendRequest(request.friendshipId, accept)
       setPendingRequests((prev) => prev.filter((r) => r.friendshipId !== request.friendshipId))
       if (accept) {
-        setFriends((prev) => [...prev, { userId: request.userId, fullName: request.fullName, headline: request.headline, currentLevel: request.currentLevel }])
+        fetchMyFriends().then((data) => {
+          setFriends(data)
+          const alreadyEncouraged = {}
+          data.forEach((f) => { if (f.youEncouraged) alreadyEncouraged[f.userId] = true })
+          setEncouraged(alreadyEncouraged)
+        })
         setNotification(`You are now friends with ${request.fullName}`)
       } else {
         setNotification(`Declined request from ${request.fullName}`)
@@ -84,16 +95,21 @@ export default function Friends() {
   const handleEncourage = async (friend) => {
     try {
       await sendEncouragement(friend.userId)
-      setEncouragements((prev) => {
-        const existing = prev[friend.userId]
-        return {
-          ...prev,
-          [friend.userId]: { count: existing ? existing.count + 1 : 1 },
-        }
-      })
+      setEncouraged((prev) => ({ ...prev, [friend.userId]: true }))
       setNotification(`You encouraged ${friend.fullName}`)
     } catch (err) {
       setNotification(err.message || `Failed to encourage ${friend.fullName}`)
+    }
+  }
+
+  const handleRemoveFriend = async (friend) => {
+    try {
+      await removeFriend(friend.userId)
+      setFriends((prev) => prev.filter((f) => f.userId !== friend.userId))
+      setSelectedFriend(null)
+      setNotification(`${friend.fullName} has been removed from your friends.`)
+    } catch (err) {
+      setNotification(err.message || `Failed to remove ${friend.fullName}`)
     }
   }
 
@@ -132,10 +148,8 @@ export default function Friends() {
             ) : friends.length === 0 ? (
               <p className="friends-panel__empty">No friends yet, go add some!</p>
             ) : friends.map((friend) => {
-              const encouragement = encouragements[friend.userId]
-
               return (
-                <Card key={friend.userId} className="friend-card">
+                <Card key={friend.userId} className="friend-card" onClick={() => setSelectedFriend(friend)}>
                   <div className="friend-card__left">
                     <div className="friend-card__avatar">
                       {friend.avatar && <span className="friend-card__avatar-emoji">{friend.avatar}</span>}
@@ -147,25 +161,22 @@ export default function Friends() {
                       </div>
                       {friend.headline && <p className="friend-card__status">{friend.headline}</p>}
                       {friend.location && <p className="friend-card__status">{friend.location}</p>}
-
-                      {encouragement && (
-                        <div className="friend-encouragement">
-                          <span className="friend-encouragement__count">
-                            {encouragement.count} encouragement
-                            {encouragement.count > 1 ? 's' : ''} sent
-                          </span>
-                        </div>
+                      {friend.needsEncouragement && (
+                        <p className="friend-card__needs-encouragement">Feeling low lately. Encourage them.</p>
                       )}
+
                     </div>
                   </div>
 
+                  {friend.encouragedYou && (
+                    <span className="friend-card__encouraged-you">{friend.fullName.split(' ')[0]} has Encouraged you!</span>
+                  )}
+
                   <div className="friend-card__right">
-                    {friend.roleName === 'job_seeker' && (
-                      <div className="friend-card__stat">
-                        <span className="friend-card__value friend-card__value--accent">{friend.applicationCount ?? 0}</span>
-                        <span className="friend-card__label">Applied</span>
-                      </div>
-                    )}
+                    <div className="friend-card__stat">
+                      <span className="friend-card__value friend-card__value--accent">{friend.applicationCount ?? 0}</span>
+                      <span className="friend-card__label">Applied</span>
+                    </div>
                     <div className="friend-card__stat">
                       <span className="friend-card__value">Lv. {friend.currentLevel}</span>
                       <span className="friend-card__label">Level</span>
@@ -174,7 +185,8 @@ export default function Friends() {
                     <Button
                       variant="ghost"
                       className="friend-card__btn"
-                      onClick={() => handleEncourage(friend)}>Encourage</Button>
+                      disabled={!!encouraged[friend.userId]}
+                      onClick={(e) => { e.stopPropagation(); handleEncourage(friend) }}>{encouraged[friend.userId] ? 'Encouraged' : 'Encourage'}</Button>
                   </div>
                 </Card>
               )
@@ -247,6 +259,50 @@ export default function Friends() {
           </div>
         </div>
       </Modal>
+
+      <Modal
+        isOpen={!!selectedFriend}
+        onClose={() => setSelectedFriend(null)}
+        title="Friend Profile">
+        {selectedFriend && (
+          <div className="friend-profile-modal">
+            <div className="friend-profile-modal__avatar">
+              {selectedFriend.avatar
+                ? <span className="friend-profile-modal__avatar-emoji">{selectedFriend.avatar}</span>
+                : null}
+            </div>
+
+            <div className="friend-profile-modal__name-row">
+              <h3 className="friend-profile-modal__name">{selectedFriend.fullName}</h3>
+              {selectedFriend.roleName === 'mentor' && <span className="friend-card__role-badge">Mentor</span>}
+            </div>
+
+            {selectedFriend.headline && (
+              <p className="friend-profile-modal__detail">{selectedFriend.headline}</p>
+            )}
+            {selectedFriend.location && (
+              <p className="friend-profile-modal__detail">{selectedFriend.location}</p>
+            )}
+
+            <div className="friend-profile-modal__stats">
+              <div className="friend-card__stat">
+                <span className="friend-card__value friend-card__value--accent">{selectedFriend.applicationCount ?? 0}</span>
+                <span className="friend-card__label">Applied</span>
+              </div>
+              <div className="friend-card__stat">
+                <span className="friend-card__value">Lv. {selectedFriend.currentLevel}</span>
+                <span className="friend-card__label">Level</span>
+              </div>
+            </div>
+
+            <div className="friend-profile-modal__actions">
+              <Button variant="ghost" onClick={() => setSelectedFriend(null)}>Close</Button>
+              <Button variant="danger" onClick={() => handleRemoveFriend(selectedFriend)}>Remove Friend</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
        {notification && <div className="notification-popup">{notification}</div>}
     </div>
   )

@@ -13,6 +13,9 @@ const MY_FRIENDS_QUERY = `
       avatar
       roleName
       applicationCount
+      encouragedYou
+      youEncouraged
+      needsEncouragement
       currentLevel
       currentXp
     }
@@ -71,6 +74,15 @@ const SEND_ENCOURAGEMENT_MUTATION = `
   }
 `
 
+const REMOVE_FRIEND_MUTATION = `
+  mutation RemoveFriend($friendUserId: Int!) {
+    removeFriend(friendUserId: $friendUserId) {
+      ok
+      message
+    }
+  }
+`
+
 // Exported API functions
 export async function fetchMyFriends() {
   const data = await graphqlRequest(MY_FRIENDS_QUERY)
@@ -100,4 +112,9 @@ export async function respondToFriendRequest(friendshipId, accept) {
 export async function sendEncouragement(receiverId, message = null) {
   const data = await graphqlRequest(SEND_ENCOURAGEMENT_MUTATION, { receiverId, message })
   return data.sendEncouragement
+}
+
+export async function removeFriend(friendUserId) {
+  const data = await graphqlRequest(REMOVE_FRIEND_MUTATION, { friendUserId })
+  return data.removeFriend
 }

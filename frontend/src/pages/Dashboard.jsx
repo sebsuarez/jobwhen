@@ -27,6 +27,13 @@ const GOAL_CONFIGS = [
 
 // Same XP for each goal type for now
 const GOAL_XP = 30
+const MOOD_SLIDER_COLORS = {
+  1: '#ef4444',
+  2: '#f97316',
+  3: '#facc15',
+  4: '#84cc16',
+  5: '#22c55e',
+}
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -42,14 +49,15 @@ export default function Dashboard() {
   const [editTargetValue, setEditTargetValue] = useState('')
   const [targetError, setTargetError] = useState('')
   const [xpEarnedGoal, setXpEarnedGoal] = useState(null)
-  const [mood, setMood] = useState(null)
-  const [burnoutAlerts, setBurnoutAlerts] = useState([])
+  const [selectedMoodScore, setSelectedMoodScore] = useState(3)
+  const [savedMoodScore, setSavedMoodScore] = useState(null)
   const [moodHistory, setMoodHistory] = useState([])
-  const [moodMessage, setMoodMessage] = useState('')
+  const [moodTrend, setMoodTrend] = useState(null)
 
   useEffect(() => {
     if (!user) return
 
+    const today = new Date().toISOString().slice(0, 10)
     let cancelled = false
 
     Promise.all([
@@ -72,7 +80,14 @@ export default function Dashboard() {
           isCompleted: g.isCompleted,
         })))
         setMoodHistory(moodInsights.myMoodHistory)
-        setBurnoutAlerts(moodInsights.myBurnoutAlerts.filter((alert) => !alert.resolved))
+        setMoodTrend(moodInsights.myMoodTrend)
+        const latest = moodInsights.myMoodHistory?.[0]
+        if (latest?.moodScore) {
+          setSelectedMoodScore(latest.moodScore)
+          setSavedMoodScore(latest.checkedInAt?.slice(0, 10) === today ? latest.moodScore : null)
+        } else {
+          setSavedMoodScore(null)
+        }
       })
       .catch(() => {})
 
@@ -100,8 +115,11 @@ export default function Dashboard() {
     allGoals.reduce((sum, g) => sum + (g.target ? Math.min(g.current / g.target, 1) : 0), 0) / 3
 
   const firstName = user?.fullName?.split(' ')[0] ?? ''
+  const today = new Date().toISOString().slice(0, 10)
   const latestMood = moodHistory[0]
-  const latestBurnoutAlert = burnoutAlerts[0]
+  const todaysMood = latestMood?.checkedInAt?.slice(0, 10) === today ? latestMood : null
+  const moodSliderPercent = ((selectedMoodScore - 1) / 4) * 100
+  const moodSliderColor = MOOD_SLIDER_COLORS[selectedMoodScore] ?? '#c084fc'
 
   function applyGoalUpdate(goalType, patch) {
     setGoals((prev) =>
@@ -156,16 +174,22 @@ export default function Dashboard() {
     } catch { /* silent */ }
   }
 
-  const handleMoodCheckin = async (score, nextMood) => {
+  const handleMoodCheckin = async () => {
     try {
-      setMood(nextMood)
-      const response = await logMoodCheckin(score)
-      setMoodMessage(response?.message ?? 'Mood check-in saved.')
+      const today = new Date().toISOString().slice(0, 10)
+      await logMoodCheckin(selectedMoodScore)
       const refreshed = await fetchMoodInsights()
       setMoodHistory(refreshed.myMoodHistory)
-      setBurnoutAlerts(refreshed.myBurnoutAlerts.filter((alert) => !alert.resolved))
+      setMoodTrend(refreshed.myMoodTrend)
+      const latest = refreshed.myMoodHistory?.[0]
+      if (latest?.moodScore) {
+        setSelectedMoodScore(latest.moodScore)
+        setSavedMoodScore(latest.checkedInAt?.slice(0, 10) === today ? latest.moodScore : null)
+      } else {
+        setSavedMoodScore(null)
+      }
     } catch (error) {
-      setMoodMessage(error.message)
+      console.error('Failed to save mood check-in:', error)
     }
   }
 
@@ -291,36 +315,50 @@ export default function Dashboard() {
 
           <Card className="dashboard__mood">
             <h2 className="dashboard__card-title">How are you feeling?</h2>
-            <p className="dashboard__mood-subtitle">Your well being matters. Check in daily.</p>
-            <div className="dashboard__mood-buttons">
-              <Button
-                variant="ghost"
-                className={`dashboard__mood-btn${mood === 'good' ? ' dashboard__mood-btn--active' : ''}`}
-                onClick={() => handleMoodCheckin(4, mood === 'good' ? null : 'good')}
-                aria-label="Feeling good"
-              >
-                👍
-              </Button>
-              <Button
-                variant="ghost"
-                className={`dashboard__mood-btn${mood === 'bad' ? ' dashboard__mood-btn--active' : ''}`}
-                onClick={() => handleMoodCheckin(2, mood === 'bad' ? null : 'bad')}
-                aria-label="Feeling bad"
-              >
-                👎
-              </Button>
+            <p className="dashboard__mood-subtitle">Rate today from 1 to 5. Your friends can spot when you may need encouragement.</p>
+            <div className="dashboard__mood-scale">
+              <div className="dashboard__mood-scale-labels">
+                <span aria-hidden="true">☹️</span>
+                <span aria-hidden="true">😊</span>
+              </div>
+              <input
+                className="dashboard__mood-slider"
+                type="range"
+                min="1"
+                max="5"
+                step="1"
+                value={selectedMoodScore}
+                onChange={(e) => setSelectedMoodScore(parseInt(e.target.value, 10))}
+                style={{
+                  '--mood-slider-percent': `${moodSliderPercent}%`,
+                  '--mood-slider-color': moodSliderColor,
+                }}
+                aria-label="Mood score slider"
+              />
+              <p className="dashboard__mood-selected">Today&apos;s mood: {selectedMoodScore}/5</p>
+              {(savedMoodScore === null || selectedMoodScore !== savedMoodScore) && (
+                <div className="dashboard__mood-actions">
+                  <Button variant="primary" onClick={handleMoodCheckin}>
+                    Save Mood
+                  </Button>
+                </div>
+              )}
             </div>
-            {moodMessage && <p className="dashboard__mood-message">{moodMessage}</p>}
-            {latestMood && (
+            {todaysMood && selectedMoodScore === savedMoodScore && (
+              <p className="dashboard__mood-history">
+                Today&apos;s mood was saved.
+              </p>
+            )}
+            {!todaysMood && latestMood && (
               <p className="dashboard__mood-history">
                 Latest check-in: score {latestMood.moodScore}
               </p>
             )}
-            {latestBurnoutAlert && (
-              <div className="dashboard__burnout-alert">
-                <p className="dashboard__burnout-title">Burnout Alert</p>
-                <p className="dashboard__burnout-message">{latestBurnoutAlert.supportiveMessage}</p>
-              </div>
+            {moodTrend?.hasEnoughDays && (
+              <p className="dashboard__mood-trend">
+                3-day average: {moodTrend.averageScore}
+                {moodTrend.isLowMoodTrend ? ' · Friends can encourage you right now.' : ''}
+              </p>
             )}
           </Card>
         </div>
