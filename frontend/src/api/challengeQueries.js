@@ -137,6 +137,15 @@ const UPDATE_CHALLENGE_PROGRESS_MUTATION = `
   }
 `
 
+const COLLECT_CHALLENGE_REWARD_MUTATION = `
+  mutation CollectChallengeReward($challengeParticipantId: Int!) {
+    collectChallengeReward(challengeParticipantId: $challengeParticipantId) {
+      ok
+      message
+    }
+  }
+`
+
 // Exported API functions
 export async function fetchActiveChallenges() {
   const data = await graphqlRequest(ACTIVE_CHALLENGES_QUERY)
@@ -161,6 +170,11 @@ export async function leaveChallenge(challengeId) {
 export async function updateChallengeProgress(challengeParticipantId, delta) {
   const data = await graphqlRequest(UPDATE_CHALLENGE_PROGRESS_MUTATION, { challengeParticipantId, delta })
   return data.updateChallengeProgress
+}
+
+export async function collectChallengeReward(challengeParticipantId) {
+  const data = await graphqlRequest(COLLECT_CHALLENGE_REWARD_MUTATION, { challengeParticipantId })
+  return data.collectChallengeReward
 }
 
 export async function fetchMyCreatedChallenges() {

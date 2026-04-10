@@ -3,6 +3,7 @@ import graphene
 from gql.types import ChallengeParticipantResponse, ChallengeResponse
 from services.auth_service import SESSION_COOKIE_NAME, fetch_session_user
 from services.challenge_service import (
+    collect_challenge_reward,
     create_challenge,
     delete_challenge,
     join_challenge,
@@ -111,9 +112,29 @@ class UpdateChallengeProgress(graphene.Mutation):
         return ChallengeParticipantResponse(ok=True, message="Challenge progress updated.", participant=participant)
 
 
+class CollectChallengeReward(graphene.Mutation):
+    class Arguments:
+        challenge_participant_id = graphene.Int(required=True)
+
+    Output = ChallengeResponse
+
+    @staticmethod
+    def mutate(root, info, challenge_participant_id):
+        user = _require_auth(info)
+        reward = collect_challenge_reward(
+            user_id=user["user_id"],
+            challenge_participant_id=challenge_participant_id,
+        )
+        message = f"Collected {reward['xp_amount']} XP."
+        if reward["badge_awarded"]:
+            message += " Badge awarded."
+        return ChallengeResponse(ok=True, message=message)
+
+
 class ChallengeMutation(graphene.ObjectType):
     join_challenge = JoinChallenge.Field()
     leave_challenge = LeaveChallenge.Field()
     create_challenge = CreateChallenge.Field()
     delete_challenge = DeleteChallenge.Field()
     update_challenge_progress = UpdateChallengeProgress.Field()
+    collect_challenge_reward = CollectChallengeReward.Field()

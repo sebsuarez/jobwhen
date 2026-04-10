@@ -8,6 +8,7 @@ import MentorChallenges from '../components/MentorChallenges'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Challenges.css'
 import {
+  collectChallengeReward,
   fetchActiveChallenges,
   fetchAvailableChallenges,
   joinChallenge,
@@ -45,7 +46,11 @@ export default function Challenges() {
   }
 
   const handleAddChallenge = async (challenge) => {
-    if (activeChallenges.length >= 5) {
+    const activeCount = activeChallenges.filter(
+      ({ participationStatus }) => participationStatus === 'active',
+    ).length
+
+    if (activeCount >= 5) {
       alert('You can only have 5 active challenges at a time.')
       return
     }
@@ -71,6 +76,20 @@ export default function Challenges() {
       }
     } catch {
       alert('Failed to leave challenge.')
+    }
+  }
+
+  const handleCollectReward = async (challengeParticipantId) => {
+    try {
+      const result = await collectChallengeReward(challengeParticipantId)
+      if (result.ok) {
+        alert(result.message)
+        await loadChallenges()
+      } else {
+        alert(result.message)
+      }
+    } catch {
+      alert('Failed to collect challenge reward.')
     }
   }
 
@@ -124,14 +143,27 @@ export default function Challenges() {
                     </p>
                   </div>
 
-                  <Button
-                    variant="danger"
-                    className="challenge-card__remove"
-                    onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
+                  {challenge.participationStatus === 'completed' ? (
+                    <Button
+                      variant="primary"
+                      className="challenge-card__collect"
+                      onClick={() => handleCollectReward(challenge.challengeParticipantId)}>Collect</Button>
+                  ) : (
+                    <Button
+                      variant="danger"
+                      className="challenge-card__remove"
+                      onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
+                  )}
                 </div>
                 <p className="challenge-card__description">
                   {challenge.description}
                 </p>
+
+                {challenge.participationStatus === 'completed' ? (
+                  <p className="challenge-card__completed">
+                    Challenge complete. Collect {challenge.xpReward} XP.
+                  </p>
+                ) : null}
 
                 <div className="challenge-card__progress-row">
                   <div className="challenge-card__controls">
@@ -139,13 +171,13 @@ export default function Challenges() {
                       type="button"
                       className="challenge-card__control-btn"
                       onClick={() => decreaseProgress(challenge.challengeParticipantId)}
-                      disabled={challenge.progressCount === 0}>-</button>
+                      disabled={challenge.progressCount === 0 || challenge.participationStatus === 'completed'}>-</button>
 
                     <button
                       type="button"
                       className="challenge-card__control-btn"
                       onClick={() => increaseProgress(challenge.challengeParticipantId)}
-                      disabled={challenge.progressCount === challenge.targetCount}>+</button>
+                      disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed'}>+</button>
                   </div>
 
                   <span className="challenge-card__progress-text">

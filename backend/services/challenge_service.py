@@ -1,6 +1,7 @@
 from sqlalchemy import text
 
 from db import engine
+from services.xp_service import award_xp
 
 
 def serialize_challenge(row):
@@ -42,7 +43,7 @@ def serialize_participant(row):
 
 
 def get_active_challenges(user_id):
-    # returns all challenges the user has actively joined (not withdrawn)
+    # returns all joined challenges that are still in progress or ready to collect
     with engine.connect() as conn:
         rows = conn.execute(
             text(
@@ -66,8 +67,10 @@ def get_active_challenges(user_id):
                 JOIN challenges c ON c.challenge_id = cp.challenge_id
                 JOIN users u ON u.user_id = c.mentor_user_id
                 WHERE cp.user_id = :user_id
-                  AND cp.participation_status = 'active'
-                ORDER BY c.due_date ASC
+                  AND cp.participation_status IN ('active', 'completed')
+                ORDER BY
+                    CASE WHEN cp.participation_status = 'completed' THEN 0 ELSE 1 END,
+                    c.due_date ASC
                 """
             ),
             {"user_id": user_id},
@@ -76,7 +79,7 @@ def get_active_challenges(user_id):
 
 
 def get_available_challenges(user_id):
-    # returns approved challenges the user has NOT joined yet
+    # returns approved challenges the user can newly join or replay after collecting
     with engine.connect() as conn:
         rows = conn.execute(
             text(
@@ -100,7 +103,7 @@ def get_available_challenges(user_id):
                   AND c.challenge_id NOT IN (
                       SELECT challenge_id FROM challenge_participants
                       WHERE user_id = :user_id
-                        AND participation_status = 'active'
+                        AND participation_status IN ('active', 'completed')
                   )
                 ORDER BY c.due_date ASC
                 """
@@ -189,7 +192,7 @@ def join_challenge(user_id, challenge_id):
         if not challenge:
             raise RuntimeError("Challenge not found or not available.")
 
-        # check if user already has an active or completed entry
+        # completed entries must be collected before the user can start over
         existing = conn.execute(
             text(
                 """
@@ -202,6 +205,8 @@ def join_challenge(user_id, challenge_id):
 
         if existing and existing["participation_status"] == "active":
             raise RuntimeError("Already joined this challenge.")
+        if existing and existing["participation_status"] == "completed":
+            raise RuntimeError("Collect this challenge before starting it again.")
 
         # check participant limit if one is set
         if challenge["participant_limit"]:
@@ -326,6 +331,88 @@ def update_challenge_progress(user_id, challenge_participant_id, delta):
         merged_row["due_date"] = participant["due_date"]
 
         return serialize_participant(merged_row)
+
+
+def collect_challenge_reward(user_id, challenge_participant_id):
+    with engine.begin() as conn:
+        participant = conn.execute(
+            text(
+                """
+                SELECT
+                    cp.challenge_participant_id,
+                    cp.challenge_id,
+                    cp.user_id,
+                    cp.progress_count,
+                    cp.target_count,
+                    cp.completion_count,
+                    cp.participation_status,
+                    c.title,
+                    c.xp_reward,
+                    c.badge_reward_id
+                FROM challenge_participants cp
+                JOIN challenges c ON c.challenge_id = cp.challenge_id
+                WHERE cp.challenge_participant_id = :challenge_participant_id
+                """
+            ),
+            {"challenge_participant_id": challenge_participant_id},
+        ).mappings().first()
+
+        if not participant:
+            raise RuntimeError("Challenge participant entry not found.")
+
+        if participant["user_id"] != user_id:
+            raise RuntimeError("Not authorized to collect this reward.")
+
+        if participant["participation_status"] != "completed":
+            raise RuntimeError("This challenge is not ready to collect.")
+
+        xp_result = None
+        if participant["xp_reward"] > 0:
+            xp_result = award_xp(
+                user_id=user_id,
+                event_type="challenge_completed",
+                amount=participant["xp_reward"],
+                description=f"Completed challenge: {participant['title']}",
+            )
+
+        badge_awarded = False
+        if participant["badge_reward_id"]:
+            badge_row = conn.execute(
+                text(
+                    """
+                    INSERT INTO user_badges (user_id, badge_id)
+                    SELECT :user_id, :badge_id
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM user_badges
+                        WHERE user_id = :user_id
+                          AND badge_id = :badge_id
+                    )
+                    RETURNING user_badge_id
+                    """
+                ),
+                {"user_id": user_id, "badge_id": participant["badge_reward_id"]},
+            ).mappings().first()
+            badge_awarded = badge_row is not None
+
+        conn.execute(
+            text(
+                """
+                UPDATE challenge_participants
+                SET participation_status = 'withdrawn',
+                    progress_count = 0,
+                    completed_at = NULL
+                WHERE challenge_participant_id = :challenge_participant_id
+                """
+            ),
+            {"challenge_participant_id": challenge_participant_id},
+        )
+
+        xp_amount = xp_result["xp_event"]["xp_amount"] if xp_result else 0
+        return {
+            "xp_amount": xp_amount,
+            "badge_awarded": badge_awarded,
+        }
 
 
 def delete_challenge(mentor_user_id, challenge_id):
