@@ -23,6 +23,9 @@ export default function Challenges() {
   const [newChallenges, setNewChallenges] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [collectingChallengeId, setCollectingChallengeId] = useState(null)
+  const [collectedChallengeId, setCollectedChallengeId] = useState(null)
+  const [collectedXpAmount, setCollectedXpAmount] = useState(null)
 
   useEffect(() => {
     loadChallenges()
@@ -81,16 +84,35 @@ export default function Challenges() {
 
   const handleCollectReward = async (challengeParticipantId) => {
     try {
+      setCollectingChallengeId(challengeParticipantId)
       const result = await collectChallengeReward(challengeParticipantId)
       if (result.ok) {
-        alert(result.message)
-        await loadChallenges()
+        const xpMatch = result.message.match(/Collected (\d+) XP/)
+        setCollectedChallengeId(challengeParticipantId)
+        setCollectedXpAmount(xpMatch ? xpMatch[1] : null)
+        setTimeout(() => {
+          setCollectedChallengeId(null)
+          setCollectedXpAmount(null)
+          loadChallenges()
+        }, 900)
       } else {
         alert(result.message)
       }
     } catch {
       alert('Failed to collect challenge reward.')
+    } finally {
+      setCollectingChallengeId(null)
     }
+  }
+
+  const getCollectLabel = (challenge) => {
+    if (collectingChallengeId === challenge.challengeParticipantId) {
+      return 'Collecting...'
+    }
+    if (collectedChallengeId === challenge.challengeParticipantId) {
+      return collectedXpAmount ? `+${collectedXpAmount} XP` : 'Collected'
+    }
+    return `Collect ${challenge.xpReward} XP`
   }
 
   const increaseProgress = async (id) => {
@@ -147,7 +169,11 @@ export default function Challenges() {
                     <Button
                       variant="primary"
                       className="challenge-card__collect"
-                      onClick={() => handleCollectReward(challenge.challengeParticipantId)}>Collect</Button>
+                      onClick={() => handleCollectReward(challenge.challengeParticipantId)}
+                      disabled={collectingChallengeId === challenge.challengeParticipantId}
+                    >
+                      {getCollectLabel(challenge)}
+                    </Button>
                   ) : (
                     <Button
                       variant="danger"
@@ -159,19 +185,13 @@ export default function Challenges() {
                   {challenge.description}
                 </p>
 
-                {challenge.participationStatus === 'completed' ? (
-                  <p className="challenge-card__completed">
-                    Challenge complete. Collect {challenge.xpReward} XP.
-                  </p>
-                ) : null}
-
                 <div className="challenge-card__progress-row">
                   <div className="challenge-card__controls">
                     <button
                       type="button"
                       className="challenge-card__control-btn"
                       onClick={() => decreaseProgress(challenge.challengeParticipantId)}
-                      disabled={challenge.progressCount === 0 || challenge.participationStatus === 'completed'}>-</button>
+                      disabled={challenge.progressCount === 0}>-</button>
 
                     <button
                       type="button"

@@ -285,8 +285,8 @@ def update_challenge_progress(user_id, challenge_participant_id, delta):
         if participant["user_id"] != user_id:
             raise RuntimeError("Not authorized to update this challenge.")
 
-        if participant["participation_status"] != "active":
-            raise RuntimeError("Only active challenges can be updated.")
+        if participant["participation_status"] not in ("active", "completed"):
+            raise RuntimeError("Only joined challenges can be updated.")
 
         new_progress = participant["progress_count"] + delta
         new_progress = max(0, min(new_progress, participant["target_count"]))
@@ -303,13 +303,9 @@ def update_challenge_progress(user_id, challenge_participant_id, delta):
                     END,
                     completed_at = CASE
                         WHEN :completed THEN COALESCE(completed_at, CURRENT_TIMESTAMP)
-                        ELSE completed_at
+                        ELSE NULL
                     END,
-                    completion_count = CASE
-                        WHEN :completed AND participation_status = 'active'
-                            THEN completion_count + 1
-                        ELSE completion_count
-                    END
+                    completion_count = completion_count
                 WHERE challenge_participant_id = :challenge_participant_id
                 RETURNING challenge_participant_id, challenge_id, user_id, progress_count,
                           target_count, completion_count, participation_status,
@@ -401,7 +397,8 @@ def collect_challenge_reward(user_id, challenge_participant_id):
                 UPDATE challenge_participants
                 SET participation_status = 'withdrawn',
                     progress_count = 0,
-                    completed_at = NULL
+                    completed_at = NULL,
+                    completion_count = completion_count + 1
                 WHERE challenge_participant_id = :challenge_participant_id
                 """
             ),
