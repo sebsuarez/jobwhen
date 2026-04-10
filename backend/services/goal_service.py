@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy import text
 
@@ -6,6 +6,14 @@ from db import engine
 from services.xp_service import award_xp
 
 GOAL_COMPLETION_XP_AMOUNT = 30
+VALID_GOAL_TYPES = {"job_application", "wellness_checkin", "interview_prep"}
+
+
+def current_week_monday():
+    # returns the Monday of the current ISO week
+    # we reset each Monday
+    today = date.today()
+    return today - timedelta(days=today.weekday())
 
 
 def serialize_goal(row):
@@ -22,9 +30,22 @@ def serialize_goal(row):
 
 
 def get_active_goals(user_id):
-    # returns goals that are currently active
-    today = date.today()
-    with engine.connect() as conn:
+    # resets progress for any goals from a previous week, then returns all active goals
+    monday = current_week_monday()
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                """
+                UPDATE goals
+                SET current_count = 0,
+                    is_completed = FALSE,
+                    week_of = :monday
+                WHERE user_id = :uid
+                  AND week_of < :monday
+                """
+            ),
+            {"uid": user_id, "monday": monday},
+        )
         rows = conn.execute(
             text(
                 """
@@ -32,14 +53,52 @@ def get_active_goals(user_id):
                        start_date, end_date, is_completed
                 FROM goals
                 WHERE user_id = :uid
-                  AND end_date >= :today
-                  AND is_completed = FALSE
-                ORDER BY goal_type, start_date
+                ORDER BY goal_type
                 """
             ),
-            {"uid": user_id, "today": today},
+            {"uid": user_id},
         ).mappings().all()
         return [serialize_goal(r) for r in rows]
+
+
+def upsert_goal(user_id, goal_type, target_count):
+    # creates a goal for this type, or updates the target if one already exists
+    # week_of is set to the current Monday so the weekly reset works correctly
+    if goal_type not in VALID_GOAL_TYPES:
+        raise RuntimeError(f"Invalid goal type: {goal_type}")
+    monday = current_week_monday()
+    far_future = monday + timedelta(days=365)
+    with engine.begin() as conn:
+        row = conn.execute(
+            text(
+                """
+                INSERT INTO goals (user_id, goal_type, target_count, current_count,
+                                   week_of, start_date, end_date)
+                VALUES (:uid, :goal_type, :target_count, 0,
+                        :monday, :monday, :end_date)
+                ON CONFLICT (user_id, goal_type)
+                DO UPDATE SET target_count = EXCLUDED.target_count
+                RETURNING goal_id, goal_type, target_count, current_count,
+                          start_date, end_date, is_completed
+                """
+            ),
+            {
+                "uid": user_id,
+                "goal_type": goal_type,
+                "target_count": target_count,
+                "monday": monday,
+                "end_date": far_future,
+            },
+        ).mappings().first()
+        return serialize_goal(row)
+
+
+def remove_goal(user_id, goal_type):
+    with engine.begin() as conn:
+        conn.execute(
+            text("DELETE FROM goals WHERE user_id = :uid AND goal_type = :goal_type"),
+            {"uid": user_id, "goal_type": goal_type},
+        )
 
 
 def complete_goal(user_id, goal_id):
