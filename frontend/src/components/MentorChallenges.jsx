@@ -68,15 +68,25 @@ export default function MentorChallenges({ openCreate = false }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSubmitting(true)
     setError('')
-    if (form.deadline < today) {
-      const deadlineInput = e.currentTarget.elements.deadline
-      deadlineInput.setCustomValidity("Users can't accept challenges back in time!")
-      deadlineInput.reportValidity()
-      setSubmitting(false)
+
+    const missing = [
+      !form.title.trim() && 'Challenge Title',
+      !form.deadline && 'Deadline',
+      !form.description.trim() && 'Description',
+      !form.targetCount && 'Target Count',
+      !form.maxCompletionsPerUser && 'Repeat Limit Per User',
+    ].filter(Boolean)
+    if (missing.length) {
+      setError(`Please fill in the following fields: ${missing.join(', ')}.`)
       return
     }
+    if (form.deadline < today) {
+      setError("Deadline can't be in the past.")
+      return
+    }
+
+    setSubmitting(true)
     try {
       const result = await createChallenge({
         title: form.title.trim(),
