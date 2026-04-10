@@ -33,7 +33,7 @@ export default function Profile() {
   const [profileStats, setProfileStats] = useState({
     applications: 0,
     badges: 0,
-    xpEvents: 0,
+    // TODO: add completedChallenges once backend exposes this data!
   })
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function Profile() {
         setProfileStats({
           applications: applications.length,
           badges: insights.myBadges.length,
-          xpEvents: insights.myXpHistory.length,
+          // TODO: fetch completedChallenges count from backend and add here
         })
       })
       .catch(() => {})
@@ -97,7 +97,8 @@ export default function Profile() {
     { label: 'Total XP', value: String(currentXp), className: 'profile-stat__value--xp' },
     { label: 'Applications', value: String(profileStats.applications), className: 'profile-stat__value--applications' },
     { label: 'Badges Achieved', value: String(profileStats.badges), className: 'profile-stat__value--badges' },
-    { label: 'XP Events', value: String(profileStats.xpEvents), className: 'profile-stat__value--challenges' },
+    // TODO: replace placeholder '' with real count once backend exposes completedChallenges
+    { label: 'Challenges Completed', value: '', className: 'profile-stat__value--challenges' },
   ]
 
   return (
