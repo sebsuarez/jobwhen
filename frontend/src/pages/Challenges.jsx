@@ -7,7 +7,14 @@ import Button from '../components/Button'
 import MentorChallenges from '../components/MentorChallenges'
 import { useAuth } from '../hooks/useAuth'
 import '../styles/Challenges.css'
-import { fetchActiveChallenges, fetchAvailableChallenges, joinChallenge, leaveChallenge } from '../api/challengeQueries'
+import {
+  collectChallengeReward,
+  fetchActiveChallenges,
+  fetchAvailableChallenges,
+  joinChallenge,
+  leaveChallenge,
+  updateChallengeProgress,
+} from '../api/challengeQueries'
 
 export default function Challenges() {
   const { user } = useAuth()
@@ -16,6 +23,9 @@ export default function Challenges() {
   const [newChallenges, setNewChallenges] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [collectingChallengeId, setCollectingChallengeId] = useState(null)
+  const [collectedChallengeId, setCollectedChallengeId] = useState(null)
+  const [collectedXpAmount, setCollectedXpAmount] = useState(null)
 
   useEffect(() => {
     loadChallenges()
@@ -39,7 +49,11 @@ export default function Challenges() {
   }
 
   const handleAddChallenge = async (challenge) => {
-    if (activeChallenges.length >= 5) {
+    const activeCount = activeChallenges.filter(
+      ({ participationStatus }) => participationStatus === 'active',
+    ).length
+
+    if (activeCount >= 5) {
       alert('You can only have 5 active challenges at a time.')
       return
     }
@@ -68,25 +82,59 @@ export default function Challenges() {
     }
   }
 
-  // NEEDS BACKEND SUPPORT!!!
-  const increaseProgress = (id) => {
-    setActiveChallenges((prev) =>
-      prev.map((c) =>
-        c.challengeParticipantId === id && c.progressCount < c.targetCount
-          ? { ...c, progressCount: c.progressCount + 1 }
-          : c
-      )
-    )
+  const handleCollectReward = async (challengeParticipantId) => {
+    try {
+      setCollectingChallengeId(challengeParticipantId)
+      const result = await collectChallengeReward(challengeParticipantId)
+      if (result.ok) {
+        const xpMatch = result.message.match(/Collected (\d+) XP/)
+        setCollectedChallengeId(challengeParticipantId)
+        setCollectedXpAmount(xpMatch ? xpMatch[1] : null)
+        setTimeout(() => {
+          setCollectedChallengeId(null)
+          setCollectedXpAmount(null)
+          loadChallenges()
+        }, 900)
+      } else {
+        alert(result.message)
+      }
+    } catch {
+      alert('Failed to collect challenge reward.')
+    } finally {
+      setCollectingChallengeId(null)
+    }
   }
 
-  const decreaseProgress = (id) => {
-    setActiveChallenges((prev) =>
-      prev.map((c) =>
-        c.challengeParticipantId === id && c.progressCount > 0
-          ? { ...c, progressCount: c.progressCount - 1 }
-          : c
-      )
-    )
+  const getCollectLabel = (challenge) => {
+    if (collectingChallengeId === challenge.challengeParticipantId) {
+      return 'Collecting...'
+    }
+    if (collectedChallengeId === challenge.challengeParticipantId) {
+      return collectedXpAmount ? `+${collectedXpAmount} XP` : 'Collected'
+    }
+    return `Collect ${challenge.xpReward} XP`
+  }
+
+  const increaseProgress = async (id) => {
+    try {
+      const result = await updateChallengeProgress(id, 1)
+      if (result.ok) {
+        await loadChallenges()
+      }
+    } catch {
+      alert('Failed to update challenge progress.')
+    }
+  }
+
+  const decreaseProgress = async (id) => {
+    try {
+      const result = await updateChallengeProgress(id, -1)
+      if (result.ok) {
+        await loadChallenges()
+      }
+    } catch {
+      alert('Failed to update challenge progress.')
+    }
   }
 
   if (loading) return <div className="challenges-page"><Sidebar /><main className="challenges-page__main"><p>Loading challenges...</p></main></div>
@@ -117,10 +165,21 @@ export default function Challenges() {
                     </p>
                   </div>
 
-                  <Button
-                    variant="danger"
-                    className="challenge-card__remove"
-                    onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
+                  {challenge.participationStatus === 'completed' ? (
+                    <Button
+                      variant="primary"
+                      className="challenge-card__collect"
+                      onClick={() => handleCollectReward(challenge.challengeParticipantId)}
+                      disabled={collectingChallengeId === challenge.challengeParticipantId}
+                    >
+                      {getCollectLabel(challenge)}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="danger"
+                      className="challenge-card__remove"
+                      onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
+                  )}
                 </div>
                 <p className="challenge-card__description">
                   {challenge.description}
@@ -138,7 +197,7 @@ export default function Challenges() {
                       type="button"
                       className="challenge-card__control-btn"
                       onClick={() => increaseProgress(challenge.challengeParticipantId)}
-                      disabled={challenge.progressCount === challenge.targetCount}>+</button>
+                      disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed'}>+</button>
                   </div>
 
                   <span className="challenge-card__progress-text">

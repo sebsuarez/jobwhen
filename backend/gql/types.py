@@ -150,6 +150,7 @@ class ChallengeType(graphene.ObjectType):
     title = graphene.String()
     description = graphene.String()
     xp_reward = graphene.Int()
+    default_target_count = graphene.Int()
     challenge_status = graphene.String()
     participant_limit = graphene.Int()
     start_date = graphene.String()
@@ -168,13 +169,21 @@ class ChallengeParticipantType(graphene.ObjectType):
     xp_reward = graphene.Int()
     progress_count = graphene.Int()
     target_count = graphene.Int()
+    completion_count = graphene.Int()
     participation_status = graphene.String()
     joined_at = graphene.String()
+    completed_at = graphene.String()
 
 
 class ChallengeResponse(graphene.ObjectType):
     ok = graphene.Boolean()
     message = graphene.String()
+
+
+class ChallengeParticipantResponse(graphene.ObjectType):
+    ok = graphene.Boolean()
+    message = graphene.String()
+    participant = graphene.Field(ChallengeParticipantType)
 
 
 # GOAL & MOOD TYPES

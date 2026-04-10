@@ -15,8 +15,10 @@ const ACTIVE_CHALLENGES_QUERY = `
       xpReward
       progressCount
       targetCount
+      completionCount
       participationStatus
       joinedAt
+      completedAt
     }
   }
 `
@@ -30,6 +32,7 @@ const AVAILABLE_CHALLENGES_QUERY = `
       title
       description
       xpReward
+      defaultTargetCount
       challengeStatus
       participantLimit
       startDate
@@ -46,6 +49,7 @@ const MY_CREATED_CHALLENGES_QUERY = `
       title
       description
       xpReward
+      defaultTargetCount
       challengeStatus
       participantLimit
       startDate
@@ -60,6 +64,7 @@ const CREATE_CHALLENGE_MUTATION = `
     $title: String!
     $description: String!
     $xpReward: Int
+    $defaultTargetCount: Int
     $participantLimit: Int
     $startDate: String
     $dueDate: String
@@ -68,6 +73,7 @@ const CREATE_CHALLENGE_MUTATION = `
       title: $title
       description: $description
       xpReward: $xpReward
+      defaultTargetCount: $defaultTargetCount
       participantLimit: $participantLimit
       startDate: $startDate
       dueDate: $dueDate
@@ -106,6 +112,40 @@ const LEAVE_CHALLENGE_MUTATION = `
   }
 `
 
+const UPDATE_CHALLENGE_PROGRESS_MUTATION = `
+  mutation UpdateChallengeProgress($challengeParticipantId: Int!, $delta: Int!) {
+    updateChallengeProgress(challengeParticipantId: $challengeParticipantId, delta: $delta) {
+      ok
+      message
+      participant {
+        challengeParticipantId
+        challengeId
+        userId
+        title
+        description
+        mentorName
+        dueDate
+        xpReward
+        progressCount
+        targetCount
+        completionCount
+        participationStatus
+        joinedAt
+        completedAt
+      }
+    }
+  }
+`
+
+const COLLECT_CHALLENGE_REWARD_MUTATION = `
+  mutation CollectChallengeReward($challengeParticipantId: Int!) {
+    collectChallengeReward(challengeParticipantId: $challengeParticipantId) {
+      ok
+      message
+    }
+  }
+`
+
 // Exported API functions
 export async function fetchActiveChallenges() {
   const data = await graphqlRequest(ACTIVE_CHALLENGES_QUERY)
@@ -125,6 +165,16 @@ export async function joinChallenge(challengeId) {
 export async function leaveChallenge(challengeId) {
   const data = await graphqlRequest(LEAVE_CHALLENGE_MUTATION, { challengeId })
   return data.leaveChallenge
+}
+
+export async function updateChallengeProgress(challengeParticipantId, delta) {
+  const data = await graphqlRequest(UPDATE_CHALLENGE_PROGRESS_MUTATION, { challengeParticipantId, delta })
+  return data.updateChallengeProgress
+}
+
+export async function collectChallengeReward(challengeParticipantId) {
+  const data = await graphqlRequest(COLLECT_CHALLENGE_REWARD_MUTATION, { challengeParticipantId })
+  return data.collectChallengeReward
 }
 
 export async function fetchMyCreatedChallenges() {
