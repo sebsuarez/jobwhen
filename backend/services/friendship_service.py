@@ -15,6 +15,7 @@ def serialize_friend(row):
         "application_count": row["application_count"],
         "encouraged_you": row["encouraged_you"],
         "you_encouraged": row["you_encouraged"],
+        "needs_encouragement": row["needs_encouragement"],
         "current_level": row["current_level"],
         "current_xp": row["current_xp"],
     }
@@ -60,6 +61,18 @@ def get_friends(user_id):
                     (SELECT COUNT(*) FROM job_applications WHERE user_id = u.user_id) AS application_count,
                     EXISTS(SELECT 1 FROM encouragements WHERE sender_id = u.user_id AND receiver_id = :uid AND sent_at >= CURRENT_DATE) AS encouraged_you,
                     EXISTS(SELECT 1 FROM encouragements WHERE sender_id = :uid AND receiver_id = u.user_id AND sent_at >= CURRENT_DATE) AS you_encouraged,
+                    EXISTS(
+                        SELECT 1
+                        FROM (
+                            SELECT DATE(mc.checked_in_at) AS checkin_day, AVG(mc.mood_score) AS day_avg
+                            FROM mood_checkins mc
+                            WHERE mc.user_id = u.user_id
+                            GROUP BY DATE(mc.checked_in_at)
+                            ORDER BY checkin_day DESC
+                            LIMIT 3
+                        ) recent_days
+                        HAVING COUNT(*) = 3 AND AVG(recent_days.day_avg) <= 3
+                    ) AS needs_encouragement,
                     u.current_level,
                     u.current_xp
                 FROM friendships f

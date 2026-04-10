@@ -144,6 +144,9 @@ export default function Friends() {
                       </div>
                       {friend.headline && <p className="friend-card__status">{friend.headline}</p>}
                       {friend.location && <p className="friend-card__status">{friend.location}</p>}
+                      {friend.needsEncouragement && (
+                        <p className="friend-card__needs-encouragement">Feeling low lately. Encourage them.</p>
+                      )}
 
                     </div>
                   </div>

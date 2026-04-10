@@ -122,6 +122,13 @@
   color: var(--text-secondary);
 }
 
+.friend-card__needs-encouragement {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #fbbf24;
+}
+
 .friend-card__encouraged-you {
   position: absolute;
   left: 50%;
