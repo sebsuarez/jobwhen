@@ -397,6 +397,16 @@
     align-items: flex-start;
   }
 
+  .friend-card__encouraged-you {
+    position: static;
+    transform: none;
+    order: 3;
+    width: 100%;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-default);
+    text-align: center;
+  }
+
   .friend-card__right {
     width: 100%;
     justify-content: space-between;
