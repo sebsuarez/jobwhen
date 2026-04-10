@@ -57,6 +57,8 @@ export default function Board() {
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState(null)
   const [editSubmitting, setEditSubmitting] = useState(false)
+  const [formError, setFormError] = useState('')
+  const [editFormError, setEditFormError] = useState('')
   const boardColumnsRef = useRef(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -90,10 +92,19 @@ export default function Board() {
   const closeModal = () => {
     setShowAddModal(false)
     setForm(EMPTY_FORM)
+    setFormError('')
   }
 
   const handleAddSubmit = async () => {
-    if (!form.companyName.trim() || !form.roleTitle.trim()) return
+    const missing = [
+      !form.companyName.trim() && 'Company',
+      !form.roleTitle.trim() && 'Role',
+    ].filter(Boolean)
+    if (missing.length) {
+      setFormError(`Please fill in the following fields: ${missing.join(', ')}.`)
+      return
+    }
+    setFormError('')
     setSubmitting(true)
     try {
       const result = await createJobApplication({
