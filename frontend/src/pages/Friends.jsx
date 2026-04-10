@@ -159,7 +159,7 @@ export default function Friends() {
                       variant="ghost"
                       className="friend-card__btn"
                       disabled={!!encouraged[friend.userId]}
-                      onClick={() => handleEncourage(friend)}>Encourage</Button>
+                      onClick={() => handleEncourage(friend)}>{encouraged[friend.userId] ? 'Encouraged' : 'Encourage'}</Button>
                   </div>
                 </Card>
               )
