@@ -221,28 +221,28 @@ ON CONFLICT (user_id) DO NOTHING;
 -- CHALLENGES
 INSERT INTO challenges (
     mentor_user_id, title, description, xp_reward, badge_reward_id, default_target_count,
-    challenge_status, participant_limit, start_date, due_date
+    max_completions_per_user, challenge_status, participant_limit, start_date, due_date
 )
 SELECT * FROM (VALUES
     (6, 'Apply-a-thon',
      'Submit 5 applications this week.',
-     100, 9, 5, 'approved', 100, '2026-03-01'::DATE, '2026-03-07'::DATE),
+     100, 9, 5, 3, 'approved', 100, '2026-03-01'::DATE, '2026-03-07'::DATE),
     (7, 'Interview Prep Sprint',
      'Complete 3 mock interview questions and post one reflection.',
-     120, 8, 3, 'approved', 50, '2026-03-01'::DATE, '2026-03-05'::DATE),
+     120, 8, 3, 2, 'approved', 50, '2026-03-01'::DATE, '2026-03-05'::DATE),
     (8, 'Network Boost',
      'Reach out to 2 new connections this week.',
-     80, NULL, 2, 'approved', 75, '2026-03-01'::DATE, '2026-03-07'::DATE),
+     80, NULL, 2, 4, 'approved', 75, '2026-03-01'::DATE, '2026-03-07'::DATE),
     (7, 'Resume Roast (Kind)',
      'Submit your resume for constructive peer and mentor feedback.',
-     60, NULL, 1, 'in_review', 40, '2026-03-02'::DATE, '2026-03-10'::DATE),
+     60, NULL, 1, 1, 'in_review', 40, '2026-03-02'::DATE, '2026-03-10'::DATE),
     (6, 'LeetCode Ladder',
      'Solve 5 medium problems and reflect on patterns.',
-     150, NULL, 5, 'rejected', 60, '2026-03-02'::DATE, '2026-03-12'::DATE),
+     150, NULL, 5, 6, 'rejected', 60, '2026-03-02'::DATE, '2026-03-12'::DATE),
     (6, 'Mock Interview Week',
      'Complete 3 mock interview sessions over the week.',
-     250, 8, 3, 'draft', 50, '2026-03-03'::DATE, '2026-03-10'::DATE)
-) AS v(mentor_user_id, title, description, xp_reward, badge_reward_id, default_target_count, challenge_status, participant_limit, start_date, due_date)
+     250, 8, 3, 2, 'draft', 50, '2026-03-03'::DATE, '2026-03-10'::DATE)
+) AS v(mentor_user_id, title, description, xp_reward, badge_reward_id, default_target_count, max_completions_per_user, challenge_status, participant_limit, start_date, due_date)
 WHERE NOT EXISTS (SELECT 1 FROM challenges LIMIT 1);
 
 -- CHALLENGE PARTICIPANTS
