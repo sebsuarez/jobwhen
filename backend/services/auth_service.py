@@ -43,6 +43,7 @@ def serialize_user(row):
         "current_xp": row.current_xp,
         "streak_days": row.streak_days,
         "is_active": row.is_active,
+        "is_mentor_approved": row.is_mentor_approved,
     }
 
 
@@ -110,9 +111,11 @@ def fetch_user_by_id(connection, user_id):
                 u.streak_days,
                 u.is_active,
                 r.role_id,
-                r.role_name
+                r.role_name,
+                mp.is_approved AS is_mentor_approved
             FROM users u
             JOIN roles r ON r.role_id = u.role_id
+            LEFT JOIN mentor_profiles mp ON mp.user_id = u.user_id
             WHERE u.user_id = :user_id
             """
         ),
@@ -394,10 +397,12 @@ def fetch_session_user(session_id):
                     u.streak_days,
                     u.is_active,
                     r.role_id,
-                    r.role_name
+                    r.role_name,
+                    mp.is_approved AS is_mentor_approved
                 FROM sessions s
                 JOIN users u ON u.user_id = s.user_id
                 JOIN roles r ON r.role_id = u.role_id
+                LEFT JOIN mentor_profiles mp ON mp.user_id = u.user_id
                 WHERE s.session_id = :session_id
                 """
             ),

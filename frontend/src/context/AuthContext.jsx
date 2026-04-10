@@ -26,6 +26,7 @@ export function AuthProvider({ children }) {
             currentLevel
             currentXp
             streakDays
+            isMentorApproved
             role {
               roleId
               roleName

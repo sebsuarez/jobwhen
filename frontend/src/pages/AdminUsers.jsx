@@ -7,6 +7,10 @@ import Modal from "../components/Modal"
 import { fetchAllUsers, suspendUser, unsuspendUser } from '../api/adminQueries'
 import '../styles/AdminUsers.css'
 
+function formatRole(role) {
+    return role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 export default function AdminUsers() {
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
@@ -68,7 +72,7 @@ export default function AdminUsers() {
                                 <span className="admin-users__name">{user.fullName}</span>
                                 <span className="admin-users__email">{user.email}</span>
                             </div>
-                            <span className="admin-users__role">{user.roleName}</span>
+                            <span className="admin-users__role">{formatRole(user.roleName)}</span>
                             <Button variant="primary" onClick={() => setSelected(user)}>
                                 Manage
                             </Button>
@@ -85,7 +89,7 @@ export default function AdminUsers() {
                 <p className="admin-users__modal-email">{selected?.email}</p>
                 <div className="admin-users__modal-field">
                     <span className="admin-users__modal-label">Current Role</span>
-                    <span className="admin-users__role">{selected?.roleName}</span>
+                    <span className="admin-users__role">{selected ? formatRole(selected.roleName) : ''}</span>
                 </div>
                 <div className="admin-users__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>

@@ -18,11 +18,13 @@ def serialize_pending_mentor(row):
 
 def serialize_admin_user(row):
     # converts a db row into a plain dict for the admin user management list
+    role_name = row["role_name"]
     return {
         "user_id": row["user_id"],
         "full_name": row["full_name"],
         "email": row["email"],
-        "role_name": row["role_name"],
+        # show pending_mentor for mentors who haven't been approved yet
+        "role_name": "pending_mentor" if role_name == "mentor" and not row["is_mentor_approved"] else role_name,
         "is_active": row["is_active"],
         "current_level": row["current_level"],
         "headline": row["headline"],
@@ -100,9 +102,11 @@ def get_all_users(query=None):
                     u.current_level,
                     u.is_active,
                     u.created_at,
-                    r.role_name
+                    r.role_name,
+                    mp.is_approved AS is_mentor_approved
                 FROM users u
                 JOIN roles r ON r.role_id = u.role_id
+                LEFT JOIN mentor_profiles mp ON mp.user_id = u.user_id
                 WHERE (:pattern IS NULL
                     OR u.full_name ILIKE :pattern
                     OR u.email ILIKE :pattern)

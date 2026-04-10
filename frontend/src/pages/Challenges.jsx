@@ -18,7 +18,7 @@ import {
 
 export default function Challenges() {
   const { user } = useAuth()
-  const isMentor = user?.role?.roleName === 'mentor'
+  const isApprovedMentor = user?.role?.roleName === 'mentor' && user?.isMentorApproved === true
   const [activeChallenges, setActiveChallenges] = useState([])
   const [newChallenges, setNewChallenges] = useState([])
   const [loading, setLoading] = useState(true)
@@ -251,7 +251,7 @@ export default function Challenges() {
             </div>
           </Card>
         </section>
-          {isMentor && <MentorChallenges />}
+          {isApprovedMentor && <MentorChallenges />}
         </div>
       </main>
     </div>

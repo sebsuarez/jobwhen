@@ -20,6 +20,7 @@ class UserType(graphene.ObjectType):
     current_level = graphene.Int()
     current_xp = graphene.Int()
     streak_days = graphene.Int()
+    is_mentor_approved = graphene.Boolean()
 
 
 class UpdateProfileResponse(graphene.ObjectType):
