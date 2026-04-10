@@ -230,10 +230,15 @@ def reject_mentor(admin_id, user_id):
 
 
 def suspend_user(admin_id, target_user_id, note):
-    # sets is_active=FALSE so the user cannot log in, and logs the action
+    # sets is_active=FALSE so the user cannot log in and logs the action
+    # also deletes all active sessions so they are logged out next time they make a request
     with engine.begin() as conn:
         conn.execute(
             text("UPDATE users SET is_active = FALSE WHERE user_id = :uid"),
+            {"uid": target_user_id},
+        )
+        conn.execute(
+            text("DELETE FROM sessions WHERE user_id = :uid"),
             {"uid": target_user_id},
         )
         conn.execute(
