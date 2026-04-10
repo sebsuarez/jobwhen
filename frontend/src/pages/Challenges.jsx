@@ -122,7 +122,7 @@ export default function Challenges() {
       0,
       maxCompletionsPerUser - remainingCompletions,
     )
-    return `${completedCount}/${maxCompletionsPerUser} completed • ${remainingCompletions} left`
+    return `↻ ${completedCount}/${maxCompletionsPerUser} completed`
   }
 
   const isExpiredChallenge = (challenge) => {
@@ -184,43 +184,44 @@ export default function Challenges() {
                   return (
                 <Card key={challenge.challengeParticipantId} className="challenge-card">
                   <div className="challenge-card__top">
-                    <div>
+                    <div className="challenge-card__main">
                       <h2 className="challenge-card__title">{challenge.title}</h2>
                       <p className="challenge-card__meta">
                         Created by {challenge.mentorName} - due {challenge.dueDate}
                       </p>
                     </div>
 
-                    {isExpired ? (
-                      <Button
-                        variant="danger"
-                        className="challenge-card__remove"
-                        onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
-                    ) : challenge.participationStatus === 'completed' ? (
-                      <Button
-                        variant="primary"
-                        className="challenge-card__collect"
-                        onClick={() => handleCollectReward(challenge.challengeParticipantId)}
-                        disabled={collectingChallengeId === challenge.challengeParticipantId}
-                      >
-                        {getCollectLabel(challenge)}
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="danger"
-                        className="challenge-card__remove"
-                        onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
-                    )}
+                    <div className="challenge-card__actions">
+                      {isExpired ? (
+                        <Button
+                          variant="danger"
+                          className="challenge-card__remove"
+                          onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
+                      ) : challenge.participationStatus === 'completed' ? (
+                        <Button
+                          variant="primary"
+                          className="challenge-card__collect"
+                          onClick={() => handleCollectReward(challenge.challengeParticipantId)}
+                          disabled={collectingChallengeId === challenge.challengeParticipantId}
+                        >
+                          {getCollectLabel(challenge)}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="danger"
+                          className="challenge-card__remove"
+                          onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
+                      )}
+                      <p className="challenge-card__meta challenge-card__meta--recurring">
+                        {formatRecurrenceText(
+                          challenge.maxCompletionsPerUser,
+                          challenge.remainingCompletions,
+                        )}
+                      </p>
+                    </div>
                   </div>
                   <p className="challenge-card__description">
                     {challenge.description}
-                  </p>
-
-                  <p className="challenge-card__meta challenge-card__meta--recurring">
-                    {formatRecurrenceText(
-                      challenge.maxCompletionsPerUser,
-                      challenge.remainingCompletions,
-                    )}
                   </p>
 
                   {isExpired ? (
