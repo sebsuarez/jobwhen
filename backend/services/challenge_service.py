@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy import text
 
 from db import engine
@@ -116,6 +118,7 @@ def get_available_challenges(user_id):
                   ON cp.challenge_id = c.challenge_id
                  AND cp.user_id = :user_id
                 WHERE c.challenge_status = 'approved'
+                  AND (c.due_date IS NULL OR c.due_date >= CURRENT_DATE)
                   AND COALESCE(cp.participation_status, 'withdrawn') NOT IN ('active', 'completed')
                   AND COALESCE(cp.completion_count, 0) < c.max_completions_per_user
                 ORDER BY c.due_date ASC
@@ -208,7 +211,7 @@ def join_challenge(user_id, challenge_id):
         challenge = conn.execute(
             text(
                 """
-                SELECT challenge_id, participant_limit, default_target_count, max_completions_per_user
+                SELECT challenge_id, participant_limit, default_target_count, max_completions_per_user, due_date
                 FROM challenges
                 WHERE challenge_id = :cid AND challenge_status = 'approved'
                 """
@@ -218,6 +221,9 @@ def join_challenge(user_id, challenge_id):
 
         if not challenge:
             raise RuntimeError("Challenge not found or not available.")
+
+        if challenge["due_date"] and challenge["due_date"] < date.today():
+            raise RuntimeError("This challenge has expired.")
 
         # completed entries must be collected before the user can start over
         existing = conn.execute(
@@ -315,6 +321,9 @@ def update_challenge_progress(user_id, challenge_participant_id, delta):
         if participant["user_id"] != user_id:
             raise RuntimeError("Not authorized to update this challenge.")
 
+        if participant["due_date"] and participant["due_date"] < date.today():
+            raise RuntimeError("This challenge has expired.")
+
         if participant["participation_status"] not in ("active", "completed"):
             raise RuntimeError("Only joined challenges can be updated.")
 
@@ -375,7 +384,8 @@ def collect_challenge_reward(user_id, challenge_participant_id):
                     cp.participation_status,
                     c.title,
                     c.xp_reward,
-                    c.badge_reward_id
+                    c.badge_reward_id,
+                    c.due_date
                 FROM challenge_participants cp
                 JOIN challenges c ON c.challenge_id = cp.challenge_id
                 WHERE cp.challenge_participant_id = :challenge_participant_id
@@ -392,6 +402,9 @@ def collect_challenge_reward(user_id, challenge_participant_id):
 
         if participant["participation_status"] != "completed":
             raise RuntimeError("This challenge is not ready to collect.")
+
+        if participant["due_date"] and participant["due_date"] < date.today():
+            raise RuntimeError("This challenge has expired.")
 
         xp_result = None
         if participant["xp_reward"] > 0:

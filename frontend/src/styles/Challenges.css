@@ -61,6 +61,17 @@
   gap: var(--space-4);
 }
 
+.challenge-card__main {
+  flex: 1;
+}
+
+.challenge-card__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .challenge-card__title {
   font-size: var(--text-xl);
   font-weight: 700;
@@ -77,8 +88,16 @@
 }
 
 .challenge-card__meta--recurring {
-  margin-bottom: var(--space-3);
+  margin: 0;
   font-weight: 600;
+  text-align: center;
+}
+
+.challenge-card__expired {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #fbbf24;
 }
 
 .challenge-card__remove {
@@ -101,10 +120,13 @@
 .challenge-card__progress-text {
   font-size: var(--text-sm);
   color: var(--text-primary);
+  min-width: 56px;
+  text-align: center;
 }
 
 .challenge-card__controls {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
 }
 
