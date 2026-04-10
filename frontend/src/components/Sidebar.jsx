@@ -1,5 +1,6 @@
 // components/Sidebar.jsx
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import '../styles/Sidebar.css'
 
 const navItems = [
@@ -15,6 +16,14 @@ const bottomItems = [
 ]
 
 export default function Sidebar() {
+  const { user } = useAuth()
+
+  const currentLevel = user?.currentLevel ?? 1
+  const currentXp = user?.currentXp ?? 0
+  const xpPerLevel = 60
+  const xpIntoLevel = currentXp % xpPerLevel
+  const progressPercent = Math.min((xpIntoLevel / xpPerLevel) * 100, 100)
+
   const renderLink = (item) => (
     <NavLink
       key={item.path}
@@ -33,6 +42,25 @@ export default function Sidebar() {
       <aside className="sidebar">
         <div className="sidebar__logo">Job When?</div>
         <nav className="sidebar__nav">{navItems.map(renderLink)}</nav>
+
+        <div className="sidebar__level-compact">
+          <div className="sidebar__level-row">
+            <div className="sidebar__level-circle">{currentLevel}</div>
+
+            <div className="sidebar__level-info">
+              <p className="sidebar__level-label">level {currentLevel}</p>
+              <p className="sidebar__level-xp">XP {xpIntoLevel}/{xpPerLevel}</p>
+            </div>
+          </div>
+
+          <div className="sidebar__level-progress">
+            <div
+              className="sidebar__level-progress-fill"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+
         <div className="sidebar__bottom">{bottomItems.map(renderLink)}</div>
       </aside>
 
@@ -42,7 +70,23 @@ export default function Sidebar() {
         </NavLink>
 
         <div className="mobile-sidebar__logo">Job When?</div>
-        
+
+        <div className="mobile-top-level">
+          <div className="mobile-top-level__circle">{currentLevel}</div>
+
+          <div className="mobile-top-level__bar-wrap">
+            <div className="mobile-top-level__xp">
+              XP {xpIntoLevel}/{xpPerLevel}
+            </div>
+
+            <div className="mobile-top-level__bar">
+              <div
+                className="mobile-top-level__fill"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <nav className="mobile-sidebar-bottom">
