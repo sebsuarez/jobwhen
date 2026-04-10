@@ -420,6 +420,10 @@
   .pending-request-card__actions {
     width: 100%;
   }
+
+  .pending-request-card__actions .btn {
+    flex: 1;
+  }
 }
 
 @media (max-width: 480px) {
