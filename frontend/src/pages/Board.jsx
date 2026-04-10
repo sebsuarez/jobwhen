@@ -492,6 +492,7 @@ export default function Board() {
               value={form.notes}
               onChange={handleFormChange}
             />
+            {formError && <p className="board__form-error">{formError}</p>}
             <div className="board__form-actions">
               <Button variant="ghost" onClick={closeModal}>Cancel</Button>
               <Button variant="submit" onClick={handleAddSubmit} disabled={submitting}>
@@ -621,6 +622,7 @@ export default function Board() {
                 value={editForm.notes}
                 onChange={handleEditFormChange}
               />
+              {editFormError && <p className="board__form-error">{editFormError}</p>}
               <div className="board__form-actions">
                 <Button variant="ghost" onClick={handleEditCancel}>Cancel</Button>
                 <Button variant="submit" onClick={handleEditSubmit} disabled={editSubmitting}>
