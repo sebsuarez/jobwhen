@@ -8,6 +8,7 @@ import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
 import { fetchJobApplications } from '../api/boardQueries'
 import { fetchActiveGoals, fetchMoodInsights, logMoodCheckin, setGoal, updateGoalProgress } from '../api/dashboardQueries'
+import { getSessionQuote } from '../data/quotes'
 import '../styles/Dashboard.css'
 
 function getGreeting() {
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const goalsRef = useRef(null)
 
+  const [quote] = useState(getSessionQuote)
   const [stats, setStats] = useState({ total: 0, interviews: 0, offers: 0, rate: 0 })
   const [goals, setGoals] = useState([])
 
@@ -171,7 +173,7 @@ export default function Dashboard() {
             {getGreeting()}, <span className="dashboard__name">{firstName}</span>
           </h1>
           <p className="dashboard__quote">
-            "You miss 100% of the shots you don't take" ~ Wayne Gretzky
+            "{quote.text}"{quote.author ? ` ~ ${quote.author}` : ''}
           </p>
         </header>
 

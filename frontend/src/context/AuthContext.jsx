@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { AuthContext } from './authContext'
 import { graphqlRequest } from '../lib/graphqlRequest'
+import { clearSessionQuote } from '../data/quotes'
 
 export function AuthProvider({ children }) {
   // global auth state — null means no logged-in user
@@ -55,6 +56,7 @@ export function AuthProvider({ children }) {
         }
       `)
     } finally {
+      clearSessionQuote()
       setUser(null)
     }
   }
