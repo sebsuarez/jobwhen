@@ -14,13 +14,6 @@ const PROFILE_INSIGHTS_QUERY = `
     myXpHistory {
       xpEventId
     }
-    allBadges {
-      badgeId
-      badgeName
-      description
-      levelRequired
-      iconName
-    }
   }
 `
 
@@ -57,6 +50,5 @@ export async function fetchProfileInsights() {
   return {
     myBadges: data.myBadges ?? [],
     myXpHistory: data.myXpHistory ?? [],
-    allBadges: data.allBadges ?? [],
   }
 }

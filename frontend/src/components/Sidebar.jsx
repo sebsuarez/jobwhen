@@ -5,7 +5,7 @@ import '../styles/Sidebar.css'
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: '📊' },
   { path: '/board', label: 'Job Board', icon: '📋' },
-  { path: '/collection', label: 'Collection', icon: '🏆' },
+  { path: '/collection', label: 'Leaderboards', icon: '🏆' },
   { path: '/challenges', label: 'Challenges', icon: '⚡' },
   { path: '/friends', label: 'Friends', icon: '👥' },
 ]
@@ -58,7 +58,7 @@ export default function Sidebar() {
 
         <NavLink to="/collection" className="mobile-sidebar__link">
           <span className="mobile-sidebar__icon">🏆</span>
-          <span className="mobile-sidebar__label">Collection</span>
+          <span className="mobile-sidebar__label">Leaderboards</span>
         </NavLink>
 
         <NavLink to="/challenges" className="mobile-sidebar__link">
