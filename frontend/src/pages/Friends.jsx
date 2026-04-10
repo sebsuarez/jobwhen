@@ -157,7 +157,9 @@ export default function Friends() {
               return (
                 <Card key={friend.userId} className="friend-card">
                   <div className="friend-card__left">
-                    <div className="friend-card__avatar" />
+                    <div className="friend-card__avatar">
+                      {friend.avatar && <span className="friend-card__avatar-emoji">{friend.avatar}</span>}
+                    </div>
                     <div className="friend-card__info">
                       <div className="friend-card__name-row">
                         <h3 className="friend-card__name">{friend.fullName}</h3>
