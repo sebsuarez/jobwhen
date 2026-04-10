@@ -25,4 +25,3 @@ class LogMoodCheckin(graphene.Mutation):
 
 class MoodMutation(graphene.ObjectType):
     log_mood_checkin = LogMoodCheckin.Field()
-    submit_mood_checkin = LogMoodCheckin.Field()

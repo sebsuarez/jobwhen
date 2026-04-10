@@ -232,15 +232,6 @@ class MoodTrendType(graphene.ObjectType):
     is_low_mood_trend = graphene.Boolean()
 
 
-class BurnoutAlertType(graphene.ObjectType):
-    alert_id = graphene.Int()
-    user_id = graphene.Int()
-    trigger_reason = graphene.String()
-    supportive_message = graphene.String()
-    created_at = graphene.String()
-    resolved = graphene.Boolean()
-
-
 # XP & BADGE TYPES
 
 class XpEventType(graphene.ObjectType):

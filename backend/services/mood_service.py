@@ -16,17 +16,6 @@ def _serialize_mood_checkin(row):
     }
 
 
-def _serialize_burnout_alert(row):
-    return {
-        "alert_id": row["alert_id"],
-        "user_id": row["user_id"],
-        "trigger_reason": row["trigger_reason"],
-        "supportive_message": row["supportive_message"],
-        "created_at": row["created_at"].isoformat() if row["created_at"] else None,
-        "resolved": row["resolved"],
-    }
-
-
 def _serialize_mood_trend(days_considered, average_score):
     return {
         "days_considered": days_considered,
@@ -130,23 +119,6 @@ def get_mood_history(user_id):
         ).mappings().all()
 
     return [_serialize_mood_checkin(row) for row in rows]
-
-
-def get_burnout_alerts(user_id):
-    with engine.connect() as conn:
-        rows = conn.execute(
-            text(
-                """
-                SELECT alert_id, user_id, trigger_reason, supportive_message, created_at, resolved
-                FROM burnout_alerts
-                WHERE user_id = :user_id
-                ORDER BY created_at DESC, alert_id DESC
-                """
-            ),
-            {"user_id": user_id},
-        ).mappings().all()
-
-    return [_serialize_burnout_alert(row) for row in rows]
 
 
 def get_mood_trend(user_id):
