@@ -11,6 +11,8 @@ const PENDING_CHALLENGES_QUERY = `
       title
       description
       xpReward
+      defaultTargetCount
+      maxCompletionsPerUser
       challengeStatus
       participantLimit
       startDate
@@ -26,6 +28,7 @@ const PENDING_MENTORS_QUERY = `
       mentorProfileId
       userId
       fullName
+      email
       headline
       company
       jobTitle
