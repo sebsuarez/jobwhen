@@ -85,6 +85,7 @@ class UpdateJobApplication(graphene.Mutation):
             location=input.get("location"),
             job_link=input.get("job_link"),
             salary_range=input.get("salary_range"),
+            status=input.get("status"),
             notes=input.get("notes"),
             application_deadline=input.get("application_deadline"),
             applied_date=input.get("applied_date"),
