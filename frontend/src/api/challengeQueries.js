@@ -69,12 +69,12 @@ const CREATE_CHALLENGE_MUTATION = `
   mutation CreateChallenge(
     $title: String!
     $description: String!
+    $dueDate: String!
     $xpReward: Int
     $defaultTargetCount: Int
     $maxCompletionsPerUser: Int
     $participantLimit: Int
     $startDate: String
-    $dueDate: String
   ) {
     createChallenge(
       title: $title

@@ -19,13 +19,14 @@ const EMPTY_FORM = {
   title: '',
   deadline: '',
   description: '',
-  reward: '',
+  reward: '50',
   targetCount: '1',
   maxCompletionsPerUser: '1',
   reviewNote: '',
 }
 
 export default function MentorChallenges({ openCreate = false }) {
+  const today = new Date().toISOString().split('T')[0]
   const [challenges, setChallenges] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(openCreate)
@@ -59,6 +60,9 @@ export default function MentorChallenges({ openCreate = false }) {
 
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target
+    if (name === 'deadline') {
+      e.target.setCustomValidity('')
+    }
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
 
@@ -66,6 +70,13 @@ export default function MentorChallenges({ openCreate = false }) {
     e.preventDefault()
     setSubmitting(true)
     setError('')
+    if (form.deadline < today) {
+      const deadlineInput = e.currentTarget.elements.deadline
+      deadlineInput.setCustomValidity("Users can't accept challenges back in time!")
+      deadlineInput.reportValidity()
+      setSubmitting(false)
+      return
+    }
     try {
       const result = await createChallenge({
         title: form.title.trim(),
@@ -124,9 +135,10 @@ export default function MentorChallenges({ openCreate = false }) {
                       Limit: {challenge.participantLimit}
                     </span>
                   )}
-                  {/* TODO: wire to updateChallenge mutation */}
                   {status === 'in_review' && (
-                    <Button variant="ghost" className="mentor-challenges__edit-btn" title="Edit">&#9998;</Button>
+                    <Button variant="danger" onClick={() => handleRemove(challenge.challengeId)} disabled={deleting === challenge.challengeId}>
+                      {deleting === challenge.challengeId ? 'Removing...' : 'Remove'}
+                    </Button>
                   )}
                   {status === 'rejected' && (
                     <Button variant="danger" onClick={() => handleRemove(challenge.challengeId)} disabled={deleting === challenge.challengeId}>
@@ -143,7 +155,7 @@ export default function MentorChallenges({ openCreate = false }) {
         )
       })}
       <Modal isOpen={showCreate} onClose={() => { setShowCreate(false); setError('') }} title="Create New Challenge">
-        <form onSubmit={handleSubmit}>
+        <form className="mentor-challenges__form" onSubmit={handleSubmit}>
               <div className="mentor-challenges__field">
                 <label className="mentor-challenges__label">Challenge Title</label>
                 <input
@@ -162,6 +174,7 @@ export default function MentorChallenges({ openCreate = false }) {
                   type="date"
                   value={form.deadline}
                   onChange={handleFormChange}
+                  required
                 />
               </div>
 
@@ -197,7 +210,7 @@ export default function MentorChallenges({ openCreate = false }) {
                   value={form.reward}
                   onChange={handleFormChange}
                   min={0}
-                  placeholder="0"
+                  placeholder="50"
                 />
               </div>
 

@@ -130,7 +130,7 @@ def get_available_challenges(user_id):
 
 
 def get_mentor_challenges(mentor_user_id):
-    # returns all challenges created by this mentor, regardless of status
+    # returns this mentor's non-expired challenges; expired ones stay in the db
     with engine.connect() as conn:
         rows = conn.execute(
             text(
@@ -152,6 +152,7 @@ def get_mentor_challenges(mentor_user_id):
                 FROM challenges c
                 JOIN users u ON u.user_id = c.mentor_user_id
                 WHERE c.mentor_user_id = :uid
+                  AND (c.due_date IS NULL OR c.due_date >= CURRENT_DATE)
                 ORDER BY c.created_at DESC
                 """
             ),
@@ -194,7 +195,7 @@ def create_challenge(
                 "mentor_user_id": mentor_user_id,
                 "title": title,
                 "description": description,
-                "xp_reward": xp_reward or 0,
+                "xp_reward": xp_reward if xp_reward is not None else 50,
                 "default_target_count": default_target_count or 1,
                 "max_completions_per_user": max_completions_per_user or 1,
                 "participant_limit": participant_limit,

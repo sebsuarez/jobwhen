@@ -35,7 +35,7 @@
 .mentor-challenges__group {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .mentor-challenges__status-label {
@@ -43,6 +43,7 @@
   font-weight: 700;
   text-align: center;
   padding: var(--space-1) 0;
+  margin-bottom: var(--space-1);
 }
 
 .mentor-challenges__status--approved { color: #4ADE80; }
@@ -93,10 +94,16 @@
   font-size: var(--text-base);
 }
 
+.mentor-challenges__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .mentor-challenges__field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 6px;
 }
 
 .mentor-challenges__field--row {
@@ -112,6 +119,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  line-height: 1.2;
 }
 
 .mentor-challenges__loopable-btn {

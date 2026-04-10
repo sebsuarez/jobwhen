@@ -1,3 +1,5 @@
+from datetime import date
+
 import graphene
 
 from gql.types import ChallengeParticipantResponse, ChallengeResponse
@@ -51,20 +53,23 @@ class CreateChallenge(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
         description = graphene.String(required=True)
+        due_date = graphene.String(required=True)
         xp_reward = graphene.Int()
         default_target_count = graphene.Int()
         max_completions_per_user = graphene.Int()
         participant_limit = graphene.Int()
         start_date = graphene.String()
-        due_date = graphene.String()
 
     Output = ChallengeResponse
 
     @staticmethod
-    def mutate(root, info, title, description, xp_reward=None, default_target_count=None, max_completions_per_user=None, participant_limit=None, start_date=None, due_date=None):
+    def mutate(root, info, title, description, due_date, xp_reward=None, default_target_count=None, max_completions_per_user=None, participant_limit=None, start_date=None):
         user = _require_auth(info)
         if user["role"]["role_name"] != "mentor":
             raise RuntimeError("Only mentors can create challenges.")
+        parsed_due_date = date.fromisoformat(due_date)
+        if parsed_due_date < date.today():
+            raise RuntimeError("Users can't accept challenges back in time!")
         create_challenge(
             mentor_user_id=user["user_id"],
             title=title,
@@ -74,7 +79,7 @@ class CreateChallenge(graphene.Mutation):
             max_completions_per_user=max_completions_per_user,
             participant_limit=participant_limit,
             start_date=start_date,
-            due_date=due_date,
+            due_date=parsed_due_date.isoformat(),
         )
         return ChallengeResponse(ok=True, message="Challenge submitted for review.")
 
