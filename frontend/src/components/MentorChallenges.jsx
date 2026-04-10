@@ -60,6 +60,9 @@ export default function MentorChallenges({ openCreate = false }) {
 
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target
+    if (name === 'deadline') {
+      e.target.setCustomValidity('')
+    }
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
 
@@ -68,7 +71,9 @@ export default function MentorChallenges({ openCreate = false }) {
     setSubmitting(true)
     setError('')
     if (form.deadline < today) {
-      setError('Due date must be today or later.')
+      const deadlineInput = e.currentTarget.elements.deadline
+      deadlineInput.setCustomValidity("Users can't accept challenges back in time!")
+      deadlineInput.reportValidity()
       setSubmitting(false)
       return
     }
@@ -168,7 +173,6 @@ export default function MentorChallenges({ openCreate = false }) {
                   type="date"
                   value={form.deadline}
                   onChange={handleFormChange}
-                  min={today}
                   required
                 />
               </div>

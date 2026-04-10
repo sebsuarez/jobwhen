@@ -69,7 +69,7 @@ class CreateChallenge(graphene.Mutation):
             raise RuntimeError("Only mentors can create challenges.")
         parsed_due_date = date.fromisoformat(due_date)
         if parsed_due_date < date.today():
-            raise RuntimeError("Due date cannot be in the past.")
+            raise RuntimeError("Users can't accept challenges back in time!")
         create_challenge(
             mentor_user_id=user["user_id"],
             title=title,
