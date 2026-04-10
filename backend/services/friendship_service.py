@@ -219,6 +219,20 @@ def send_encouragement(sender_id, receiver_id, message=None):
         if not friendship:
             raise RuntimeError("You can only encourage friends.")
 
+        already_sent = conn.execute(
+            text(
+                """
+                SELECT 1 FROM encouragements
+                WHERE sender_id = :s AND receiver_id = :r
+                  AND sent_at >= CURRENT_DATE
+                """
+            ),
+            {"s": sender_id, "r": receiver_id},
+        ).first()
+
+        if already_sent:
+            raise RuntimeError("You can only encourage someone once per day.")
+
         default_msg = "Keep going, you've got this!"
         conn.execute(
             text(
