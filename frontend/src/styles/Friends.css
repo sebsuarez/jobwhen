@@ -256,7 +256,7 @@
 }
 
 .pending-requests {
-  margin-bottom: var(--space-6);
+  margin-top: var(--space-6);
 }
 
 .pending-requests__title {
