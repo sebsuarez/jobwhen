@@ -1,5 +1,6 @@
 // pages/Friends.jsx
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -8,10 +9,11 @@ import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest,  fet
 import '../styles/Friends.css'
 
 export default function Friends() {
+  const location = useLocation()
   const [friends, setFriends] = useState([])
   const [loadingFriends, setLoadingFriends] = useState(true)
   const [pendingRequests, setPendingRequests] = useState([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(() => !!location.state?.openAddFriend)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [searchLoading, setSearchLoading] = useState(false)
