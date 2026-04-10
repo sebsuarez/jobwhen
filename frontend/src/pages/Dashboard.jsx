@@ -34,8 +34,15 @@ const MOCK_GOALS = [
 export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const goalsRef = useRef(null)
+
   const [stats, setStats] = useState({ total: 0, interviews: 0, offers: 0, rate: 0 })
-  const [goals, setGoals] = useState([])
+  const [goals, setGoals] = useState(MOCK_GOALS)
+
+  // Goal interaction state
+  const [editingGoalType, setEditingGoalType] = useState(null)
+  const [editTargetValue, setEditTargetValue] = useState('')
+  const [xpEarnedGoal, setXpEarnedGoal] = useState(null)
   const [mood, setMood] = useState(null)
   const [burnoutAlerts, setBurnoutAlerts] = useState([])
   const [moodHistory, setMoodHistory] = useState([])
@@ -48,10 +55,10 @@ export default function Dashboard() {
 
     Promise.all([
       fetchJobApplications(user.userId),
-      fetchActiveGoals(),
+      // TODO: add fetchActiveGoals() back here once backend goal endpoints are live
       fetchMoodInsights(),
     ])
-      .then(([apps, activeGoals, moodInsights]) => {
+      .then(([apps, moodInsights]) => {
         if (cancelled) return
         const applied = apps.filter((a) => a.status !== 'wishlist')
         const interviews = apps.filter((a) => a.status === 'interview').length
@@ -59,12 +66,6 @@ export default function Dashboard() {
         const total = applied.length
         const rate = total > 0 ? Math.round((interviews / total) * 100) : 0
         setStats({ total, interviews, offers, rate })
-        setGoals(activeGoals.map((goal) => ({
-          id: goal.goalId,
-          label: `${goal.goalType[0].toUpperCase()}${goal.goalType.slice(1)} Goal`,
-          current: goal.currentCount,
-          target: goal.targetCount,
-        })))
         setMoodHistory(moodInsights.myMoodHistory)
         setBurnoutAlerts(moodInsights.myBurnoutAlerts.filter((alert) => !alert.resolved))
       })
