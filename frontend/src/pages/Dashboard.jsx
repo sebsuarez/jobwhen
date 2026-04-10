@@ -1,10 +1,11 @@
 // pages/Dashboard.jsx
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../hooks/useAuth'
 import { fetchJobApplications } from '../api/boardQueries'
-import { fetchActiveGoals, fetchMoodInsights, logMoodCheckin } from '../api/dashboardQueries'
+// TODO: re-add fetchActiveGoals import once backend goal endpoints are live
+import { fetchMoodInsights, logMoodCheckin } from '../api/dashboardQueries'
 import '../styles/Dashboard.css'
 
 function getGreeting() {
@@ -13,6 +14,22 @@ function getGreeting() {
   if (hour < 17) return 'Good afternoon'
   return 'Good evening'
 }
+
+// Preset weekly goals - TODO: replace with backend goals one endpoints are live
+const GOAL_CONFIGS = [
+  { type: 'applications', label: 'Job Applications' },
+  { type: 'wellness', label: 'Wellness Check-in' },
+  { type: 'interview_prep', label: 'Interview Prep' },
+]
+
+const GOAL_XP = 30
+
+// TODO: remove mock data and replace once backend goal endpoints are live
+const MOCK_GOALS = [
+  { id: 1, goalType: 'applications', current: 2, target: 5, isCompleted: false },
+  { id: 2, goalType: 'wellness', current: 1, target: 3, isCompleted: false },
+  { id: 3, goalType: 'interview_prep', current: 0, target: 2, isCompleted: false },
+]
 
 export default function Dashboard() {
   const { user } = useAuth()
