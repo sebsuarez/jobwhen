@@ -216,9 +216,7 @@ export default function Board() {
         setApplications((prev) =>
           prev.map((a) => a.applicationId === result.application.applicationId ? result.application : a)
         )
-        setSelectedApp(result.application)
-        setIsEditing(false)
-        setEditForm(null)
+       closeDetailModal()
       }
     } catch (err) {
       console.error('Failed to update application:', err)
@@ -513,9 +511,7 @@ const handleBoardDragOver = (e) => {
                 </>
               )}
               <div className="board__form-actions">
-                <Button variant="ghost" onClick={handleDeleteApp}>
-                  {confirmDelete ? 'Confirm?' : 'Delete'}
-                </Button>
+                <Button variant="ghost" onClick={handleDeleteApp}>Delete</Button>
                 <Button variant="submit" onClick={handleEditStart}>Edit</Button>
               </div>
             </div>
