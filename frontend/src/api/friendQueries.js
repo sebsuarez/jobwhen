@@ -11,6 +11,7 @@ const MY_FRIENDS_QUERY = `
       headline
       location
       roleName
+      applicationCount
       currentLevel
       currentXp
     }
