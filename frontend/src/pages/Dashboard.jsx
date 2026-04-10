@@ -27,6 +27,13 @@ const GOAL_CONFIGS = [
 
 // Same XP for each goal type for now
 const GOAL_XP = 30
+const MOOD_SLIDER_COLORS = {
+  1: '#ef4444',
+  2: '#f97316',
+  3: '#facc15',
+  4: '#84cc16',
+  5: '#22c55e',
+}
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -111,6 +118,8 @@ export default function Dashboard() {
   const today = new Date().toISOString().slice(0, 10)
   const latestMood = moodHistory[0]
   const todaysMood = latestMood?.checkedInAt?.slice(0, 10) === today ? latestMood : null
+  const moodSliderPercent = ((selectedMoodScore - 1) / 4) * 100
+  const moodSliderColor = MOOD_SLIDER_COLORS[selectedMoodScore] ?? '#c084fc'
 
   function applyGoalUpdate(goalType, patch) {
     setGoals((prev) =>
@@ -167,8 +176,8 @@ export default function Dashboard() {
 
   const handleMoodCheckin = async () => {
     try {
-      const response = await logMoodCheckin(selectedMoodScore)
-      setMoodMessage(response?.message ?? 'Mood check-in saved.')
+      await logMoodCheckin(selectedMoodScore)
+      setMoodMessage('')
       const refreshed = await fetchMoodInsights()
       setMoodHistory(refreshed.myMoodHistory)
       setMoodTrend(refreshed.myMoodTrend)
@@ -309,11 +318,8 @@ export default function Dashboard() {
             <p className="dashboard__mood-subtitle">Rate today from 1 to 5. Your friends can spot when you may need encouragement.</p>
             <div className="dashboard__mood-scale">
               <div className="dashboard__mood-scale-labels">
-                <span>1</span>
-                <span>2</span>
-                <span>3</span>
-                <span>4</span>
-                <span>5</span>
+                <span aria-hidden="true">☹️</span>
+                <span aria-hidden="true">😊</span>
               </div>
               <input
                 className="dashboard__mood-slider"
@@ -323,6 +329,10 @@ export default function Dashboard() {
                 step="1"
                 value={selectedMoodScore}
                 onChange={(e) => setSelectedMoodScore(parseInt(e.target.value, 10))}
+                style={{
+                  '--mood-slider-percent': `${moodSliderPercent}%`,
+                  '--mood-slider-color': moodSliderColor,
+                }}
                 aria-label="Mood score slider"
               />
               <p className="dashboard__mood-selected">Today&apos;s mood: {selectedMoodScore}/5</p>
@@ -334,10 +344,9 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            {moodMessage && <p className="dashboard__mood-message">{moodMessage}</p>}
-            {todaysMood && (
+            {todaysMood && selectedMoodScore === savedMoodScore && (
               <p className="dashboard__mood-history">
-                Today&apos;s saved check-in: score {todaysMood.moodScore}
+                Today&apos;s mood was saved.
               </p>
             )}
             {!todaysMood && latestMood && (
