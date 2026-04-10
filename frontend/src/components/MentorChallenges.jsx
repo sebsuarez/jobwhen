@@ -68,15 +68,25 @@ export default function MentorChallenges({ openCreate = false }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSubmitting(true)
     setError('')
-    if (form.deadline < today) {
-      const deadlineInput = e.currentTarget.elements.deadline
-      deadlineInput.setCustomValidity("Users can't accept challenges back in time!")
-      deadlineInput.reportValidity()
-      setSubmitting(false)
+
+    const missing = [
+      !form.title.trim() && 'Challenge Title',
+      !form.deadline && 'Deadline',
+      !form.description.trim() && 'Description',
+      !form.targetCount && 'Target Count',
+      !form.maxCompletionsPerUser && 'Repeat Limit Per User',
+    ].filter(Boolean)
+    if (missing.length) {
+      setError(`Please fill in the following fields: ${missing.join(', ')}.`)
       return
     }
+    if (form.deadline < today) {
+      setError("Deadline can't be in the past.")
+      return
+    }
+
+    setSubmitting(true)
     try {
       const result = await createChallenge({
         title: form.title.trim(),
@@ -157,35 +167,32 @@ export default function MentorChallenges({ openCreate = false }) {
       <Modal isOpen={showCreate} onClose={() => { setShowCreate(false); setError('') }} title="Create New Challenge">
         <form className="mentor-challenges__form" onSubmit={handleSubmit}>
               <div className="mentor-challenges__field">
-                <label className="mentor-challenges__label">Challenge Title</label>
+                <label className="mentor-challenges__label">Challenge Title *</label>
                 <input
                   name="title"
                   value={form.title}
                   onChange={handleFormChange}
                   placeholder="e.g. One More!"
-                  required
                 />
               </div>
 
               <div className="mentor-challenges__field">
-                <label className="mentor-challenges__label">Deadline</label>
+                <label className="mentor-challenges__label">Deadline *</label>
                 <input
                   name="deadline"
                   type="date"
                   value={form.deadline}
                   onChange={handleFormChange}
-                  required
                 />
               </div>
 
               <div className="mentor-challenges__field">
-                <label className="mentor-challenges__label">Description</label>
+                <label className="mentor-challenges__label">Description *</label>
                 <textarea
                   name="description"
                   value={form.description}
                   onChange={handleFormChange}
                   rows={3}
-                  required
                 />
               </div>
 
@@ -215,7 +222,7 @@ export default function MentorChallenges({ openCreate = false }) {
               </div>
 
               <div className="mentor-challenges__field">
-                <label className="mentor-challenges__label">Target Count</label>
+                <label className="mentor-challenges__label">Target Count *</label>
                 <input
                   name="targetCount"
                   type="number"
@@ -223,12 +230,11 @@ export default function MentorChallenges({ openCreate = false }) {
                   onChange={handleFormChange}
                   min={1}
                   placeholder="1"
-                  required
                 />
               </div>
 
               <div className="mentor-challenges__field">
-                <label className="mentor-challenges__label">Repeat Limit Per User</label>
+                <label className="mentor-challenges__label">Repeat Limit Per User *</label>
                 <input
                   name="maxCompletionsPerUser"
                   type="number"
@@ -236,7 +242,6 @@ export default function MentorChallenges({ openCreate = false }) {
                   onChange={handleFormChange}
                   min={1}
                   placeholder="1"
-                  required
                 />
               </div>
 
@@ -264,7 +269,7 @@ export default function MentorChallenges({ openCreate = false }) {
               </div>
               */}
 
-              {error && <p style={{ color: 'var(--error, #f87171)', fontSize: 'var(--text-sm)' }}>{error}</p>}
+              {error && <p className="mentor-challenges__error">{error}</p>}
 
               <div className="mentor-challenges__modal-actions">
                 <Button variant="ghost" type="button" onClick={() => { setShowCreate(false); setError('') }}>Cancel</Button>
