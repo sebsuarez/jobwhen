@@ -19,7 +19,7 @@ const EMPTY_FORM = {
   title: '',
   deadline: '',
   description: '',
-  reward: '50',
+  reward: '',
   targetCount: '1',
   maxCompletionsPerUser: '1',
   reviewNote: '',
@@ -149,7 +149,7 @@ export default function MentorChallenges({ openCreate = false }) {
         )
       })}
       <Modal isOpen={showCreate} onClose={() => { setShowCreate(false); setError('') }} title="Create New Challenge">
-        <form onSubmit={handleSubmit}>
+        <form className="mentor-challenges__form" onSubmit={handleSubmit}>
               <div className="mentor-challenges__field">
                 <label className="mentor-challenges__label">Challenge Title</label>
                 <input
@@ -205,7 +205,7 @@ export default function MentorChallenges({ openCreate = false }) {
                   value={form.reward}
                   onChange={handleFormChange}
                   min={0}
-                  placeholder="50"
+                  placeholder="0"
                 />
               </div>
 
