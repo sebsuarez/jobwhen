@@ -224,6 +224,13 @@ class MoodCheckinType(graphene.ObjectType):
     checked_in_at = graphene.String()
 
 
+class MoodTrendType(graphene.ObjectType):
+    days_considered = graphene.Int()
+    average_score = graphene.Float()
+    has_enough_days = graphene.Boolean()
+    is_low_mood_trend = graphene.Boolean()
+
+
 class BurnoutAlertType(graphene.ObjectType):
     alert_id = graphene.Int()
     user_id = graphene.Int()
