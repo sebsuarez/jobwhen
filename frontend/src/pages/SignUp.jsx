@@ -54,6 +54,18 @@ export default function SignUp() {
       return
     }
 
+    if (role === 'mentor') {
+      const missing = [
+        !mentorJobTitle.trim() && 'Job Title',
+        !mentorCompany.trim() && 'Company',
+        !mentorReason.trim() && 'reason for becoming a mentor',
+      ].filter(Boolean)
+      if (missing.length) {
+        setFormError(`Please fill in the following mentor fields: ${missing.join(', ')}.`)
+        return
+      }
+    }
+
     setFormLoading(true)
     setFormError('')
 
