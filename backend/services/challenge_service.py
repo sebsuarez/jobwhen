@@ -14,6 +14,9 @@ def serialize_challenge(row):
         "description": row["description"],
         "xp_reward": row["xp_reward"],
         "default_target_count": row["default_target_count"],
+        "max_completions_per_user": row["max_completions_per_user"],
+        "current_completion_count": row.get("current_completion_count"),
+        "remaining_completions": row.get("remaining_completions"),
         "challenge_status": row["challenge_status"],
         "participant_limit": row["participant_limit"],
         "start_date": row["start_date"].isoformat() if row["start_date"] else None,
@@ -24,6 +27,11 @@ def serialize_challenge(row):
 
 def serialize_participant(row):
     # converts a db row into a plain dict for an active challenge the user joined
+    pending_completion = 1 if row["participation_status"] == "completed" else 0
+    remaining_completions = max(
+        0,
+        row["max_completions_per_user"] - row["completion_count"] - pending_completion,
+    )
     return {
         "challenge_participant_id": row["challenge_participant_id"],
         "challenge_id": row["challenge_id"],
@@ -36,6 +44,8 @@ def serialize_participant(row):
         "progress_count": row["progress_count"],
         "target_count": row["target_count"],
         "completion_count": row["completion_count"],
+        "max_completions_per_user": row["max_completions_per_user"],
+        "remaining_completions": remaining_completions,
         "participation_status": row["participation_status"],
         "joined_at": row["joined_at"].isoformat() if row["joined_at"] else None,
         "completed_at": row["completed_at"].isoformat() if row["completed_at"] else None,
@@ -61,6 +71,7 @@ def get_active_challenges(user_id):
                     c.title,
                     c.description,
                     c.xp_reward,
+                    c.max_completions_per_user,
                     c.due_date,
                     u.full_name AS mentor_name
                 FROM challenge_participants cp
@@ -91,6 +102,9 @@ def get_available_challenges(user_id):
                     c.description,
                     c.xp_reward,
                     c.default_target_count,
+                    c.max_completions_per_user,
+                    COALESCE(cp.completion_count, 0) AS current_completion_count,
+                    GREATEST(c.max_completions_per_user - COALESCE(cp.completion_count, 0), 0) AS remaining_completions,
                     c.challenge_status,
                     c.participant_limit,
                     c.start_date,
@@ -99,12 +113,12 @@ def get_available_challenges(user_id):
                     u.full_name AS mentor_name
                 FROM challenges c
                 JOIN users u ON u.user_id = c.mentor_user_id
+                LEFT JOIN challenge_participants cp
+                  ON cp.challenge_id = c.challenge_id
+                 AND cp.user_id = :user_id
                 WHERE c.challenge_status = 'approved'
-                  AND c.challenge_id NOT IN (
-                      SELECT challenge_id FROM challenge_participants
-                      WHERE user_id = :user_id
-                        AND participation_status IN ('active', 'completed')
-                  )
+                  AND COALESCE(cp.participation_status, 'withdrawn') NOT IN ('active', 'completed')
+                  AND COALESCE(cp.completion_count, 0) < c.max_completions_per_user
                 ORDER BY c.due_date ASC
                 """
             ),
@@ -126,6 +140,7 @@ def get_mentor_challenges(mentor_user_id):
                     c.description,
                     c.xp_reward,
                     c.default_target_count,
+                    c.max_completions_per_user,
                     c.challenge_status,
                     c.participant_limit,
                     c.start_date,
@@ -143,7 +158,17 @@ def get_mentor_challenges(mentor_user_id):
         return [serialize_challenge(r) for r in rows]
 
 
-def create_challenge(mentor_user_id, title, description, xp_reward, default_target_count, participant_limit, start_date, due_date):
+def create_challenge(
+    mentor_user_id,
+    title,
+    description,
+    xp_reward,
+    default_target_count,
+    max_completions_per_user,
+    participant_limit,
+    start_date,
+    due_date,
+):
     # inserts a new challenge with status 'in_review'
     # admin must approve before it goes live
     with engine.begin() as conn:
@@ -152,10 +177,12 @@ def create_challenge(mentor_user_id, title, description, xp_reward, default_targ
                 """
                 INSERT INTO challenges (
                     mentor_user_id, title, description, xp_reward, default_target_count,
+                    max_completions_per_user,
                     participant_limit, start_date, due_date
                 )
                 VALUES (
                     :mentor_user_id, :title, :description, :xp_reward, :default_target_count,
+                    :max_completions_per_user,
                     :participant_limit, :start_date, :due_date
                 )
                 RETURNING challenge_id
@@ -167,6 +194,7 @@ def create_challenge(mentor_user_id, title, description, xp_reward, default_targ
                 "description": description,
                 "xp_reward": xp_reward or 0,
                 "default_target_count": default_target_count or 1,
+                "max_completions_per_user": max_completions_per_user or 1,
                 "participant_limit": participant_limit,
                 "start_date": start_date,
                 "due_date": due_date,
@@ -181,7 +209,7 @@ def join_challenge(user_id, challenge_id):
         challenge = conn.execute(
             text(
                 """
-                SELECT challenge_id, participant_limit, default_target_count
+                SELECT challenge_id, participant_limit, default_target_count, max_completions_per_user
                 FROM challenges
                 WHERE challenge_id = :cid AND challenge_status = 'approved'
                 """
@@ -196,7 +224,7 @@ def join_challenge(user_id, challenge_id):
         existing = conn.execute(
             text(
                 """
-                SELECT participation_status FROM challenge_participants
+                SELECT participation_status, completion_count FROM challenge_participants
                 WHERE challenge_id = :cid AND user_id = :uid
                 """
             ),
@@ -207,6 +235,8 @@ def join_challenge(user_id, challenge_id):
             raise RuntimeError("Already joined this challenge.")
         if existing and existing["participation_status"] == "completed":
             raise RuntimeError("Collect this challenge before starting it again.")
+        if existing and existing["completion_count"] >= challenge["max_completions_per_user"]:
+            raise RuntimeError("You have reached the completion limit for this challenge.")
 
         # check participant limit if one is set
         if challenge["participant_limit"]:
