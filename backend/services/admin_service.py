@@ -9,6 +9,7 @@ def serialize_pending_mentor(row):
         "mentor_profile_id": row["mentor_profile_id"],
         "user_id": row["user_id"],
         "full_name": row["full_name"],
+        "email": row["email"],
         "headline": row["headline"],
         "company": row["company"],
         "job_title": row["job_title"],
@@ -46,6 +47,8 @@ def get_pending_challenges():
                     c.title,
                     c.description,
                     c.xp_reward,
+                    c.default_target_count,
+                    c.max_completions_per_user,
                     c.challenge_status,
                     c.participant_limit,
                     c.start_date,
@@ -72,6 +75,7 @@ def get_pending_mentors():
                     mp.mentor_profile_id,
                     mp.user_id,
                     u.full_name,
+                    u.email,
                     u.headline,
                     mp.company,
                     mp.job_title,
@@ -197,8 +201,7 @@ def approve_mentor(admin_id, user_id):
 
 
 def reject_mentor(admin_id, user_id):
-    # removes the pending mentor profile
-    # the user keeps their account but loses mentor status
+    # removes the pending mentor profile and change the user to job_seeker
     with engine.begin() as conn:
         row = conn.execute(
             text(
@@ -213,6 +216,17 @@ def reject_mentor(admin_id, user_id):
 
         if not row:
             raise RuntimeError("Mentor profile not found or already approved.")
+
+        conn.execute(
+            text(
+                """
+                UPDATE users
+                SET role_id = (SELECT role_id FROM roles WHERE role_name = 'job_seeker')
+                WHERE user_id = :uid
+                """
+            ),
+            {"uid": user_id},
+        )
 
 
 def suspend_user(admin_id, target_user_id, note):

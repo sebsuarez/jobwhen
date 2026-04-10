@@ -62,19 +62,27 @@ export default function AdminMentors() {
                 title={selected?.fullName}
             >
                 <div className="admin-mentors__modal-field">
+                    <span className="admin-mentors__modal-label">Email</span>
+                    <p className="admin-mentors__modal-value">{selected?.email}</p>
+                </div>
+                {selected?.headline && (
+                    <div className="admin-mentors__modal-field">
+                        <span className="admin-mentors__modal-label">Headline</span>
+                        <p className="admin-mentors__modal-value">{selected.headline}</p>
+                    </div>
+                )}
+                <div className="admin-mentors__modal-field">
                     <span className="admin-mentors__modal-label">Job Title</span>
-                    <p className="admin-mentors__modal-value">{selected?.jobTitle}</p>
+                    <p className="admin-mentors__modal-value">{selected?.jobTitle || '—'}</p>
                 </div>
                 <div className="admin-mentors__modal-field">
                     <span className="admin-mentors__modal-label">Company</span>
-                    <p className="admin-mentors__modal-value">{selected?.company}</p>
+                    <p className="admin-mentors__modal-value">{selected?.company || '—'}</p>
                 </div>
-                {/* TODO: uncomment after API exposes mentor application notes
                 <div className="admin-mentors__modal-field">
                     <span className="admin-mentors__modal-label">Why they want to mentor</span>
-                    <p className="admin-mentors__modal-value">{selected?.notes}</p>
+                    <p className="admin-mentors__modal-value">{selected?.expertise || '—'}</p>
                 </div>
-                */}
                 <div className="admin-mentors__modal-actions">
                     <Button variant="ghost" onClick={handleReject}>Reject</Button>
                     <Button variant="primary" onClick={handleApprove}>Approve</Button>

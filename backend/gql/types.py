@@ -273,6 +273,7 @@ class PendingMentorType(graphene.ObjectType):
     mentor_profile_id = graphene.Int()
     user_id = graphene.Int()
     full_name = graphene.String()
+    email = graphene.String()
     headline = graphene.String()
     company = graphene.String()
     job_title = graphene.String()
