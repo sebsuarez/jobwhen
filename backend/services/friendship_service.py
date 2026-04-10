@@ -162,19 +162,30 @@ def send_friend_request(requester_id, addressee_id):
 
 def respond_to_friend_request(friendship_id, addressee_id, accept):
     # only the addressee can accept or reject (checked in the WHERE clause)
-    status = "accepted" if accept else "rejected"
     with engine.begin() as conn:
-        row = conn.execute(
-            text(
-                """
-                UPDATE friendships
-                SET status = :status
-                WHERE friendship_id = :fid AND addressee_id = :uid
-                RETURNING friendship_id
-                """
-            ),
-            {"status": status, "fid": friendship_id, "uid": addressee_id},
-        ).fetchone()
+        if accept:
+            row = conn.execute(
+                text(
+                    """
+                    UPDATE friendships
+                    SET status = 'accepted'
+                    WHERE friendship_id = :fid AND addressee_id = :uid
+                    RETURNING friendship_id
+                    """
+                ),
+                {"fid": friendship_id, "uid": addressee_id},
+            ).fetchone()
+        else:
+            row = conn.execute(
+                text(
+                    """
+                    DELETE FROM friendships
+                    WHERE friendship_id = :fid AND addressee_id = :uid
+                    RETURNING friendship_id
+                    """
+                ),
+                {"fid": friendship_id, "uid": addressee_id},
+            ).fetchone()
 
         if not row:
             raise RuntimeError("Friend request not found or not authorized.")
