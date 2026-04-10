@@ -11,6 +11,16 @@ function formatRole(role) {
     return role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+function roleClass(role) {
+    const map = {
+        job_seeker: 'admin-users__role--job-seeker',
+        mentor: 'admin-users__role--mentor',
+        pending_mentor: 'admin-users__role--pending-mentor',
+        admin: 'admin-users__role--admin',
+    }
+    return map[role] ?? ''
+}
+
 export default function AdminUsers() {
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
@@ -32,7 +42,6 @@ export default function AdminUsers() {
     }
 
     const handleSuspend = async () => {
-        // TODO: replace '' with a note from a text input field in the modal
         await suspendUser(selected.userId, '')
         setUsers((prev) => prev.map((u) => u.userId === selected.userId ? { ...u, isActive: false } : u))
         setSelected(null)
@@ -72,7 +81,8 @@ export default function AdminUsers() {
                                 <span className="admin-users__name">{user.fullName}</span>
                                 <span className="admin-users__email">{user.email}</span>
                             </div>
-                            <span className="admin-users__role">{formatRole(user.roleName)}</span>
+                            <span className={`admin-users__role ${roleClass(user.roleName)}`}>{formatRole(user.roleName)}</span>
+                            {!user.isActive && <span className="admin-users__tag--suspended">Suspended</span>}
                             <Button variant="primary" onClick={() => setSelected(user)}>
                                 Manage
                             </Button>
@@ -89,7 +99,7 @@ export default function AdminUsers() {
                 <p className="admin-users__modal-email">{selected?.email}</p>
                 <div className="admin-users__modal-field">
                     <span className="admin-users__modal-label">Current Role</span>
-                    <span className="admin-users__role">{selected ? formatRole(selected.roleName) : ''}</span>
+                    <span className={`admin-users__role ${selected ? roleClass(selected.roleName) : ''}`}>{selected ? formatRole(selected.roleName) : ''}</span>
                 </div>
                 <div className="admin-users__modal-actions">
                     <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
