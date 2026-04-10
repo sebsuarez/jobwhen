@@ -1,6 +1,7 @@
 // pages/Challenges.jsx
 
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -18,6 +19,7 @@ import {
 
 export default function Challenges() {
   const { user } = useAuth()
+  const location = useLocation()
   const isApprovedMentor = user?.role?.roleName === 'mentor' && user?.isMentorApproved === true
   const [activeChallenges, setActiveChallenges] = useState([])
   const [newChallenges, setNewChallenges] = useState([])
@@ -284,7 +286,7 @@ export default function Challenges() {
             )}
           </Card>
         </section>
-          {isApprovedMentor && <MentorChallenges />}
+          {isApprovedMentor && <MentorChallenges openCreate={!!location.state?.openCreateModal} />}
         </div>
       </main>
     </div>
