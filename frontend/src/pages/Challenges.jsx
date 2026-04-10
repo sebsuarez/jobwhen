@@ -236,16 +236,16 @@ export default function Challenges() {
                         onClick={() => decreaseProgress(challenge.challengeParticipantId)}
                         disabled={challenge.progressCount === 0 || isExpired}>-</button>
 
+                      <span className="challenge-card__progress-text">
+                        {challenge.progressCount}/{challenge.targetCount}
+                      </span>
+
                       <button
                         type="button"
                         className="challenge-card__control-btn"
                         onClick={() => increaseProgress(challenge.challengeParticipantId)}
                         disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed' || isExpired}>+</button>
                     </div>
-
-                    <span className="challenge-card__progress-text">
-                      {challenge.progressCount}/{challenge.targetCount}
-                    </span>
                   </div>
 
                   <div className="challenge-card__progress">

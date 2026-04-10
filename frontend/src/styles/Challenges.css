@@ -120,10 +120,13 @@
 .challenge-card__progress-text {
   font-size: var(--text-sm);
   color: var(--text-primary);
+  min-width: 56px;
+  text-align: center;
 }
 
 .challenge-card__controls {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
 }
 
