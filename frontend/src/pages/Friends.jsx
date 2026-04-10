@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
-import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest,  fetchPendingRequests, respondToFriendRequest } from '../api/friendQueries'
+import { fetchMyFriends, sendEncouragement, searchUsers, sendFriendRequest, fetchPendingRequests, respondToFriendRequest, removeFriend } from '../api/friendQueries'
 import '../styles/Friends.css'
 
 export default function Friends() {
@@ -19,6 +19,7 @@ export default function Friends() {
   const [searchLoading, setSearchLoading] = useState(false)
   const [sentRequests, setSentRequests] = useState({})
   const [encouraged, setEncouraged] = useState({})
+  const [selectedFriend, setSelectedFriend] = useState(null)
   const [notification, setNotification] = useState('')
 
   useEffect(() => {
@@ -42,7 +43,12 @@ export default function Friends() {
       await respondToFriendRequest(request.friendshipId, accept)
       setPendingRequests((prev) => prev.filter((r) => r.friendshipId !== request.friendshipId))
       if (accept) {
-        setFriends((prev) => [...prev, { userId: request.userId, fullName: request.fullName, headline: request.headline, currentLevel: request.currentLevel }])
+        fetchMyFriends().then((data) => {
+          setFriends(data)
+          const alreadyEncouraged = {}
+          data.forEach((f) => { if (f.youEncouraged) alreadyEncouraged[f.userId] = true })
+          setEncouraged(alreadyEncouraged)
+        })
         setNotification(`You are now friends with ${request.fullName}`)
       } else {
         setNotification(`Declined request from ${request.fullName}`)
@@ -96,6 +102,17 @@ export default function Friends() {
     }
   }
 
+  const handleRemoveFriend = async (friend) => {
+    try {
+      await removeFriend(friend.userId)
+      setFriends((prev) => prev.filter((f) => f.userId !== friend.userId))
+      setSelectedFriend(null)
+      setNotification(`${friend.fullName} has been removed from your friends.`)
+    } catch (err) {
+      setNotification(err.message || `Failed to remove ${friend.fullName}`)
+    }
+  }
+
   useEffect(() => {
     if (!notification) return
 
@@ -132,7 +149,7 @@ export default function Friends() {
               <p className="friends-panel__empty">No friends yet, go add some!</p>
             ) : friends.map((friend) => {
               return (
-                <Card key={friend.userId} className="friend-card">
+                <Card key={friend.userId} className="friend-card" onClick={() => setSelectedFriend(friend)}>
                   <div className="friend-card__left">
                     <div className="friend-card__avatar">
                       {friend.avatar && <span className="friend-card__avatar-emoji">{friend.avatar}</span>}
@@ -156,12 +173,10 @@ export default function Friends() {
                   )}
 
                   <div className="friend-card__right">
-                    {friend.roleName === 'job_seeker' && (
-                      <div className="friend-card__stat">
-                        <span className="friend-card__value friend-card__value--accent">{friend.applicationCount ?? 0}</span>
-                        <span className="friend-card__label">Applied</span>
-                      </div>
-                    )}
+                    <div className="friend-card__stat">
+                      <span className="friend-card__value friend-card__value--accent">{friend.applicationCount ?? 0}</span>
+                      <span className="friend-card__label">Applied</span>
+                    </div>
                     <div className="friend-card__stat">
                       <span className="friend-card__value">Lv. {friend.currentLevel}</span>
                       <span className="friend-card__label">Level</span>
@@ -171,7 +186,7 @@ export default function Friends() {
                       variant="ghost"
                       className="friend-card__btn"
                       disabled={!!encouraged[friend.userId]}
-                      onClick={() => handleEncourage(friend)}>{encouraged[friend.userId] ? 'Encouraged' : 'Encourage'}</Button>
+                      onClick={(e) => { e.stopPropagation(); handleEncourage(friend) }}>{encouraged[friend.userId] ? 'Encouraged' : 'Encourage'}</Button>
                   </div>
                 </Card>
               )
@@ -244,6 +259,50 @@ export default function Friends() {
           </div>
         </div>
       </Modal>
+
+      <Modal
+        isOpen={!!selectedFriend}
+        onClose={() => setSelectedFriend(null)}
+        title="Friend Profile">
+        {selectedFriend && (
+          <div className="friend-profile-modal">
+            <div className="friend-profile-modal__avatar">
+              {selectedFriend.avatar
+                ? <span className="friend-profile-modal__avatar-emoji">{selectedFriend.avatar}</span>
+                : null}
+            </div>
+
+            <div className="friend-profile-modal__name-row">
+              <h3 className="friend-profile-modal__name">{selectedFriend.fullName}</h3>
+              {selectedFriend.roleName === 'mentor' && <span className="friend-card__role-badge">Mentor</span>}
+            </div>
+
+            {selectedFriend.headline && (
+              <p className="friend-profile-modal__detail">{selectedFriend.headline}</p>
+            )}
+            {selectedFriend.location && (
+              <p className="friend-profile-modal__detail">{selectedFriend.location}</p>
+            )}
+
+            <div className="friend-profile-modal__stats">
+              <div className="friend-card__stat">
+                <span className="friend-card__value friend-card__value--accent">{selectedFriend.applicationCount ?? 0}</span>
+                <span className="friend-card__label">Applied</span>
+              </div>
+              <div className="friend-card__stat">
+                <span className="friend-card__value">Lv. {selectedFriend.currentLevel}</span>
+                <span className="friend-card__label">Level</span>
+              </div>
+            </div>
+
+            <div className="friend-profile-modal__actions">
+              <Button variant="ghost" onClick={() => setSelectedFriend(null)}>Close</Button>
+              <Button variant="danger" onClick={() => handleRemoveFriend(selectedFriend)}>Remove Friend</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
        {notification && <div className="notification-popup">{notification}</div>}
     </div>
   )

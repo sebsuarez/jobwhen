@@ -4,6 +4,7 @@ from gql.types import EncouragementResponse, FriendshipResponse
 from services.auth_service import SESSION_COOKIE_NAME, fetch_session_user
 from services.friendship_service import (
     block_user,
+    remove_friend,
     respond_to_friend_request,
     send_encouragement,
     send_friend_request,
@@ -73,6 +74,19 @@ class SendEncouragement(graphene.Mutation):
         return EncouragementResponse(ok=True, message="Encouragement sent!")
 
 
+class RemoveFriend(graphene.Mutation):
+    class Arguments:
+        friend_user_id = graphene.Int(required=True)
+
+    Output = FriendshipResponse
+
+    @staticmethod
+    def mutate(root, info, friend_user_id):
+        user = _require_auth(info)
+        remove_friend(user_id=user["user_id"], friend_user_id=friend_user_id)
+        return FriendshipResponse(ok=True, message="Friend removed.")
+
+
 class BlockUser(graphene.Mutation):
     class Arguments:
         target_user_id = graphene.Int(required=True)
@@ -91,4 +105,5 @@ class FriendMutation(graphene.ObjectType):
     send_friend_request = SendFriendRequest.Field()
     respond_to_friend_request = RespondToFriendRequest.Field()
     send_encouragement = SendEncouragement.Field()
+    remove_friend = RemoveFriend.Field()
     block_user = BlockUser.Field()

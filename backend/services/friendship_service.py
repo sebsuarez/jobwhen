@@ -175,22 +175,53 @@ def send_friend_request(requester_id, addressee_id):
 
 def respond_to_friend_request(friendship_id, addressee_id, accept):
     # only the addressee can accept or reject (checked in the WHERE clause)
-    status = "accepted" if accept else "rejected"
+    with engine.begin() as conn:
+        if accept:
+            row = conn.execute(
+                text(
+                    """
+                    UPDATE friendships
+                    SET status = 'accepted'
+                    WHERE friendship_id = :fid AND addressee_id = :uid
+                    RETURNING friendship_id
+                    """
+                ),
+                {"fid": friendship_id, "uid": addressee_id},
+            ).fetchone()
+        else:
+            row = conn.execute(
+                text(
+                    """
+                    DELETE FROM friendships
+                    WHERE friendship_id = :fid AND addressee_id = :uid
+                    RETURNING friendship_id
+                    """
+                ),
+                {"fid": friendship_id, "uid": addressee_id},
+            ).fetchone()
+
+        if not row:
+            raise RuntimeError("Friend request not found or not authorized.")
+
+
+def remove_friend(user_id, friend_user_id):
+    # deletes the accepted friendship between two users in either direction
     with engine.begin() as conn:
         row = conn.execute(
             text(
                 """
-                UPDATE friendships
-                SET status = :status
-                WHERE friendship_id = :fid AND addressee_id = :uid
+                DELETE FROM friendships
+                WHERE ((requester_id = :uid AND addressee_id = :fid)
+                    OR (requester_id = :fid AND addressee_id = :uid))
+                  AND status = 'accepted'
                 RETURNING friendship_id
                 """
             ),
-            {"status": status, "fid": friendship_id, "uid": addressee_id},
+            {"uid": user_id, "fid": friend_user_id},
         ).fetchone()
 
         if not row:
-            raise RuntimeError("Friend request not found or not authorized.")
+            raise RuntimeError("Friendship not found.")
 
 
 def block_user(user_id, target_user_id):

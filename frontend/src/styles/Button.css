@@ -36,6 +36,7 @@
   color: var(--btn-destructive-bg);
   border: 1px solid rgba(248, 113, 113, 0.3);
 }
+.btn--danger:hover { background: rgba(248, 113, 113, 0.28); }
 
 .btn--full { width: 100%; }
 
