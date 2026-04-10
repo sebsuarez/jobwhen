@@ -27,10 +27,9 @@ def serialize_challenge(row):
 
 def serialize_participant(row):
     # converts a db row into a plain dict for an active challenge the user joined
-    pending_completion = 1 if row["participation_status"] == "completed" else 0
     remaining_completions = max(
         0,
-        row["max_completions_per_user"] - row["completion_count"] - pending_completion,
+        row["max_completions_per_user"] - row["completion_count"],
     )
     return {
         "challenge_participant_id": row["challenge_participant_id"],
@@ -298,6 +297,7 @@ def update_challenge_progress(user_id, challenge_participant_id, delta):
                     c.title,
                     c.description,
                     c.xp_reward,
+                    c.max_completions_per_user,
                     c.due_date,
                     u.full_name AS mentor_name
                 FROM challenge_participants cp
@@ -354,6 +354,7 @@ def update_challenge_progress(user_id, challenge_participant_id, delta):
         merged_row["description"] = participant["description"]
         merged_row["mentor_name"] = participant["mentor_name"]
         merged_row["xp_reward"] = participant["xp_reward"]
+        merged_row["max_completions_per_user"] = participant["max_completions_per_user"]
         merged_row["due_date"] = participant["due_date"]
 
         return serialize_participant(merged_row)

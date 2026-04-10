@@ -115,8 +115,12 @@ export default function Challenges() {
     return `Collect ${challenge.xpReward} XP`
   }
 
-  const formatRecurrenceText = (completionCount, maxCompletionsPerUser, remainingCompletions) => {
-    return `${completionCount}/${maxCompletionsPerUser} completed • ${remainingCompletions} left`
+  const formatRecurrenceText = (maxCompletionsPerUser, remainingCompletions) => {
+    const completedCount = Math.max(
+      0,
+      maxCompletionsPerUser - remainingCompletions,
+    )
+    return `${completedCount}/${maxCompletionsPerUser} completed • ${remainingCompletions} left`
   }
 
   const increaseProgress = async (id) => {
@@ -191,7 +195,6 @@ export default function Challenges() {
 
                 <p className="challenge-card__meta challenge-card__meta--recurring">
                   {formatRecurrenceText(
-                    challenge.completionCount,
                     challenge.maxCompletionsPerUser,
                     challenge.remainingCompletions,
                   )}
@@ -255,7 +258,6 @@ export default function Challenges() {
                   </p>
                   <p className="new-challenge-card__desc new-challenge-card__desc--recurring">
                     {formatRecurrenceText(
-                      challenge.currentCompletionCount,
                       challenge.maxCompletionsPerUser,
                       challenge.remainingCompletions,
                     )}
