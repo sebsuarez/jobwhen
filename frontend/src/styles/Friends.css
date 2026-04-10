@@ -134,6 +134,10 @@
   color: var(--text-primary);
 }
 
+.friend-card__value--accent {
+  color: var(--stat-interview);
+}
+
 .friend-card__label {
   font-size: var(--text-xs);
   line-height: 1.1;
