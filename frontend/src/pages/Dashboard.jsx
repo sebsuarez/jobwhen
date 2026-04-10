@@ -7,8 +7,7 @@ import Button from '../components/Button'
 import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
 import { fetchJobApplications } from '../api/boardQueries'
-// TODO: re-add fetchActiveGoals import once backend goal endpoints are live
-import { fetchMoodInsights, logMoodCheckin } from '../api/dashboardQueries'
+import { fetchActiveGoals, fetchMoodInsights, logMoodCheckin, setGoal, updateGoalProgress } from '../api/dashboardQueries'
 import '../styles/Dashboard.css'
 
 function getGreeting() {
@@ -18,21 +17,14 @@ function getGreeting() {
   return 'Good evening'
 }
 
-// Preset weekly goals - TODO: replace with backend goals one endpoints are live
 const GOAL_CONFIGS = [
-  { type: 'applications', label: 'Job Applications' },
-  { type: 'wellness', label: 'Wellness Check-in' },
+  { type: 'job_application', label: 'Job Applications' },
+  { type: 'wellness_checkin', label: 'Wellness Check-in' },
   { type: 'interview_prep', label: 'Interview Prep' },
 ]
 
+// Same XP for each goal type for now
 const GOAL_XP = 30
-
-// TODO: remove mock data and replace once backend goal endpoints are live
-const MOCK_GOALS = [
-  { id: 1, goalType: 'applications', current: 2, target: 5, isCompleted: false },
-  { id: 2, goalType: 'wellness', current: 1, target: 3, isCompleted: false },
-  { id: 3, goalType: 'interview_prep', current: 0, target: 2, isCompleted: false },
-]
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -40,7 +32,7 @@ export default function Dashboard() {
   const goalsRef = useRef(null)
 
   const [stats, setStats] = useState({ total: 0, interviews: 0, offers: 0, rate: 0 })
-  const [goals, setGoals] = useState(MOCK_GOALS)
+  const [goals, setGoals] = useState([])
 
   // Goal interaction state
   const [editModalGoal, setEditModalGoal] = useState(null)
@@ -58,10 +50,10 @@ export default function Dashboard() {
 
     Promise.all([
       fetchJobApplications(user.userId),
-      // TODO: add fetchActiveGoals() back here once backend goal endpoints are live
+      fetchActiveGoals(),
       fetchMoodInsights(),
     ])
-      .then(([apps, moodInsights]) => {
+      .then(([apps, activeGoals, moodInsights]) => {
         if (cancelled) return
         const applied = apps.filter((a) => a.status !== 'wishlist')
         const interviews = apps.filter((a) => a.status === 'interview').length
@@ -69,6 +61,13 @@ export default function Dashboard() {
         const total = applied.length
         const rate = total > 0 ? Math.round((interviews / total) * 100) : 0
         setStats({ total, interviews, offers, rate })
+        setGoals(activeGoals.map((g) => ({
+          id: g.goalId,
+          goalType: g.goalType,
+          current: g.currentCount,
+          target: g.targetCount,
+          isCompleted: g.isCompleted,
+        })))
         setMoodHistory(moodInsights.myMoodHistory)
         setBurnoutAlerts(moodInsights.myBurnoutAlerts.filter((alert) => !alert.resolved))
       })
@@ -107,46 +106,47 @@ export default function Dashboard() {
     )
   }
 
-  // TODO: replace body with proper API call once backend endpoint is live
-  const handleIncrementGoal = (goalType) => {
+  const handleUpdateProgress = async (goalType, delta) => {
     const goal = goals.find((g) => g.goalType === goalType)
-    if (!goal || goal.isCompleted) return
+    if (!goal) return
+    if (delta > 0 && goal.isCompleted) return
+    if (delta < 0 && goal.current <= 0) return
 
-    const newCurrent = goal.current + 1
-    const justCompleted = newCurrent >= goal.target
-    applyGoalUpdate(goalType, { current: newCurrent, isCompleted: justCompleted })
-
-    if (justCompleted) {
-      setXpEarnedGoal(goalType)
-      setTimeout(() => setXpEarnedGoal(null), 2500)
-    }
+    try {
+      const result = await updateGoalProgress(goal.id, delta)
+      if (result.ok) {
+        const g = result.goal
+        applyGoalUpdate(goalType, { current: g.currentCount, target: g.targetCount, isCompleted: g.isCompleted })
+        if (result.xpAwarded) {
+          setXpEarnedGoal(goalType)
+          setTimeout(() => setXpEarnedGoal(null), 2500)
+        }
+      }
+    } catch { /* silent */ }
   }
 
-  // TODO: replace body with proper API call once backend endpoint is live
-  const handleDecrementGoal = (goalType) => {
-    const goal = goals.find((g) => g.goalType === goalType)
-    if (!goal || goal.current <= 0) return
-
-    const newCurrent = goal.current - 1
-    const stillCompleted = newCurrent >= goal.target
-    applyGoalUpdate(goalType, { current: newCurrent, isCompleted: stillCompleted })
-  }
-
-  // TODO: replace body with proper API call once backend endpoint is live
-  const handleSetTarget = (goalType) => {
+  const handleSetTarget = async (goalType) => {
     const target = parseInt(editTargetValue, 10)
     setEditModalGoal(null)
     if (!target || target < 1) return
 
-    const goal = goals.find((g) => g.goalType === goalType)
-    const wasCompleted = goal?.isCompleted ?? false
-    const newCompleted = (goal?.current ?? 0) >= target
-    applyGoalUpdate(goalType, { target, isCompleted: newCompleted })
-
-    if (newCompleted && !wasCompleted) {
-      setXpEarnedGoal(goalType)
-      setTimeout(() => setXpEarnedGoal(null), 2500)
-    }
+    try {
+      const result = await setGoal(goalType, target)
+      if (result.ok) {
+        const g = result.goal
+        const normalized = { id: g.goalId, goalType: g.goalType, current: g.currentCount, target: g.targetCount, isCompleted: g.isCompleted }
+        setGoals((prev) => {
+          const exists = prev.find((x) => x.goalType === goalType)
+          return exists
+            ? prev.map((x) => x.goalType === goalType ? normalized : x)
+            : [...prev, normalized]
+        })
+        if (normalized.isCompleted) {
+          setXpEarnedGoal(goalType)
+          setTimeout(() => setXpEarnedGoal(null), 2500)
+        }
+      }
+    } catch { /* silent */ }
   }
 
   const handleMoodCheckin = async (score, nextMood) => {
@@ -234,7 +234,7 @@ export default function Dashboard() {
                             <Button
                               variant="ghost"
                               className="dashboard__goal-increment-btn"
-                              onClick={() => handleDecrementGoal(goal.type)}
+                              onClick={() => handleUpdateProgress(goal.type, -1)}
                               disabled={goal.target === null || goal.current <= 0}
                               aria-label={`Remove progress from ${goal.label}`}
                             >
@@ -243,7 +243,7 @@ export default function Dashboard() {
                             <Button
                               variant="ghost"
                               className="dashboard__goal-increment-btn"
-                              onClick={() => handleIncrementGoal(goal.type)}
+                              onClick={() => handleUpdateProgress(goal.type, 1)}
                               disabled={goal.target === null}
                               aria-label={`Add progress to ${goal.label}`}
                             >
