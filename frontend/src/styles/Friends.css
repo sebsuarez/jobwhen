@@ -54,6 +54,7 @@
 }
 
 .friend-card {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -119,6 +120,16 @@
   font-size: var(--text-sm);
   line-height: 1.2;
   color: var(--text-secondary);
+}
+
+.friend-card__encouraged-you {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-accent);
+  white-space: nowrap;
 }
 
 .friend-card__right {

@@ -13,6 +13,8 @@ def serialize_friend(row):
         "avatar": row["avatar"],
         "role_name": row["role_name"],
         "application_count": row["application_count"],
+        "encouraged_you": row["encouraged_you"],
+        "you_encouraged": row["you_encouraged"],
         "current_level": row["current_level"],
         "current_xp": row["current_xp"],
     }
@@ -56,6 +58,8 @@ def get_friends(user_id):
                     u.avatar,
                     r.role_name,
                     (SELECT COUNT(*) FROM job_applications WHERE user_id = u.user_id) AS application_count,
+                    EXISTS(SELECT 1 FROM encouragements WHERE sender_id = u.user_id AND receiver_id = :uid AND sent_at >= CURRENT_DATE) AS encouraged_you,
+                    EXISTS(SELECT 1 FROM encouragements WHERE sender_id = :uid AND receiver_id = u.user_id AND sent_at >= CURRENT_DATE) AS you_encouraged,
                     u.current_level,
                     u.current_xp
                 FROM friendships f
@@ -218,6 +222,20 @@ def send_encouragement(sender_id, receiver_id, message=None):
 
         if not friendship:
             raise RuntimeError("You can only encourage friends.")
+
+        already_sent = conn.execute(
+            text(
+                """
+                SELECT 1 FROM encouragements
+                WHERE sender_id = :s AND receiver_id = :r
+                  AND sent_at >= CURRENT_DATE
+                """
+            ),
+            {"s": sender_id, "r": receiver_id},
+        ).first()
+
+        if already_sent:
+            raise RuntimeError("You can only encourage someone once per day.")
 
         default_msg = "Keep going, you've got this!"
         conn.execute(
