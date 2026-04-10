@@ -257,6 +257,13 @@ class UserBadgeType(graphene.ObjectType):
     badge = graphene.Field(BadgeType)
 
 
+class LeaderboardEntryType(graphene.ObjectType):
+    user_id = graphene.Int()
+    full_name = graphene.String()
+    avatar = graphene.String()
+    value = graphene.Int()
+
+
 # ADMIN TYPES
 
 class AdminUserType(graphene.ObjectType):
