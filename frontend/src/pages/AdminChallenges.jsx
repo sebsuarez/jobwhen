@@ -91,19 +91,11 @@ export default function AdminChallenges() {
                     <p className="admin-challenges__modal-value">{selected?.defaultTargetCount ?? '—'}</p>
                 </div>
                 <div className="admin-challenges__modal-field">
-                    <span className="admin-challenges__modal-label">Max Completions per User</span>
+                    <span className="admin-challenges__modal-label">Repeat Limit Per User</span>
                     <p className="admin-challenges__modal-value">{selected?.maxCompletionsPerUser ?? '—'}</p>
                 </div>
                 <div className="admin-challenges__modal-field">
-                    <span className="admin-challenges__modal-label">Participant Limit</span>
-                    <p className="admin-challenges__modal-value">{selected?.participantLimit ?? 'Unlimited'}</p>
-                </div>
-                <div className="admin-challenges__modal-field">
-                    <span className="admin-challenges__modal-label">Start Date</span>
-                    <p className="admin-challenges__modal-value">{formatDate(selected?.startDate)}</p>
-                </div>
-                <div className="admin-challenges__modal-field">
-                    <span className="admin-challenges__modal-label">Due Date</span>
+                    <span className="admin-challenges__modal-label">Deadline</span>
                     <p className="admin-challenges__modal-value">{formatDate(selected?.dueDate)}</p>
                 </div>
                 <div className="admin-challenges__modal-field">
