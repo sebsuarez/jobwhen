@@ -16,6 +16,8 @@ const ACTIVE_CHALLENGES_QUERY = `
       progressCount
       targetCount
       completionCount
+      maxCompletionsPerUser
+      remainingCompletions
       participationStatus
       joinedAt
       completedAt
@@ -33,6 +35,9 @@ const AVAILABLE_CHALLENGES_QUERY = `
       description
       xpReward
       defaultTargetCount
+      maxCompletionsPerUser
+      currentCompletionCount
+      remainingCompletions
       challengeStatus
       participantLimit
       startDate
@@ -50,6 +55,7 @@ const MY_CREATED_CHALLENGES_QUERY = `
       description
       xpReward
       defaultTargetCount
+      maxCompletionsPerUser
       challengeStatus
       participantLimit
       startDate
@@ -65,6 +71,7 @@ const CREATE_CHALLENGE_MUTATION = `
     $description: String!
     $xpReward: Int
     $defaultTargetCount: Int
+    $maxCompletionsPerUser: Int
     $participantLimit: Int
     $startDate: String
     $dueDate: String
@@ -74,6 +81,7 @@ const CREATE_CHALLENGE_MUTATION = `
       description: $description
       xpReward: $xpReward
       defaultTargetCount: $defaultTargetCount
+      maxCompletionsPerUser: $maxCompletionsPerUser
       participantLimit: $participantLimit
       startDate: $startDate
       dueDate: $dueDate
@@ -129,6 +137,8 @@ const UPDATE_CHALLENGE_PROGRESS_MUTATION = `
         progressCount
         targetCount
         completionCount
+        maxCompletionsPerUser
+        remainingCompletions
         participationStatus
         joinedAt
         completedAt

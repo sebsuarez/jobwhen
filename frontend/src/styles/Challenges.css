@@ -64,6 +64,11 @@
   margin: var(--space-3) 0;
 }
 
+.challenge-card__meta--recurring {
+  margin-bottom: var(--space-3);
+  font-weight: 600;
+}
+
 .challenge-card__remove {
   border-radius: var(--radius-full);
   min-width: 120px;
@@ -178,6 +183,10 @@
 
 .new-challenge-card__desc {
   margin-top: var(--space-1);
+}
+
+.new-challenge-card__desc--recurring {
+  font-weight: 600;
 }
 
 .new-challenge-card__days {
