@@ -461,4 +461,8 @@
   .friends-modal__actions .btn {
     width: 100%;
   }
+
+  .friend-profile-modal__actions .btn {
+    flex: 1;
+  }
 }
