@@ -35,6 +35,15 @@ def _serialize_xp_event(row):
     }
 
 
+def _serialize_leaderboard_entry(row):
+    return {
+        "user_id": row["user_id"],
+        "full_name": row["full_name"],
+        "avatar": row["avatar"],
+        "value": row["value"],
+    }
+
+
 def get_all_badges():
     with engine.connect() as conn:
         rows = conn.execute(
@@ -91,6 +100,27 @@ def get_xp_history(user_id):
         ).mappings().all()
 
     return [_serialize_xp_event(row) for row in rows]
+
+
+def get_top_users_by_level(limit=5):
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                """
+                SELECT
+                    u.user_id,
+                    u.full_name,
+                    u.avatar,
+                    u.current_level AS value
+                FROM users u
+                ORDER BY u.current_level DESC, u.current_xp DESC, u.user_id ASC
+                LIMIT :limit
+                """
+            ),
+            {"limit": limit},
+        ).mappings().all()
+
+    return [_serialize_leaderboard_entry(row) for row in rows]
 
 
 def calculate_level(total_xp):
