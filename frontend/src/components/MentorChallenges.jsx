@@ -162,6 +162,7 @@ export default function MentorChallenges({ openCreate = false }) {
                   type="date"
                   value={form.deadline}
                   onChange={handleFormChange}
+                  required
                 />
               </div>
 

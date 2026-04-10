@@ -51,17 +51,17 @@ class CreateChallenge(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
         description = graphene.String(required=True)
+        due_date = graphene.String(required=True)
         xp_reward = graphene.Int()
         default_target_count = graphene.Int()
         max_completions_per_user = graphene.Int()
         participant_limit = graphene.Int()
         start_date = graphene.String()
-        due_date = graphene.String()
 
     Output = ChallengeResponse
 
     @staticmethod
-    def mutate(root, info, title, description, xp_reward=None, default_target_count=None, max_completions_per_user=None, participant_limit=None, start_date=None, due_date=None):
+    def mutate(root, info, title, description, due_date, xp_reward=None, default_target_count=None, max_completions_per_user=None, participant_limit=None, start_date=None):
         user = _require_auth(info)
         if user["role"]["role_name"] != "mentor":
             raise RuntimeError("Only mentors can create challenges.")
