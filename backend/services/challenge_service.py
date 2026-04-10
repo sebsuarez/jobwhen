@@ -473,6 +473,40 @@ def get_completed_challenges_count(user_id):
         return int(result)
 
 
+def get_top_users_by_completed_challenges(limit=5):
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                """
+                SELECT
+                    u.user_id,
+                    u.full_name,
+                    u.avatar,
+                    (
+                        COALESCE(SUM(cp.completion_count), 0)
+                        + COUNT(*) FILTER (WHERE cp.participation_status = 'completed')
+                    )::INT AS value
+                FROM users u
+                LEFT JOIN challenge_participants cp ON cp.user_id = u.user_id
+                GROUP BY u.user_id, u.full_name, u.avatar
+                ORDER BY value DESC, u.user_id ASC
+                LIMIT :limit
+                """
+            ),
+            {"limit": limit},
+        ).mappings().all()
+
+    return [
+        {
+            "user_id": row["user_id"],
+            "full_name": row["full_name"],
+            "avatar": row["avatar"],
+            "value": row["value"],
+        }
+        for row in rows
+    ]
+
+
 def delete_challenge(mentor_user_id, challenge_id):
     # allows a mentor to delete a challenge they created
     # to avoid foreign key conflicts we remove all the participants first
