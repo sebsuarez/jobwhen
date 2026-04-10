@@ -20,6 +20,7 @@ export default function Friends() {
   const [sentRequests, setSentRequests] = useState({})
   const [encouraged, setEncouraged] = useState({})
   const [selectedFriend, setSelectedFriend] = useState(null)
+  const [confirmRemove, setConfirmRemove] = useState(false)
   const [notification, setNotification] = useState('')
 
   useEffect(() => {
@@ -103,6 +104,11 @@ export default function Friends() {
   }
 
   const handleRemoveFriend = async (friend) => {
+    if (!confirmRemove) {
+      setConfirmRemove(true)
+      return
+    }
+    setConfirmRemove(false)
     try {
       await removeFriend(friend.userId)
       setFriends((prev) => prev.filter((f) => f.userId !== friend.userId))
@@ -262,7 +268,7 @@ export default function Friends() {
 
       <Modal
         isOpen={!!selectedFriend}
-        onClose={() => setSelectedFriend(null)}
+        onClose={() => { setSelectedFriend(null); setConfirmRemove(false) }}
         title="Friend Profile">
         {selectedFriend && (
           <div className="friend-profile-modal">
@@ -296,8 +302,10 @@ export default function Friends() {
             </div>
 
             <div className="friend-profile-modal__actions">
-              <Button variant="ghost" onClick={() => setSelectedFriend(null)}>Close</Button>
-              <Button variant="danger" onClick={() => handleRemoveFriend(selectedFriend)}>Remove Friend</Button>
+              <Button variant="ghost" onClick={() => { setSelectedFriend(null); setConfirmRemove(false) }}>Close</Button>
+              <Button variant="danger" onClick={() => handleRemoveFriend(selectedFriend)}>
+                {confirmRemove ? 'Confirm Remove?' : 'Remove Friend'}
+              </Button>
             </div>
           </div>
         )}

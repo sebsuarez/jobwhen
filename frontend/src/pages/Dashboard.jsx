@@ -253,7 +253,7 @@ export default function Dashboard() {
                           <span className="dashboard__goal-xp-earned">+{GOAL_XP} XP</span>
                         ) : (
                           <span className="dashboard__goal-progress">
-                            {goal.target !== null ? `${goal.current}/${goal.target}` : '—'}
+                            {goal.target !== null ? `${goal.current}/${goal.target}` : null}
                           </span>
                         )}
 
