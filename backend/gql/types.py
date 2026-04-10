@@ -117,6 +117,7 @@ class FriendType(graphene.ObjectType):
     avatar = graphene.String()
     role_name = graphene.String()
     application_count = graphene.Int()
+    encouraged_you = graphene.Boolean()
     current_level = graphene.Int()
     current_xp = graphene.Int()
 

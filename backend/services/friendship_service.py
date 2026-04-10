@@ -13,6 +13,7 @@ def serialize_friend(row):
         "avatar": row["avatar"],
         "role_name": row["role_name"],
         "application_count": row["application_count"],
+        "encouraged_you": row["encouraged_you"],
         "current_level": row["current_level"],
         "current_xp": row["current_xp"],
     }
@@ -56,6 +57,7 @@ def get_friends(user_id):
                     u.avatar,
                     r.role_name,
                     (SELECT COUNT(*) FROM job_applications WHERE user_id = u.user_id) AS application_count,
+                    EXISTS(SELECT 1 FROM encouragements WHERE sender_id = u.user_id AND receiver_id = :uid AND sent_at >= CURRENT_DATE) AS encouraged_you,
                     u.current_level,
                     u.current_xp
                 FROM friendships f
