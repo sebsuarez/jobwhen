@@ -108,6 +108,12 @@
 .challenge-card__collect {
   border-radius: var(--radius-full);
   min-width: 120px;
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.challenge-card__collect:hover:not(:disabled) {
+  background: #15803d;
 }
 
 .challenge-card__progress-row {
@@ -289,7 +295,8 @@
     position: relative;
   }
 
-  .challenge-card__remove {
+  .challenge-card__remove,
+  .challenge-card__collect {
     position: absolute;
     top: var(--space-4);
     right: var(--space-4);
