@@ -225,7 +225,9 @@
   color: var(--btn-primary-text);
   border-color: var(--btn-primary-bg);
 }
-
+.board__page-scroll {
+  overflow-x: auto;
+}
 /* ── Responsive ── */
 
 @media (max-width: 900px) {
@@ -258,6 +260,7 @@
   }
 
   .board__columns {
+    overflow-x: auto;
     display: block;
     overflow-x: visible;
   }
@@ -273,9 +276,10 @@
   }
 
   .board__column-body {
-    padding: var(--space-3);
-    min-height: auto;
-  }
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
 
   .board__job {
     padding: var(--space-3);

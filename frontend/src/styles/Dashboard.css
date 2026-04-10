@@ -59,6 +59,7 @@
 .dashboard__stat-value--interview  { color: var(--stat-interview); }
 .dashboard__stat-value--offer      { color: var(--stat-offer); }
 .dashboard__stat-value--rate       { color: var(--stat-rate); }
+.dashboard__stat-value--challenges { color: #facc15; }
 
 .dashboard__card {
   background: var(--bg-card-solid);
@@ -261,4 +262,64 @@
 .dashboard__action-btn:hover {
   border-color: var(--text-accent);
   color: var(--text-primary);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .dashboard__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard__mid-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard__goals-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+  }
+
+  .dashboard__goals-summary {
+    align-items: flex-start;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard {
+    gap: var(--space-5);
+  }
+
+  .dashboard__greeting {
+    font-size: var(--text-2xl);
+  }
+
+  .dashboard__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard__card,
+  .dashboard__stat-card {
+    padding: var(--space-4);
+  }
+
+  .dashboard__stat-value {
+    font-size: var(--text-3xl);
+  }
+
+  .dashboard__mood-buttons {
+    gap: var(--space-4);
+  }
+
+  .dashboard__mood-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 1.75rem;
+  }
+
+  .dashboard__actions-grid {
+    grid-template-columns: 1fr;
+  }
 }
