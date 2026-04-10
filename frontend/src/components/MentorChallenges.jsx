@@ -135,9 +135,10 @@ export default function MentorChallenges({ openCreate = false }) {
                       Limit: {challenge.participantLimit}
                     </span>
                   )}
-                  {/* TODO: wire to updateChallenge mutation */}
                   {status === 'in_review' && (
-                    <Button variant="ghost" className="mentor-challenges__edit-btn" title="Edit">&#9998;</Button>
+                    <Button variant="danger" onClick={() => handleRemove(challenge.challengeId)} disabled={deleting === challenge.challengeId}>
+                      {deleting === challenge.challengeId ? 'Removing...' : 'Remove'}
+                    </Button>
                   )}
                   {status === 'rejected' && (
                     <Button variant="danger" onClick={() => handleRemove(challenge.challengeId)} disabled={deleting === challenge.challengeId}>
