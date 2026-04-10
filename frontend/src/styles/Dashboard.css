@@ -59,6 +59,7 @@
 .dashboard__stat-value--interview  { color: var(--stat-interview); }
 .dashboard__stat-value--offer      { color: var(--stat-offer); }
 .dashboard__stat-value--rate       { color: var(--stat-rate); }
+.dashboard__stat-value--challenges { color: #facc15; }
 
 .dashboard__card {
   background: var(--bg-card-solid);

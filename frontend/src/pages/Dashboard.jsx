@@ -99,9 +99,10 @@ export default function Dashboard() {
             <p className="dashboard__stat-label">Total Applied</p>
             <p className="dashboard__stat-value dashboard__stat-value--total">{stats.total}</p>
           </div>
+          {/* TODO: replace placeholder value with completedChallenges count once backend exposes it */}
           <div className="dashboard__stat-card">
-            <p className="dashboard__stat-label">Interviews</p>
-            <p className="dashboard__stat-value dashboard__stat-value--interview">{stats.interviews}</p>
+            <p className="dashboard__stat-label">Challenges Completed</p>
+            <p className="dashboard__stat-value dashboard__stat-value--challenges">—</p>
           </div>
           <div className="dashboard__stat-card">
             <p className="dashboard__stat-label">Offers</p>
