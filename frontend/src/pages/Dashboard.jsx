@@ -42,9 +42,9 @@ export default function Dashboard() {
   const [editTargetValue, setEditTargetValue] = useState('')
   const [targetError, setTargetError] = useState('')
   const [xpEarnedGoal, setXpEarnedGoal] = useState(null)
-  const [mood, setMood] = useState(null)
-  const [burnoutAlerts, setBurnoutAlerts] = useState([])
+  const [selectedMoodScore, setSelectedMoodScore] = useState(null)
   const [moodHistory, setMoodHistory] = useState([])
+  const [moodTrend, setMoodTrend] = useState(null)
   const [moodMessage, setMoodMessage] = useState('')
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function Dashboard() {
           isCompleted: g.isCompleted,
         })))
         setMoodHistory(moodInsights.myMoodHistory)
-        setBurnoutAlerts(moodInsights.myBurnoutAlerts.filter((alert) => !alert.resolved))
+        setMoodTrend(moodInsights.myMoodTrend)
       })
       .catch(() => {})
 
@@ -101,7 +101,6 @@ export default function Dashboard() {
 
   const firstName = user?.fullName?.split(' ')[0] ?? ''
   const latestMood = moodHistory[0]
-  const latestBurnoutAlert = burnoutAlerts[0]
 
   function applyGoalUpdate(goalType, patch) {
     setGoals((prev) =>
@@ -156,14 +155,14 @@ export default function Dashboard() {
     } catch { /* silent */ }
   }
 
-  const handleMoodCheckin = async (score, nextMood) => {
+  const handleMoodCheckin = async (score) => {
     try {
-      setMood(nextMood)
+      setSelectedMoodScore(score)
       const response = await logMoodCheckin(score)
       setMoodMessage(response?.message ?? 'Mood check-in saved.')
       const refreshed = await fetchMoodInsights()
       setMoodHistory(refreshed.myMoodHistory)
-      setBurnoutAlerts(refreshed.myBurnoutAlerts.filter((alert) => !alert.resolved))
+      setMoodTrend(refreshed.myMoodTrend)
     } catch (error) {
       setMoodMessage(error.message)
     }
@@ -291,24 +290,19 @@ export default function Dashboard() {
 
           <Card className="dashboard__mood">
             <h2 className="dashboard__card-title">How are you feeling?</h2>
-            <p className="dashboard__mood-subtitle">Your well being matters. Check in daily.</p>
+            <p className="dashboard__mood-subtitle">Rate today from 1 to 5. Your friends can spot when you may need encouragement.</p>
             <div className="dashboard__mood-buttons">
-              <Button
-                variant="ghost"
-                className={`dashboard__mood-btn${mood === 'good' ? ' dashboard__mood-btn--active' : ''}`}
-                onClick={() => handleMoodCheckin(4, mood === 'good' ? null : 'good')}
-                aria-label="Feeling good"
-              >
-                👍
-              </Button>
-              <Button
-                variant="ghost"
-                className={`dashboard__mood-btn${mood === 'bad' ? ' dashboard__mood-btn--active' : ''}`}
-                onClick={() => handleMoodCheckin(2, mood === 'bad' ? null : 'bad')}
-                aria-label="Feeling bad"
-              >
-                👎
-              </Button>
+              {[1, 2, 3, 4, 5].map((score) => (
+                <Button
+                  key={score}
+                  variant="ghost"
+                  className={`dashboard__mood-btn${selectedMoodScore === score ? ' dashboard__mood-btn--active' : ''}`}
+                  onClick={() => handleMoodCheckin(score)}
+                  aria-label={`Mood score ${score}`}
+                >
+                  {score}
+                </Button>
+              ))}
             </div>
             {moodMessage && <p className="dashboard__mood-message">{moodMessage}</p>}
             {latestMood && (
@@ -316,11 +310,11 @@ export default function Dashboard() {
                 Latest check-in: score {latestMood.moodScore}
               </p>
             )}
-            {latestBurnoutAlert && (
-              <div className="dashboard__burnout-alert">
-                <p className="dashboard__burnout-title">Burnout Alert</p>
-                <p className="dashboard__burnout-message">{latestBurnoutAlert.supportiveMessage}</p>
-              </div>
+            {moodTrend?.hasEnoughDays && (
+              <p className="dashboard__mood-trend">
+                3-day average: {moodTrend.averageScore}
+                {moodTrend.isLowMoodTrend ? ' · Friends can encourage you right now.' : ''}
+              </p>
             )}
           </Card>
         </div>

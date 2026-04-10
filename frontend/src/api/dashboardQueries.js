@@ -24,12 +24,11 @@ const MOOD_INSIGHTS_QUERY = `
       reflection
       checkedInAt
     }
-    myBurnoutAlerts {
-      alertId
-      triggerReason
-      supportiveMessage
-      createdAt
-      resolved
+    myMoodTrend {
+      daysConsidered
+      averageScore
+      hasEnoughDays
+      isLowMoodTrend
     }
   }
 `
@@ -95,7 +94,7 @@ export async function fetchMoodInsights() {
   const data = await graphqlRequest(MOOD_INSIGHTS_QUERY)
   return {
     myMoodHistory: data.myMoodHistory ?? [],
-    myBurnoutAlerts: data.myBurnoutAlerts ?? [],
+    myMoodTrend: data.myMoodTrend ?? null,
   }
 }
 
