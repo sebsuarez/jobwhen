@@ -1,10 +1,14 @@
 // pages/Dashboard.jsx
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import Card from '../components/Card'
+import Button from '../components/Button'
+import Modal from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
 import { fetchJobApplications } from '../api/boardQueries'
-import { fetchActiveGoals, fetchMoodInsights, logMoodCheckin } from '../api/dashboardQueries'
+// TODO: re-add fetchActiveGoals import once backend goal endpoints are live
+import { fetchMoodInsights, logMoodCheckin } from '../api/dashboardQueries'
 import '../styles/Dashboard.css'
 
 function getGreeting() {
@@ -14,11 +18,34 @@ function getGreeting() {
   return 'Good evening'
 }
 
+// Preset weekly goals - TODO: replace with backend goals one endpoints are live
+const GOAL_CONFIGS = [
+  { type: 'applications', label: 'Job Applications' },
+  { type: 'wellness', label: 'Wellness Check-in' },
+  { type: 'interview_prep', label: 'Interview Prep' },
+]
+
+const GOAL_XP = 30
+
+// TODO: remove mock data and replace once backend goal endpoints are live
+const MOCK_GOALS = [
+  { id: 1, goalType: 'applications', current: 2, target: 5, isCompleted: false },
+  { id: 2, goalType: 'wellness', current: 1, target: 3, isCompleted: false },
+  { id: 3, goalType: 'interview_prep', current: 0, target: 2, isCompleted: false },
+]
+
 export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const goalsRef = useRef(null)
+
   const [stats, setStats] = useState({ total: 0, interviews: 0, offers: 0, rate: 0 })
-  const [goals, setGoals] = useState([])
+  const [goals, setGoals] = useState(MOCK_GOALS)
+
+  // Goal interaction state
+  const [editModalGoal, setEditModalGoal] = useState(null)
+  const [editTargetValue, setEditTargetValue] = useState('')
+  const [xpEarnedGoal, setXpEarnedGoal] = useState(null)
   const [mood, setMood] = useState(null)
   const [burnoutAlerts, setBurnoutAlerts] = useState([])
   const [moodHistory, setMoodHistory] = useState([])
@@ -31,10 +58,10 @@ export default function Dashboard() {
 
     Promise.all([
       fetchJobApplications(user.userId),
-      fetchActiveGoals(),
+      // TODO: add fetchActiveGoals() back here once backend goal endpoints are live
       fetchMoodInsights(),
     ])
-      .then(([apps, activeGoals, moodInsights]) => {
+      .then(([apps, moodInsights]) => {
         if (cancelled) return
         const applied = apps.filter((a) => a.status !== 'wishlist')
         const interviews = apps.filter((a) => a.status === 'interview').length
@@ -42,12 +69,6 @@ export default function Dashboard() {
         const total = applied.length
         const rate = total > 0 ? Math.round((interviews / total) * 100) : 0
         setStats({ total, interviews, offers, rate })
-        setGoals(activeGoals.map((goal) => ({
-          id: goal.goalId,
-          label: `${goal.goalType[0].toUpperCase()}${goal.goalType.slice(1)} Goal`,
-          current: goal.currentCount,
-          target: goal.targetCount,
-        })))
         setMoodHistory(moodInsights.myMoodHistory)
         setBurnoutAlerts(moodInsights.myBurnoutAlerts.filter((alert) => !alert.resolved))
       })
@@ -58,15 +79,75 @@ export default function Dashboard() {
     }
   }, [user])
 
-  const completedGoals = goals.filter((g) => g.current >= g.target).length
+  // Always show all 3 goal rows, filling in data where available
+  const allGoals = GOAL_CONFIGS.map((config) => {
+    const found = goals.find((g) => g.goalType === config.type)
+    return {
+      type: config.type,
+      label: config.label,
+      id: found?.id ?? null,
+      current: found?.current ?? 0,
+      target: found?.target ?? null,
+      isCompleted: found?.isCompleted ?? false,
+    }
+  })
+
+  const completedGoals = allGoals.filter((g) => g.isCompleted).length
+  // Unset goals count as 0 so the bar reflects real state across all 3
   const overallProgress =
-    goals.length > 0
-      ? goals.reduce((sum, g) => sum + Math.min(g.current / g.target, 1), 0) / goals.length
-      : 0
+    allGoals.reduce((sum, g) => sum + (g.target ? Math.min(g.current / g.target, 1) : 0), 0) / 3
 
   const firstName = user?.fullName?.split(' ')[0] ?? ''
   const latestMood = moodHistory[0]
   const latestBurnoutAlert = burnoutAlerts[0]
+
+  function applyGoalUpdate(goalType, patch) {
+    setGoals((prev) =>
+      prev.map((g) => (g.goalType === goalType ? { ...g, ...patch } : g))
+    )
+  }
+
+  // TODO: replace body with proper API call once backend endpoint is live
+  const handleIncrementGoal = (goalType) => {
+    const goal = goals.find((g) => g.goalType === goalType)
+    if (!goal || goal.isCompleted) return
+
+    const newCurrent = goal.current + 1
+    const justCompleted = newCurrent >= goal.target
+    applyGoalUpdate(goalType, { current: newCurrent, isCompleted: justCompleted })
+
+    if (justCompleted) {
+      setXpEarnedGoal(goalType)
+      setTimeout(() => setXpEarnedGoal(null), 2500)
+    }
+  }
+
+  // TODO: replace body with proper API call once backend endpoint is live
+  const handleDecrementGoal = (goalType) => {
+    const goal = goals.find((g) => g.goalType === goalType)
+    if (!goal || goal.current <= 0) return
+
+    const newCurrent = goal.current - 1
+    const stillCompleted = newCurrent >= goal.target
+    applyGoalUpdate(goalType, { current: newCurrent, isCompleted: stillCompleted })
+  }
+
+  // TODO: replace body with proper API call once backend endpoint is live
+  const handleSetTarget = (goalType) => {
+    const target = parseInt(editTargetValue, 10)
+    setEditModalGoal(null)
+    if (!target || target < 1) return
+
+    const goal = goals.find((g) => g.goalType === goalType)
+    const wasCompleted = goal?.isCompleted ?? false
+    const newCompleted = (goal?.current ?? 0) >= target
+    applyGoalUpdate(goalType, { target, isCompleted: newCompleted })
+
+    if (newCompleted && !wasCompleted) {
+      setXpEarnedGoal(goalType)
+      setTimeout(() => setXpEarnedGoal(null), 2500)
+    }
+  }
 
   const handleMoodCheckin = async (score, nextMood) => {
     try {
@@ -95,33 +176,33 @@ export default function Dashboard() {
         </header>
 
         <div className="dashboard__stats">
-          <div className="dashboard__stat-card">
+          <Card className="dashboard__stat-card">
             <p className="dashboard__stat-label">Total Applied</p>
             <p className="dashboard__stat-value dashboard__stat-value--total">{stats.total}</p>
-          </div>
+          </Card>
           {/* TODO: replace placeholder value with completedChallenges count once backend exposes it */}
-          <div className="dashboard__stat-card">
+          <Card className="dashboard__stat-card">
             <p className="dashboard__stat-label">Challenges Completed</p>
             <p className="dashboard__stat-value dashboard__stat-value--challenges">—</p>
-          </div>
-          <div className="dashboard__stat-card">
+          </Card>
+          <Card className="dashboard__stat-card">
             <p className="dashboard__stat-label">Offers</p>
             <p className="dashboard__stat-value dashboard__stat-value--offer">{stats.offers}</p>
-          </div>
-          <div className="dashboard__stat-card">
+          </Card>
+          <Card className="dashboard__stat-card">
             <p className="dashboard__stat-label">Interview Rate</p>
             <p className="dashboard__stat-value dashboard__stat-value--rate">{stats.rate}%</p>
-          </div>
+          </Card>
         </div>
 
         <div className="dashboard__mid-row">
-          <div className="dashboard__card dashboard__goals">
-            <h2 className="dashboard__card-title">Today's Goals</h2>
+          <Card className="dashboard__goals" ref={goalsRef}>
+            <h2 className="dashboard__card-title">This Week's Goals</h2>
             <div className="dashboard__goals-body">
               <div className="dashboard__goals-summary">
                 <p className="dashboard__goals-number">{completedGoals}</p>
                 <p className="dashboard__goals-label">Goals</p>
-                <p className="dashboard__goals-of">of {goals.length}</p>
+                <p className="dashboard__goals-of">of 3</p>
                 <div className="dashboard__goals-bar">
                   <div
                     className="dashboard__goals-bar-fill"
@@ -130,45 +211,96 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="dashboard__goals-list">
-                {goals.map((goal) => (
-                  <div key={goal.id} className="dashboard__goal-item">
+                {allGoals.map((goal) => (
+                  <div
+                    key={goal.type}
+                    className={`dashboard__goal-item${goal.isCompleted ? ' dashboard__goal-item--done' : ''}`}
+                  >
                     <div className="dashboard__goal-top">
                       <span className="dashboard__goal-name">{goal.label}</span>
-                      <span className="dashboard__goal-progress">{goal.current}/{goal.target}</span>
+                      <div className="dashboard__goal-controls">
+                        {xpEarnedGoal === goal.type ? (
+                          <span className="dashboard__goal-xp-earned">+{GOAL_XP} XP</span>
+                        ) : (
+                          <span className="dashboard__goal-progress">
+                            {goal.target !== null ? `${goal.current}/${goal.target}` : '—'}
+                          </span>
+                        )}
+
+                        {goal.isCompleted ? (
+                          <span className="dashboard__goal-done-badge">Done</span>
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              className="dashboard__goal-increment-btn"
+                              onClick={() => handleDecrementGoal(goal.type)}
+                              disabled={goal.target === null || goal.current <= 0}
+                              aria-label={`Remove progress from ${goal.label}`}
+                            >
+                              −
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="dashboard__goal-increment-btn"
+                              onClick={() => handleIncrementGoal(goal.type)}
+                              disabled={goal.target === null}
+                              aria-label={`Add progress to ${goal.label}`}
+                            >
+                              +
+                            </Button>
+                          </>
+                        )}
+
+                        <Button
+                          variant="ghost"
+                          className="dashboard__goal-icon-btn"
+                          onClick={() => {
+                            setEditModalGoal({ type: goal.type, label: goal.label })
+                            setEditTargetValue(goal.target !== null ? String(goal.target) : '')
+                          }}
+                          aria-label={`Edit ${goal.label} target`}
+                        >
+                          ✎
+                        </Button>
+                      </div>
                     </div>
-                    <div className="dashboard__goal-bar">
-                      <div
-                        className="dashboard__goal-bar-fill"
-                        style={{ width: `${Math.min(goal.current / goal.target, 1) * 100}%` }}
-                      />
-                    </div>
+                    {goal.target !== null ? (
+                      <div className="dashboard__goal-bar">
+                        <div
+                          className="dashboard__goal-bar-fill"
+                          style={{ width: `${Math.min(goal.current / goal.target, 1) * 100}%` }}
+                        />
+                      </div>
+                    ) : (
+                      <p className="dashboard__goal-unset">Set a target to start tracking</p>
+                    )}
                   </div>
                 ))}
-                {goals.length === 0 && <p className="dashboard__empty">No active goals right now.</p>}
               </div>
             </div>
-          </div>
+          </Card>
 
-          <div className="dashboard__card dashboard__mood">
+          <Card className="dashboard__mood">
             <h2 className="dashboard__card-title">How are you feeling?</h2>
             <p className="dashboard__mood-subtitle">Your well being matters. Check in daily.</p>
             <div className="dashboard__mood-buttons">
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 className={`dashboard__mood-btn${mood === 'good' ? ' dashboard__mood-btn--active' : ''}`}
                 onClick={() => handleMoodCheckin(4, mood === 'good' ? null : 'good')}
                 aria-label="Feeling good"
               >
                 👍
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="ghost"
                 className={`dashboard__mood-btn${mood === 'bad' ? ' dashboard__mood-btn--active' : ''}`}
                 onClick={() => handleMoodCheckin(2, mood === 'bad' ? null : 'bad')}
                 aria-label="Feeling bad"
               >
                 👎
-              </button>
+              </Button>
             </div>
             {moodMessage && <p className="dashboard__mood-message">{moodMessage}</p>}
             {latestMood && (
@@ -182,30 +314,59 @@ export default function Dashboard() {
                 <p className="dashboard__burnout-message">{latestBurnoutAlert.supportiveMessage}</p>
               </div>
             )}
-          </div>
+          </Card>
         </div>
 
-        <div className="dashboard__card dashboard__quick-actions">
+        <Card className="dashboard__quick-actions">
           <h2 className="dashboard__card-title">Quick Actions</h2>
           <div className="dashboard__actions-grid">
-            <button type="button" className="dashboard__action-btn" onClick={() => navigate('/board')}>
+            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/board')}>
               Add Application
-            </button>
-            <button type="button" className="dashboard__action-btn" onClick={() => navigate('/collection')}>
+            </Button>
+            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/collection')}>
               View Badges
-            </button>
-            <button type="button" className="dashboard__action-btn" onClick={() => navigate('/challenges')}>
+            </Button>
+            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/challenges')}>
               Check Challenges
-            </button>
-            <button type="button" className="dashboard__action-btn" onClick={() => navigate('/friends')}>
+            </Button>
+            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/friends')}>
               See Friends
-            </button>
-            <button type="button" className="dashboard__action-btn">
+            </Button>
+            <Button
+              variant="ghost"
+              className="dashboard__action-btn"
+              onClick={() => goalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+            >
               Edit Goals
-            </button>
+            </Button>
+          </div>
+        </Card>
+      </main>
+
+      <Modal
+        isOpen={editModalGoal !== null}
+        onClose={() => setEditModalGoal(null)}
+        title={`Set Target — ${editModalGoal?.label}`}
+      >
+        <div className="dashboard__goal-modal">
+          <p className="dashboard__goal-modal-label">
+            How many this week?
+          </p>
+          <input
+            className="dashboard__goal-target-input"
+            type="number"
+            min="1"
+            value={editTargetValue}
+            onChange={(e) => setEditTargetValue(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSetTarget(editModalGoal?.type)}
+            autoFocus
+          />
+          <div className="dashboard__goal-modal-actions">
+            <Button variant="ghost" onClick={() => setEditModalGoal(null)}>Cancel</Button>
+            <Button variant="primary" onClick={() => handleSetTarget(editModalGoal?.type)}>Save</Button>
           </div>
         </div>
-      </main>
+      </Modal>
     </div>
   )
 }
