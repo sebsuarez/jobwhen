@@ -76,11 +76,23 @@ export default function Dashboard() {
     }
   }, [user])
 
-  const completedGoals = goals.filter((g) => g.current >= g.target).length
+  // Always show all 3 goal rows, filling in data where available
+  const allGoals = GOAL_CONFIGS.map((config) => {
+    const found = goals.find((g) => g.goalType === config.type)
+    return {
+      type: config.type,
+      label: config.label,
+      id: found?.id ?? null,
+      current: found?.current ?? 0,
+      target: found?.target ?? null,
+      isCompleted: found?.isCompleted ?? false,
+    }
+  })
+
+  const completedGoals = allGoals.filter((g) => g.isCompleted).length
+  // Unset goals count as 0 so the bar reflects real state across all 3
   const overallProgress =
-    goals.length > 0
-      ? goals.reduce((sum, g) => sum + Math.min(g.current / g.target, 1), 0) / goals.length
-      : 0
+    allGoals.reduce((sum, g) => sum + (g.target ? Math.min(g.current / g.target, 1) : 0), 0) / 3
 
   const firstName = user?.fullName?.split(' ')[0] ?? ''
   const latestMood = moodHistory[0]
