@@ -19,6 +19,7 @@ export default function Friends() {
   const [searchLoading, setSearchLoading] = useState(false)
   const [sentRequests, setSentRequests] = useState({})
   const [encouraged, setEncouraged] = useState({})
+  const [selectedFriend, setSelectedFriend] = useState(null)
   const [notification, setNotification] = useState('')
 
   useEffect(() => {
@@ -132,7 +133,7 @@ export default function Friends() {
               <p className="friends-panel__empty">No friends yet, go add some!</p>
             ) : friends.map((friend) => {
               return (
-                <Card key={friend.userId} className="friend-card">
+                <Card key={friend.userId} className="friend-card" onClick={() => setSelectedFriend(friend)}>
                   <div className="friend-card__left">
                     <div className="friend-card__avatar">
                       {friend.avatar && <span className="friend-card__avatar-emoji">{friend.avatar}</span>}
@@ -168,7 +169,7 @@ export default function Friends() {
                       variant="ghost"
                       className="friend-card__btn"
                       disabled={!!encouraged[friend.userId]}
-                      onClick={() => handleEncourage(friend)}>{encouraged[friend.userId] ? 'Encouraged' : 'Encourage'}</Button>
+                      onClick={(e) => { e.stopPropagation(); handleEncourage(friend) }}>{encouraged[friend.userId] ? 'Encouraged' : 'Encourage'}</Button>
                   </div>
                 </Card>
               )
@@ -241,6 +242,52 @@ export default function Friends() {
           </div>
         </div>
       </Modal>
+
+      <Modal
+        isOpen={!!selectedFriend}
+        onClose={() => setSelectedFriend(null)}
+        title="Friend Profile">
+        {selectedFriend && (
+          <div className="friend-profile-modal">
+            <div className="friend-profile-modal__avatar">
+              {selectedFriend.avatar
+                ? <span className="friend-profile-modal__avatar-emoji">{selectedFriend.avatar}</span>
+                : null}
+            </div>
+
+            <div className="friend-profile-modal__name-row">
+              <h3 className="friend-profile-modal__name">{selectedFriend.fullName}</h3>
+              {selectedFriend.roleName === 'mentor' && <span className="friend-card__role-badge">Mentor</span>}
+            </div>
+
+            {selectedFriend.headline && (
+              <p className="friend-profile-modal__detail">{selectedFriend.headline}</p>
+            )}
+            {selectedFriend.location && (
+              <p className="friend-profile-modal__detail">{selectedFriend.location}</p>
+            )}
+
+            <div className="friend-profile-modal__stats">
+              {selectedFriend.roleName === 'job_seeker' && (
+                <div className="friend-card__stat">
+                  <span className="friend-card__value friend-card__value--accent">{selectedFriend.applicationCount ?? 0}</span>
+                  <span className="friend-card__label">Applied</span>
+                </div>
+              )}
+              <div className="friend-card__stat">
+                <span className="friend-card__value">Lv. {selectedFriend.currentLevel}</span>
+                <span className="friend-card__label">Level</span>
+              </div>
+            </div>
+
+            <div className="friend-profile-modal__actions">
+              <Button variant="ghost" onClick={() => setSelectedFriend(null)}>Close</Button>
+              <Button variant="danger">Remove Friend</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
        {notification && <div className="notification-popup">{notification}</div>}
     </div>
   )
