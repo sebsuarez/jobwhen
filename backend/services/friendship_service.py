@@ -180,6 +180,26 @@ def respond_to_friend_request(friendship_id, addressee_id, accept):
             raise RuntimeError("Friend request not found or not authorized.")
 
 
+def remove_friend(user_id, friend_user_id):
+    # deletes the accepted friendship between two users in either direction
+    with engine.begin() as conn:
+        row = conn.execute(
+            text(
+                """
+                DELETE FROM friendships
+                WHERE ((requester_id = :uid AND addressee_id = :fid)
+                    OR (requester_id = :fid AND addressee_id = :uid))
+                  AND status = 'accepted'
+                RETURNING friendship_id
+                """
+            ),
+            {"uid": user_id, "fid": friend_user_id},
+        ).fetchone()
+
+        if not row:
+            raise RuntimeError("Friendship not found.")
+
+
 def block_user(user_id, target_user_id):
     # removes any existing friendship first, then inserts a blocked record
     # requester_id is always set to the blocker so we know who initiated it
