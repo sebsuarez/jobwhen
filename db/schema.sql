@@ -140,15 +140,18 @@ CREATE TABLE IF NOT EXISTS goals (
     goal_type VARCHAR(20) NOT NULL,
     target_count INT NOT NULL,
     current_count INT NOT NULL DEFAULT 0,
+    week_of DATE NOT NULL DEFAULT CURRENT_DATE,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     is_completed BOOLEAN NOT NULL DEFAULT FALSE,
 
     CONSTRAINT chk_goal_type
-        CHECK (goal_type IN ('daily', 'weekly')),
+        CHECK (goal_type IN ('job_application', 'wellness_checkin', 'interview_prep')),
 
     CONSTRAINT chk_goal_count
         CHECK (target_count > 0 AND current_count >= 0),
+
+    CONSTRAINT uq_user_goal_type UNIQUE (user_id, goal_type),
 
     CONSTRAINT fk_goal_user
         FOREIGN KEY (user_id) REFERENCES users(user_id)
