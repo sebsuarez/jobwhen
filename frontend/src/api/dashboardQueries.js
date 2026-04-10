@@ -35,6 +35,22 @@ const MOOD_INSIGHTS_QUERY = `
 `
 
 // Dashboard Mutations (modify or writing data)
+const UPDATE_GOAL_PROGRESS_MUTATION = `
+  mutation UpdateGoalProgress($goalId: Int!, $delta: Int!) {
+    updateGoalProgress(goalId: $goalId, delta: $delta) {
+      ok
+      xpAwarded
+      goal {
+        goalId
+        goalType
+        targetCount
+        currentCount
+        isCompleted
+      }
+    }
+  }
+`
+
 const SET_GOAL_MUTATION = `
   mutation SetGoal($goalType: String!, $targetCount: Int!) {
     setGoal(goalType: $goalType, targetCount: $targetCount) {
@@ -88,11 +104,18 @@ export async function logMoodCheckin(moodScore, reflection = null) {
   return data.logMoodCheckin
 }
 
+export async function updateGoalProgress(goalId, delta) {
+  const data = await graphqlRequest(UPDATE_GOAL_PROGRESS_MUTATION, { goalId, delta })
+  return data.updateGoalProgress
+}
+
 export async function setGoal(goalType, targetCount) {
   const data = await graphqlRequest(SET_GOAL_MUTATION, { goalType, targetCount })
   return data.setGoal
 }
 
+// kept for potential future use 
+// currently the dashboard always shows all 3 fixed goal categories
 export async function removeGoal(goalType) {
   const data = await graphqlRequest(REMOVE_GOAL_MUTATION, { goalType })
   return data.removeGoal
