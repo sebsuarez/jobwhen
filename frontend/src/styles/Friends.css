@@ -359,12 +359,7 @@
   }
 
   .friend-card__right {
-    flex-wrap: wrap;
-    gap: var(--space-4);
-  }
-
-  .friend-card__btn {
-    width: 100%;
+    gap: var(--space-3);
   }
 
   .friends-modal__actions {
