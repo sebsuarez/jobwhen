@@ -123,6 +123,16 @@ export default function Dashboard() {
   }
 
   // TODO: replace body with proper API call once backend endpoint is live
+  const handleDecrementGoal = (goalType) => {
+    const goal = goals.find((g) => g.goalType === goalType)
+    if (!goal || goal.current <= 0) return
+
+    const newCurrent = goal.current - 1
+    const stillCompleted = newCurrent >= goal.target
+    applyGoalUpdate(goalType, { current: newCurrent, isCompleted: stillCompleted })
+  }
+
+  // TODO: replace body with proper API call once backend endpoint is live
   const handleSetTarget = (goalType) => {
     const target = parseInt(editTargetValue, 10)
     setEditModalGoal(null)
@@ -220,15 +230,15 @@ export default function Dashboard() {
                         {goal.isCompleted ? (
                           <span className="dashboard__goal-done-badge">Done</span>
                         ) : (
-                          <Button
-                            variant="ghost"
-                            className="dashboard__goal-increment-btn"
-                            onClick={() => handleIncrementGoal(goal.type)}
-                            disabled={goal.target === null}
-                            aria-label={`Add progress to ${goal.label}`}
-                          >
-                            +
-                          </Button>
+                            <Button
+                              variant="ghost"
+                              className="dashboard__goal-increment-btn"
+                              onClick={() => handleIncrementGoal(goal.type)}
+                              disabled={goal.target === null}
+                              aria-label={`Add progress to ${goal.label}`}
+                            >
+                              +
+                            </Button>
                         )}
 
                         <Button
