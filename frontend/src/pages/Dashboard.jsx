@@ -188,7 +188,9 @@ export default function Dashboard() {
       } else {
         setSavedMoodScore(null)
       }
-    } catch {}
+    } catch (error) {
+      console.error('Failed to save mood check-in:', error)
+    }
   }
 
   return (
