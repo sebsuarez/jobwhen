@@ -125,6 +125,14 @@ export default function Challenges() {
     return `${completedCount}/${maxCompletionsPerUser} completed • ${remainingCompletions} left`
   }
 
+  const isExpiredChallenge = (challenge) => {
+    if (!challenge.dueDate) return false
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const dueDate = new Date(`${challenge.dueDate}T00:00:00`)
+    return dueDate < today
+  }
+
   const increaseProgress = async (id) => {
     try {
       const result = await updateChallengeProgress(id, 1)
@@ -171,6 +179,9 @@ export default function Challenges() {
               </Card>
             ) : (
               activeChallenges.map((challenge) => (
+                (() => {
+                  const isExpired = isExpiredChallenge(challenge)
+                  return (
                 <Card key={challenge.challengeParticipantId} className="challenge-card">
                   <div className="challenge-card__top">
                     <div>
@@ -180,7 +191,12 @@ export default function Challenges() {
                       </p>
                     </div>
 
-                    {challenge.participationStatus === 'completed' ? (
+                    {isExpired ? (
+                      <Button
+                        variant="danger"
+                        className="challenge-card__remove"
+                        onClick={() => handleRemoveChallenge(challenge)}>Remove</Button>
+                    ) : challenge.participationStatus === 'completed' ? (
                       <Button
                         variant="primary"
                         className="challenge-card__collect"
@@ -207,19 +223,23 @@ export default function Challenges() {
                     )}
                   </p>
 
+                  {isExpired ? (
+                    <p className="challenge-card__expired">Expired. You can only remove this challenge.</p>
+                  ) : null}
+
                   <div className="challenge-card__progress-row">
                     <div className="challenge-card__controls">
                       <button
                         type="button"
                         className="challenge-card__control-btn"
                         onClick={() => decreaseProgress(challenge.challengeParticipantId)}
-                        disabled={challenge.progressCount === 0}>-</button>
+                        disabled={challenge.progressCount === 0 || isExpired}>-</button>
 
                       <button
                         type="button"
                         className="challenge-card__control-btn"
                         onClick={() => increaseProgress(challenge.challengeParticipantId)}
-                        disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed'}>+</button>
+                        disabled={challenge.progressCount === challenge.targetCount || challenge.participationStatus === 'completed' || isExpired}>+</button>
                     </div>
 
                     <span className="challenge-card__progress-text">
@@ -236,6 +256,8 @@ export default function Challenges() {
                     />
                   </div>
                 </Card>
+                  )
+                })()
               ))
             )}
           </div>
