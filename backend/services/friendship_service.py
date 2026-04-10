@@ -9,6 +9,7 @@ def serialize_friend(row):
         "user_id": row["user_id"],
         "full_name": row["full_name"],
         "headline": row["headline"],
+        "location": row["location"],
         "current_level": row["current_level"],
         "current_xp": row["current_xp"],
     }
@@ -48,6 +49,7 @@ def get_friends(user_id):
                     u.user_id,
                     u.full_name,
                     u.headline,
+                    u.location,
                     u.current_level,
                     u.current_xp
                 FROM friendships f

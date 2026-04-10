@@ -9,6 +9,7 @@ const MY_FRIENDS_QUERY = `
       userId
       fullName
       headline
+      location
       currentLevel
       currentXp
     }
