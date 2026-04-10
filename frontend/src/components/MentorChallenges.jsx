@@ -19,7 +19,7 @@ const EMPTY_FORM = {
   title: '',
   deadline: '',
   description: '',
-  reward: '',
+  reward: '50',
   targetCount: '1',
   maxCompletionsPerUser: '1',
   reviewNote: '',
@@ -67,6 +67,11 @@ export default function MentorChallenges({ openCreate = false }) {
     e.preventDefault()
     setSubmitting(true)
     setError('')
+    if (form.deadline < today) {
+      setError('Due date must be today or later.')
+      setSubmitting(false)
+      return
+    }
     try {
       const result = await createChallenge({
         title: form.title.trim(),
@@ -200,7 +205,7 @@ export default function MentorChallenges({ openCreate = false }) {
                   value={form.reward}
                   onChange={handleFormChange}
                   min={0}
-                  placeholder="0"
+                  placeholder="50"
                 />
               </div>
 
