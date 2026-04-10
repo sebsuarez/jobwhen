@@ -157,7 +157,10 @@ export default function Friends() {
                   <div className="friend-card__left">
                     <div className="friend-card__avatar" />
                     <div className="friend-card__info">
-                      <h3 className="friend-card__name">{friend.fullName}</h3>
+                      <div className="friend-card__name-row">
+                        <h3 className="friend-card__name">{friend.fullName}</h3>
+                        {friend.roleName === 'mentor' && <span className="friend-card__role-badge">Mentor</span>}
+                      </div>
                       {friend.headline && <p className="friend-card__status">{friend.headline}</p>}
                       {friend.location && <p className="friend-card__status">{friend.location}</p>}
 
