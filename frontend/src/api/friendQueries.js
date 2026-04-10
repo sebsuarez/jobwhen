@@ -14,6 +14,7 @@ const MY_FRIENDS_QUERY = `
       roleName
       applicationCount
       encouragedYou
+      youEncouraged
       currentLevel
       currentXp
     }

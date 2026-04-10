@@ -23,7 +23,12 @@ export default function Friends() {
 
   useEffect(() => {
     fetchMyFriends()
-      .then(setFriends)
+      .then((data) => {
+        setFriends(data)
+        const alreadyEncouraged = {}
+        data.forEach((f) => { if (f.youEncouraged) alreadyEncouraged[f.userId] = true })
+        setEncouraged(alreadyEncouraged)
+      })
       .catch((err) => console.error('Failed to load friends:', err))
       .finally(() => setLoadingFriends(false))
 
