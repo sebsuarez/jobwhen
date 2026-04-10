@@ -230,6 +230,16 @@ export default function Dashboard() {
                         {goal.isCompleted ? (
                           <span className="dashboard__goal-done-badge">Done</span>
                         ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              className="dashboard__goal-increment-btn"
+                              onClick={() => handleDecrementGoal(goal.type)}
+                              disabled={goal.target === null || goal.current <= 0}
+                              aria-label={`Remove progress from ${goal.label}`}
+                            >
+                              −
+                            </Button>
                             <Button
                               variant="ghost"
                               className="dashboard__goal-increment-btn"
@@ -239,6 +249,7 @@ export default function Dashboard() {
                             >
                               +
                             </Button>
+                          </>
                         )}
 
                         <Button
