@@ -28,6 +28,7 @@ export default function Profile() {
   const [editOpen, setEditOpen] = useState(false)
   const [draftName, setDraftName] = useState('')
   const [draftHeadline, setDraftHeadline] = useState('')
+  const [draftLocation, setDraftLocation] = useState('')
   const [draftEmoji, setDraftEmoji] = useState('')
   const [saving, setSaving] = useState(false)
   const [profileStats, setProfileStats] = useState({
@@ -68,6 +69,7 @@ export default function Profile() {
   const openEdit = () => {
     setDraftName(user?.fullName ?? '')
     setDraftHeadline(user?.headline ?? '')
+    setDraftLocation(user?.location ?? '')
     setDraftEmoji(user?.avatar ?? '')
     setEditOpen(true)
   }
@@ -78,6 +80,7 @@ export default function Profile() {
       await updateProfile({
         fullName: draftName.trim() || undefined,
         headline: draftHeadline.trim() || undefined,
+        location: draftLocation.trim() || undefined,
         avatar: draftEmoji || undefined,
       })
       await refreshUser()
@@ -121,8 +124,7 @@ export default function Profile() {
 
               <div className="profile-card__details">
                 {user?.headline && <p>{user.headline}</p>}
-                <p>{user?.email ?? 'No email available'}</p>
-                <p>{user?.role?.roleName ?? 'job_seeker'}</p>
+                {user?.location && <p>{user.location}</p>}
               </div>
 
               <Button className="profile-card__logout" type="button" onClick={handleLogout}>
@@ -130,19 +132,6 @@ export default function Profile() {
               </Button>
             </Card>
 
-            <Card className="profile-bio">
-              <h2 className="profile-section__title">Bio</h2>
-
-              <div className="profile-bio__input-wrap">
-                <input
-                  type="text"
-                  placeholder="e.g. Grinding Today!"
-                  className="profile-bio__input"
-                  value={user?.bio ?? ''}
-                  readOnly
-                />
-              </div>
-            </Card>
           </div>
 
           <div className="profile-layout__right">
@@ -199,6 +188,16 @@ export default function Profile() {
             value={draftHeadline}
             onChange={(e) => setDraftHeadline(e.target.value)}
             placeholder="e.g. Software Engineer at Amazon"
+            maxLength={100}
+          />
+
+          <label className="profile-edit__label">Location</label>
+          <input
+            className="profile-edit__name-input"
+            type="text"
+            value={draftLocation}
+            onChange={(e) => setDraftLocation(e.target.value)}
+            placeholder="e.g. Calgary, AB"
             maxLength={100}
           />
 
