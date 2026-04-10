@@ -35,6 +35,18 @@
   gap: var(--space-5);
 }
 
+.challenges-empty-state {
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid var(--border-default);
+}
+
+.challenges-empty-state__text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
 .challenge-card {
   padding: var(--space-5);
   border-radius: var(--radius-xl);
@@ -132,6 +144,11 @@
   font-size: var(--text-xl);
   font-weight: 700;
   margin-bottom: var(--space-4);
+}
+
+.new-challenges__empty {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 
 .new-challenges__grid {
