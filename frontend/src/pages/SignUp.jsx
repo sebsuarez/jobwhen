@@ -34,8 +34,14 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!firstName.trim() || !lastName.trim() || !username.trim() || !email.trim()) {
-      setFormError('Please fill in all required fields.')
+    const missingBase = [
+      !firstName.trim() && 'First Name',
+      !lastName.trim() && 'Last Name',
+      !username.trim() && 'Username',
+      !email.trim() && 'Email',
+    ].filter(Boolean)
+    if (missingBase.length) {
+      setFormError(`Please fill in the following fields: ${missingBase.join(', ')}.`)
       return
     }
 
