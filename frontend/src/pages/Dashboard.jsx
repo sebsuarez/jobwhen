@@ -53,11 +53,11 @@ export default function Dashboard() {
   const [savedMoodScore, setSavedMoodScore] = useState(null)
   const [moodHistory, setMoodHistory] = useState([])
   const [moodTrend, setMoodTrend] = useState(null)
-  const [moodMessage, setMoodMessage] = useState('')
 
   useEffect(() => {
     if (!user) return
 
+    const today = new Date().toISOString().slice(0, 10)
     let cancelled = false
 
     Promise.all([
@@ -176,8 +176,8 @@ export default function Dashboard() {
 
   const handleMoodCheckin = async () => {
     try {
+      const today = new Date().toISOString().slice(0, 10)
       await logMoodCheckin(selectedMoodScore)
-      setMoodMessage('')
       const refreshed = await fetchMoodInsights()
       setMoodHistory(refreshed.myMoodHistory)
       setMoodTrend(refreshed.myMoodTrend)
@@ -188,9 +188,7 @@ export default function Dashboard() {
       } else {
         setSavedMoodScore(null)
       }
-    } catch (error) {
-      setMoodMessage(error.message)
-    }
+    } catch {}
   }
 
   return (
