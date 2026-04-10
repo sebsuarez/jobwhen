@@ -511,9 +511,7 @@ const handleBoardDragOver = (e) => {
                 </>
               )}
               <div className="board__form-actions">
-                <Button variant="ghost" onClick={handleDeleteApp}>
-                  {confirmDelete ? 'Are you sure?' : 'Delete'}
-                </Button>
+                <Button variant="ghost" onClick={handleDeleteApp}>Delete</Button>
                 <Button variant="submit" onClick={handleEditStart}>Edit</Button>
               </div>
             </div>
