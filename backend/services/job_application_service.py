@@ -193,7 +193,7 @@ def update_application_status(application_id, user_id, new_status, note=None):
 def update_application_fields(application_id, user_id, **fields):
     # only allow updating these specific columns
     allowed = {"company_name", "role_title", "location", "job_link", "salary_range",
-               "notes", "application_deadline", "applied_date"}
+               "status", "notes", "application_deadline", "applied_date"}
     updates = {k: v for k, v in fields.items() if k in allowed and v is not None}
 
     if not updates:

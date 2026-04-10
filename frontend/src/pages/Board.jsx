@@ -169,6 +169,7 @@ export default function Board() {
       location: selectedApp.location ?? '',
       salaryRange: selectedApp.salaryRange ?? '',
       jobLink: selectedApp.jobLink ?? '',
+      status: selectedApp.status,
       applicationDeadline: selectedApp.applicationDeadline ?? '',
       appliedDate: selectedApp.appliedDate ?? '',
       notes: selectedApp.notes ?? '',
@@ -203,6 +204,7 @@ export default function Board() {
         location: editForm.location || null,
         salaryRange: editForm.salaryRange || null,
         jobLink: editForm.jobLink || null,
+        status: editForm.status,
         applicationDeadline: editForm.applicationDeadline || null,
         appliedDate: editForm.appliedDate || null,
         notes: editForm.notes || null,
@@ -545,6 +547,12 @@ const handleBoardDragOver = (e) => {
                 value={editForm.jobLink}
                 onChange={handleEditFormChange}
               />
+              <label className="board__form-label">Status</label>
+              <select name="status" value={editForm.status} onChange={handleEditFormChange}>
+              {COLUMNS.map((col) => (
+                <option key={col.id} value={col.id}>{col.label}</option>
+              ))}
+              </select>
               <label className="board__form-label">Application Deadline</label>
               <input
                 name="applicationDeadline"

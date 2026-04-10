@@ -92,6 +92,7 @@ class UpdateJobApplicationInput(graphene.InputObjectType):
     notes = graphene.String()
     application_deadline = graphene.String()
     applied_date = graphene.String()
+    status = graphene.String()
 
 
 class JobApplicationResponse(graphene.ObjectType):
