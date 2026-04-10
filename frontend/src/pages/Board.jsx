@@ -49,7 +49,7 @@ export default function Board() {
   const [showAddModal, setShowAddModal] = useState(() => !!location.state?.openAddModal)
   const [form, setForm] = useState(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
-  const [activeFilter, setActiveFilter] = useState('All')
+  const [activeFilters, setActiveFilters] = useState(['All'])
   const [searchQuery, setSearchQuery] = useState('')
   const [draggedId, setDraggedId] = useState(null)
   const [dragOverColumn, setDragOverColumn] = useState(null)
@@ -178,11 +178,13 @@ export default function Board() {
       notes: selectedApp.notes ?? '',
     })
     setIsEditing(true)
+    setConfirmDelete(false)
   }
 
   const handleEditCancel = () => {
     setIsEditing(false)
     setEditForm(null)
+    setConfirmDelete(false)
   }
 
   const handleEditFormChange = (e) => {
@@ -256,12 +258,12 @@ export default function Board() {
   }
 
   // When a filter is active, show only that column
-  const visibleColumns = activeFilter === 'All'
+  const visibleColumns = activeFilters.includes('All')
     ? COLUMNS
-    : COLUMNS.filter((col) => col.id === activeFilter.toLowerCase())
-
-    
-const handleBoardDragOver = (e) => {
+    : COLUMNS.filter((col) => activeFilters.includes(col.label))
+  
+  const canDragBetweenColumns = visibleColumns.length > 1
+  const handleBoardDragOver = (e) => {
   const container = boardColumnsRef.current
   if (!container) return
 
@@ -309,14 +311,31 @@ const handleBoardDragOver = (e) => {
 
         <div className="board__filters">
           {FILTERS.map((filter) => {
-            const count = filter === 'All'
+            const count =
+              filter === 'All'
               ? applications.length
               : applications.filter((a) => a.status === filter.toLowerCase()).length
+
+            const isActive = activeFilters.includes(filter)
+
             return (
               <button
                 key={filter}
-                className={`board__filter ${activeFilter === filter ? 'board__filter--active' : ''}`}
-                onClick={() => setActiveFilter(filter)}
+                className={`board__filter ${isActive ? 'board__filter--active' : ''}`}
+                onClick={() => {
+                  setActiveFilters((prev) => {
+                    if (filter === 'All') {
+                      return ['All']
+                    }
+
+                    const withoutAll = prev.filter((f) => f !== 'All')
+                    const updated = withoutAll.includes(filter)
+                      ? withoutAll.filter((f) => f !== filter)
+                      : [...withoutAll, filter]
+
+                    return updated.length ? updated : ['All']
+                  })
+                }}
               >
                 {filter} ({count})
               </button>
@@ -337,9 +356,9 @@ const handleBoardDragOver = (e) => {
                 <div
                   key={col.id}
                   className={`board__column ${dragOverColumn === col.id ? 'board__column--drag-over' : ''}`}
-                  onDragOver={(e) => handleDragOver(e, col.id)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, col.id)}
+                  onDragOver={canDragBetweenColumns ? (e) => handleDragOver(e, col.id) : undefined}
+                  onDragLeave={canDragBetweenColumns ? handleDragLeave : undefined}
+                  onDrop={canDragBetweenColumns ? (e) => handleDrop(e, col.id) : undefined}
                 >
                   <div className="board__column-header">
                     <span className={`board__column-label board__column-label--${col.id}`}>
@@ -355,7 +374,7 @@ const handleBoardDragOver = (e) => {
                         <Card
                           key={app.applicationId}
                           className={`board__job board__job--${app.status} ${draggedId === app.applicationId ? 'board__job--dragging' : ''}`}
-                          draggable
+                          draggable={canDragBetweenColumns}
                           onDragStart={(e) => handleDragStart(e, app.applicationId)}
                           onDragEnd={handleDragEnd}
                           onClick={() => setSelectedApp(app)}
@@ -511,7 +530,9 @@ const handleBoardDragOver = (e) => {
                 </>
               )}
               <div className="board__form-actions">
-                <Button variant="ghost" onClick={handleDeleteApp}>Delete</Button>
+                <Button variant="ghost" onClick={handleDeleteApp}>
+                  {confirmDelete ? 'Confirm Delete?' : 'Delete'}
+                </Button>
                 <Button variant="submit" onClick={handleEditStart}>Edit</Button>
               </div>
             </div>
