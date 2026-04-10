@@ -1,6 +1,6 @@
 // pages/Profile.jsx
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -24,9 +24,10 @@ const EMOJIS = [
 
 export default function Profile() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, refreshUser, logout } = useAuth()
 
-  const [editOpen, setEditOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(() => !!location.state?.openEditModal)
   const [draftName, setDraftName] = useState('')
   const [draftHeadline, setDraftHeadline] = useState('')
   const [draftLocation, setDraftLocation] = useState('')
@@ -68,13 +69,16 @@ export default function Profile() {
     navigate('/', { replace: true })
   }
 
-  const openEdit = () => {
-    setDraftName(user?.fullName ?? '')
-    setDraftHeadline(user?.headline ?? '')
-    setDraftLocation(user?.location ?? '')
-    setDraftEmoji(user?.avatar ?? '')
-    setEditOpen(true)
-  }
+  useEffect(() => {
+    if (editOpen && user) {
+      setDraftName(user.fullName ?? '')
+      setDraftHeadline(user.headline ?? '')
+      setDraftLocation(user.location ?? '')
+      setDraftEmoji(user.avatar ?? '')
+    }
+  }, [editOpen, user])
+
+  const openEdit = () => setEditOpen(true)
 
   const handleSave = async () => {
     setSaving(true)

@@ -321,25 +321,23 @@ export default function Dashboard() {
         <Card className="dashboard__quick-actions">
           <h2 className="dashboard__card-title">Quick Actions</h2>
           <div className="dashboard__actions-grid">
-            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/board')}>
+            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/board', { state: { openAddModal: true } })}>
               Add Application
             </Button>
-            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/collection')}>
-              View Badges
+            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/profile', { state: { openEditModal: true } })}>
+              Edit Profile
             </Button>
             <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/challenges')}>
               Check Challenges
             </Button>
-            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/friends')}>
-              See Friends
+            <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/friends', { state: { openAddFriend: true } })}>
+              Add Friend
             </Button>
-            <Button
-              variant="ghost"
-              className="dashboard__action-btn"
-              onClick={() => goalsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-            >
-              Edit Goals
-            </Button>
+            {user?.role?.roleName === 'mentor' && user?.isMentorApproved && (
+              <Button variant="ghost" className="dashboard__action-btn" onClick={() => navigate('/challenges', { state: { openCreateModal: true } })}>
+                Create Challenge
+              </Button>
+            )}
           </div>
         </Card>
       </main>

@@ -1,5 +1,6 @@
 // pages/Board.jsx
 import { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
@@ -41,10 +42,11 @@ function formatDeadline(dateStr) {
 
 export default function Board() {
   const { user } = useAuth()
+  const location = useLocation()
   const [applications, setApplications] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [showAddModal, setShowAddModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(() => !!location.state?.openAddModal)
   const [form, setForm] = useState(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [activeFilter, setActiveFilter] = useState('All')
