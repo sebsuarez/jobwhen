@@ -71,6 +71,37 @@ def get_applications_by_user(user_id):
     return [serialize_application(row) for row in rows]
 
 
+def get_top_users_by_applications_submitted(limit=5):
+    with engine.begin() as conn:
+        rows = conn.execute(
+            text(
+                """
+                SELECT
+                    u.user_id,
+                    u.full_name,
+                    u.avatar,
+                    COUNT(ja.application_id)::INT AS value
+                FROM users u
+                LEFT JOIN job_applications ja ON ja.user_id = u.user_id
+                GROUP BY u.user_id, u.full_name, u.avatar
+                ORDER BY value DESC, u.user_id ASC
+                LIMIT :limit
+                """
+            ),
+            {"limit": limit},
+        ).mappings().all()
+
+    return [
+        {
+            "user_id": row["user_id"],
+            "full_name": row["full_name"],
+            "avatar": row["avatar"],
+            "value": row["value"],
+        }
+        for row in rows
+    ]
+
+
 def create_application(user_id, company_name, role_title, location=None, job_link=None,
                        salary_range=None, status="wishlist", notes=None,
                        application_deadline=None, applied_date=None):
