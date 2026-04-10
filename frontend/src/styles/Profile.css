@@ -254,6 +254,12 @@
   letter-spacing: 0.05em;
 }
 
+.profile-edit__error {
+  color: #b42318;
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
 .profile-edit__name-input {
   width: 100%;
   font-size: var(--text-base);
