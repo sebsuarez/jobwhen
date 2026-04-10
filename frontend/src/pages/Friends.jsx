@@ -143,6 +143,10 @@ export default function Friends() {
                     </div>
                   </div>
 
+                  {friend.encouragedYou && (
+                    <span className="friend-card__encouraged-you">{friend.fullName.split(' ')[0]} has Encouraged you!</span>
+                  )}
+
                   <div className="friend-card__right">
                     {friend.roleName === 'job_seeker' && (
                       <div className="friend-card__stat">

@@ -13,6 +13,7 @@ const MY_FRIENDS_QUERY = `
       avatar
       roleName
       applicationCount
+      encouragedYou
       currentLevel
       currentXp
     }
