@@ -18,6 +18,12 @@ if [ "$input" = "CONFIRM" ]; then
     echo "  Running schema.sql..."
     psql "$DATABASE_URL" -f db/schema.sql
 
+    echo "  Running migrations..."
+    psql "$DATABASE_URL" -f db/migrations/001_add_default_target_count_to_challenges.sql
+    psql "$DATABASE_URL" -f db/migrations/002_add_challenge_recurrence_limit.sql
+    psql "$DATABASE_URL" -f db/migrations/003_update_goals_table.sql
+    psql "$DATABASE_URL" -f db/migrations/004_add_last_login_date_to_users.sql
+
     echo "  Running seed.sql..."
     psql "$DATABASE_URL" -f db/seed.sql
 
