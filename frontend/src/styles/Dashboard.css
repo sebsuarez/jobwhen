@@ -418,7 +418,7 @@
 }
 
 .dashboard__goal-item--done .dashboard__goal-bar-fill {
-  background: #4ade80;
+  background: var(--status-offer);
 }
 
 .dashboard__goal-increment-btn {
@@ -473,7 +473,7 @@
 .dashboard__goal-done-badge {
   font-size: 11px;
   font-weight: 600;
-  color: #4ade80;
+  color: var(--status-offer);
   letter-spacing: 0.03em;
 }
 
@@ -527,7 +527,7 @@
 }
 
 .dashboard__goal-modal-error {
-  color: #b42318;
+  color: var(--error-strong);
   font-size: var(--text-sm);
   margin: 0;
 }
