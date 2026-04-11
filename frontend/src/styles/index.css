@@ -63,7 +63,7 @@
   --status-offer:     #4ADE80;
   --status-rejected:  #F87171;
   --status-ghosted:   #FBBF24;
-
+  
   /* Dashboard Stats */
   --stat-total:     #A855F7;
   --stat-interview: #38BDF8;
@@ -132,6 +132,12 @@
 
   /* Sidebar Layout */
   --sidebar-width: 250px;
+
+  /* Background */
+  --card-bg-soft: rgba(30, 41, 59, 0.65);
+  --card-bg-strong: rgba(30, 41, 59, 0.96);
+  --error-strong: #b42318;
+ 
 }
 
 

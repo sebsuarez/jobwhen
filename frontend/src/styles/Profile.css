@@ -193,7 +193,7 @@
 }
 
 .profile-stat__value--friends {
-  color: #4ade80;
+  color: var(--status-offer);
 }
 
 .profile-stat__value--encouraged {
@@ -255,7 +255,7 @@
 }
 
 .profile-edit__error {
-  color: #b42318;
+  color: var(--error-strong);
   font-size: var(--text-sm);
   margin: 0;
 }
