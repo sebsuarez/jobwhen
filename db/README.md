@@ -83,17 +83,23 @@ The database will be ready at `localhost:5432`.
 
 ---
 
-### Option 2: Manual psql
+### Option 2: Manual psql (Neon or local)
 
-To run the scripts manually against an already-running PostgreSQL instance:
+Run in this order — schema first, then all migrations in order, then seed:
 
 ```bash
-psql -h localhost -U <your_user> -d <your_db> -f db/schema.sql
-psql -h localhost -U <your_user> -d <your_db> -f db/seed.sql
+DB="your_database_url"
+
+psql "$DB" -f db/schema.sql
+psql "$DB" -f db/migrations/001_add_default_target_count_to_challenges.sql
+psql "$DB" -f db/migrations/002_add_challenge_recurrence_limit.sql
+psql "$DB" -f db/migrations/003_update_goals_table.sql
+psql "$DB" -f db/migrations/004_add_last_login_date_to_users.sql
+psql "$DB" -f db/seed.sql
 ```
 
-> `schema.sql` drops and recreates all tables — running it will erase all existing data.
-> Always run `seed.sql` after `schema.sql` on a fresh database.
+> Migrations use `IF NOT EXISTS` guards and are safe to re-run.
+> `seed.sql` truncates all data and resets sequences before inserting — safe to re-run any time.
 
 ## Resetting the Database
 
@@ -103,8 +109,14 @@ docker compose down -v
 docker compose up --build
 ```
 
-**Manually:**
+**Manually (Neon or local):**
 ```bash
-psql -h localhost -U <your_user> -d <your_db> -f db/schema.sql
-psql -h localhost -U <your_user> -d <your_db> -f db/seed.sql
+DB="your_database_url"
+
+psql "$DB" -f db/schema.sql
+psql "$DB" -f db/migrations/001_add_default_target_count_to_challenges.sql
+psql "$DB" -f db/migrations/002_add_challenge_recurrence_limit.sql
+psql "$DB" -f db/migrations/003_update_goals_table.sql
+psql "$DB" -f db/migrations/004_add_last_login_date_to_users.sql
+psql "$DB" -f db/seed.sql
 ```
